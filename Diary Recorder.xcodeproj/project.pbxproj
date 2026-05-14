@@ -6,6 +6,32 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0428A4372FAF5DAE00783C6D /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A4362FAF5DAE00783C6D /* SnapKit */; };
+		0428A58A2FAF5E5600783C6D /* CombineMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A5892FAF5E5600783C6D /* CombineMoya */; };
+		0428A58C2FAF5E5600783C6D /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A58B2FAF5E5600783C6D /* Moya */; };
+		0428A58E2FAF5E5600783C6D /* ReactiveMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A58D2FAF5E5600783C6D /* ReactiveMoya */; };
+		0428A5902FAF5E5600783C6D /* RxMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A58F2FAF5E5600783C6D /* RxMoya */; };
+		0428A5A22FB205F500783C6D /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A5A12FB205F500783C6D /* RealmSwift */; };
+		0428A8442FB48EFE00783C6D /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 0428A5A12FB205F500783C6D /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		0428A8482FB4A1D000783C6D /* DSWaveformImage in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A8472FB4A1D000783C6D /* DSWaveformImage */; };
+		0428A84A2FB4A1D000783C6D /* DSWaveformImageViews in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A8492FB4A1D000783C6D /* DSWaveformImageViews */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0428A8452FB48EFE00783C6D /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				0428A8442FB48EFE00783C6D /* RealmSwift in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		0428A41D2FAF5C8600783C6D /* Diary Recorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Diary Recorder.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +62,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0428A8482FB4A1D000783C6D /* DSWaveformImage in Frameworks */,
+				0428A5902FAF5E5600783C6D /* RxMoya in Frameworks */,
+				0428A5A22FB205F500783C6D /* RealmSwift in Frameworks */,
+				0428A84A2FB4A1D000783C6D /* DSWaveformImageViews in Frameworks */,
+				0428A4372FAF5DAE00783C6D /* SnapKit in Frameworks */,
+				0428A58C2FAF5E5600783C6D /* Moya in Frameworks */,
+				0428A58E2FAF5E5600783C6D /* ReactiveMoya in Frameworks */,
+				0428A58A2FAF5E5600783C6D /* CombineMoya in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,6 +80,7 @@
 			isa = PBXGroup;
 			children = (
 				0428A41F2FAF5C8600783C6D /* Diary Recorder */,
+				0428A5882FAF5E5600783C6D /* Frameworks */,
 				0428A41E2FAF5C8600783C6D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -58,6 +93,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		0428A5882FAF5E5600783C6D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -68,6 +110,7 @@
 				0428A4192FAF5C8600783C6D /* Sources */,
 				0428A41A2FAF5C8600783C6D /* Frameworks */,
 				0428A41B2FAF5C8600783C6D /* Resources */,
+				0428A8452FB48EFE00783C6D /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -78,6 +121,14 @@
 			);
 			name = "Diary Recorder";
 			packageProductDependencies = (
+				0428A4362FAF5DAE00783C6D /* SnapKit */,
+				0428A5892FAF5E5600783C6D /* CombineMoya */,
+				0428A58B2FAF5E5600783C6D /* Moya */,
+				0428A58D2FAF5E5600783C6D /* ReactiveMoya */,
+				0428A58F2FAF5E5600783C6D /* RxMoya */,
+				0428A5A12FB205F500783C6D /* RealmSwift */,
+				0428A8472FB4A1D000783C6D /* DSWaveformImage */,
+				0428A8492FB4A1D000783C6D /* DSWaveformImageViews */,
 			);
 			productName = "Diary Recorder";
 			productReference = 0428A41D2FAF5C8600783C6D /* Diary Recorder.app */;
@@ -107,6 +158,12 @@
 			);
 			mainGroup = 0428A4142FAF5C8600783C6D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0428A4352FAF5DAE00783C6D /* XCRemoteSwiftPackageReference "SnapKit" */,
+				0428A43A2FAF5E0F00783C6D /* XCRemoteSwiftPackageReference "Moya" */,
+				0428A59E2FB205F500783C6D /* XCRemoteSwiftPackageReference "realm-swift" */,
+				0428A8462FB4A1D000783C6D /* XCRemoteSwiftPackageReference "DSWaveformImage" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0428A41E2FAF5C8600783C6D /* Products */;
 			projectDirPath = "";
@@ -148,11 +205,12 @@
 				DEVELOPMENT_TEAM = V6ZJF96WF2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Diary Recorder/Info.plist";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "to record your diary we need your permission for mic, please accept.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -176,11 +234,12 @@
 				DEVELOPMENT_TEAM = V6ZJF96WF2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Diary Recorder/Info.plist";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "to record your diary we need your permission for mic, please accept.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -337,6 +396,84 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0428A4352FAF5DAE00783C6D /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		0428A43A2FAF5E0F00783C6D /* XCRemoteSwiftPackageReference "Moya" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Moya/Moya.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 15.0.3;
+			};
+		};
+		0428A59E2FB205F500783C6D /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-swift.git";
+			requirement = {
+				branch = community;
+				kind = branch;
+			};
+		};
+		0428A8462FB4A1D000783C6D /* XCRemoteSwiftPackageReference "DSWaveformImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dmrschmidt/DSWaveformImage.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 14.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0428A4362FAF5DAE00783C6D /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0428A4352FAF5DAE00783C6D /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		0428A5892FAF5E5600783C6D /* CombineMoya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0428A43A2FAF5E0F00783C6D /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = CombineMoya;
+		};
+		0428A58B2FAF5E5600783C6D /* Moya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0428A43A2FAF5E0F00783C6D /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = Moya;
+		};
+		0428A58D2FAF5E5600783C6D /* ReactiveMoya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0428A43A2FAF5E0F00783C6D /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = ReactiveMoya;
+		};
+		0428A58F2FAF5E5600783C6D /* RxMoya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0428A43A2FAF5E0F00783C6D /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = RxMoya;
+		};
+		0428A5A12FB205F500783C6D /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0428A59E2FB205F500783C6D /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
+		};
+		0428A8472FB4A1D000783C6D /* DSWaveformImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0428A8462FB4A1D000783C6D /* XCRemoteSwiftPackageReference "DSWaveformImage" */;
+			productName = DSWaveformImage;
+		};
+		0428A8492FB4A1D000783C6D /* DSWaveformImageViews */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0428A8462FB4A1D000783C6D /* XCRemoteSwiftPackageReference "DSWaveformImage" */;
+			productName = DSWaveformImageViews;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0428A4152FAF5C8600783C6D /* Project object */;
 }
