@@ -7,6 +7,7 @@
 
 import Foundation
 import RealmSwift
+import Combine
 
 public final class RecordingsDetailsRealmManager {
     
@@ -18,8 +19,16 @@ public final class RecordingsDetailsRealmManager {
         getRealmObject()
     }
     
+    private var tokens: [NotificationToken] = []
+    
     private init() {
         
+    }
+    
+    deinit {
+        tokens.forEach {
+            $0.invalidate()
+        }
     }
     
     private func getRealmObject() -> Realm {
@@ -57,6 +66,8 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
         realm.safeWrite {
             realm.delete(realmInstance)
         }
+        
+        try? FileManager.default.removeItem(atPath: realmInstance.fileURL)
     }
     
     func removeAllRecordings() throws(RemoveRecordingError) {
@@ -89,11 +100,41 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
             .map {
                 RecordingFileDetails(
                     id: $0.identifier,
-                    fileURL: URL(filePath: $0.fileURL),
+                    fileURL: URL(string: $0.fileURL)!,
                     name: $0.name,
                     date: $0.date,
                     duration: $0.duration
                 )
             }
+    }
+    
+    func listRecordingsPublisher() -> AnyPublisher<[RecordingFileDetails], ListRecordingError> {
+        let results = realm
+            .objects(RecordingsDetailsRealmModel.self)
+            .sorted(by: \.date, ascending: false)
+        let subject = PassthroughSubject<[RecordingFileDetails], ListRecordingError>()
+        let token = results.observe { [weak self] changes in
+            guard let self = self else { return }
+            switch changes {
+            case .initial(let results), .update(let results, _, _, _):
+                subject.send(
+                    Array(
+                        results.map {
+                            RecordingFileDetails(
+                                id: $0.identifier,
+                                fileURL: URL(string: $0.fileURL)!,
+                                name: $0.name,
+                                date: $0.date,
+                                duration: $0.duration
+                            )
+                        }
+                    )
+                )
+            case .error:
+                subject.send(completion: .failure(.failedToList))
+            }
+        }
+        tokens.append(token)
+        return subject.eraseToAnyPublisher()
     }
 }

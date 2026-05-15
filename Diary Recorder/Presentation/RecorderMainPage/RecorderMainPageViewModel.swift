@@ -150,6 +150,7 @@ class RecorderMainPageViewModel: NSObject, ObservableObject, AVAudioRecorderDele
         waveformSamples = []
         
         if let url = currentRecordingURL {
+            print(">>>", Self.self, #function, url.isFileURL, "'\(url.absoluteString)'")
             let duration = getAudioDuration(url: url)
             let newRecording = RecordingFileDetails(
                 id: UUID(),

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 enum SaveRecordingError: Error {
     case failedToSave
@@ -39,6 +40,7 @@ extension RecordingModifierHandler {
 
 protocol ListRecordingHandler {
     func listRecordings() throws(ListRecordingError) -> [RecordingFileDetails]
+    func listRecordingsPublisher() -> AnyPublisher<[RecordingFileDetails], ListRecordingError>
 }
 
 protocol RecordingsManager: RecordingModifierHandler, ListRecordingHandler {

@@ -288,7 +288,7 @@ class RecorderMainPageViewController: UIViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] waveformSamples in
                 guard let self else { return }
-                let zeroArray: [Float] = .init(repeating: 1.0, count: 999)
+                let zeroArray: [Float] = []// .init(repeating: 1.0, count: 999)
                 let newWaveformSamples = zeroArray + waveformSamples
                 self.waveformLiveView.add(samples: newWaveformSamples)
             }

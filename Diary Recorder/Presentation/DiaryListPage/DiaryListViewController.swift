@@ -104,7 +104,11 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        router.navigateToDiaryPlayer()
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPath: IndexPath
+    ) {
+        router.navigateToDiaryPlayer(diary: viewModel.diaryListDataCollection[indexPath.row])
+        print(">>>>>, thie is file selected: \(viewModel.diaryListDataCollection[indexPath.row])")
     }
 }

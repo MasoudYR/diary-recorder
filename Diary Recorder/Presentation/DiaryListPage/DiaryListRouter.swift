@@ -14,9 +14,9 @@ class DiaryListRouter {
         
     }
     
-    func navigateToDiaryPlayer(){
+    func navigateToDiaryPlayer(diary: RecordingFileDetails){
         guard let diaryListViewController else { return }
-        let diaryPlayerViewController = DiaryPlayerViewController.make()
+        let diaryPlayerViewController = DiaryPlayerViewController.make(diary: diary)
         if let sheet = diaryPlayerViewController.sheetPresentationController {
             sheet.detents = [
                 .custom { context in
