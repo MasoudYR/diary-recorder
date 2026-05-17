@@ -30,4 +30,10 @@ class DiaryListRouter {
         }
         diaryListViewController.present(diaryPlayerViewController, animated: true)
     }
+    
+    func navigateToDeleteAlert(deleteHandler: @escaping () -> Void){
+        guard let diaryListViewController else { return }
+        let deleteAlertViewController = DeleteAlertViewController.make(deleteHandler: deleteHandler)
+        diaryListViewController.present(deleteAlertViewController, animated: true)
+    }
 }

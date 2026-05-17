@@ -68,6 +68,7 @@ class DiaryListViewController: UIViewController {
         diaryListTableView.bounces = false
         diaryListTableView.separatorInset = .zero
         diaryListTableView.showsVerticalScrollIndicator = false
+        diaryListTableView.rowHeight = 70
         diaryListTableView.snp.makeConstraints { make in
             make.edges.equalTo(view.safeAreaLayoutGuide.snp.edges)
         }
@@ -110,5 +111,26 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
     ) {
         router.navigateToDiaryPlayer(diary: viewModel.diaryListDataCollection[indexPath.row])
         print(">>>>>, thie is file selected: \(viewModel.diaryListDataCollection[indexPath.row])")
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] _, _, completion in
+            guard let self else { return }
+            self.router.navigateToDeleteAlert(
+                deleteHandler: { [weak self] in
+                    guard let self else { return }
+                    self.viewModel.delete(
+                        viewModel.diaryListDataCollection[indexPath.row]
+                    )
+                }
+            )
+            completion(true)
+        }
+        
+        deleteAction.image = UIImage(systemName: "trash.fill")
+        //deleteAction.backgroundColor = .systemRed
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        return configuration
     }
 }

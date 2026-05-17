@@ -45,6 +45,7 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
     func saveRecording(_ recording: RecordingFileDetails) throws(SaveRecordingError) {
         let realm = self.realm
         let stringURL = recording.fileURL.absoluteString
+        print("this is string url of the fil &&&&: \(stringURL)")
         let realmInstance = RecordingsDetailsRealmModel(
             identifier: recording.id,
             fileURL: stringURL,
@@ -60,14 +61,23 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
     
     func removeRecording(withID recordingID: UUID) throws(RemoveRecordingError) {
         let realm = self.realm
+        
         guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: recordingID) else {
             throw .recordingNotFound
         }
+        
+        let fileURL = realmInstance.fileURL
+        print(">>>>>>>>>> my file url to delete is: \(fileURL)")
         realm.safeWrite {
             realm.delete(realmInstance)
         }
         
-        try? FileManager.default.removeItem(atPath: realmInstance.fileURL)
+        do {
+            let url = URL(string: fileURL)!
+            try FileManager.default.removeItem(at: url)
+        } catch (let error) {
+            print("delete file from the file manager doesnt work because: \(error)")
+        }
     }
     
     func removeAllRecordings() throws(RemoveRecordingError) {
@@ -94,17 +104,25 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
     func listRecordings() throws(ListRecordingError) -> [RecordingFileDetails] {
         let realm = self.realm
         
+        let realmData = realm
+            .objects(RecordingsDetailsRealmModel.self)
+            .sorted(by: \.date, ascending: false)
+        print("this is list of realm data: %%%%: \(realmData)")
+        
         return realm
             .objects(RecordingsDetailsRealmModel.self)
             .sorted(by: \.date, ascending: false)
             .map {
-                RecordingFileDetails(
+                let sample = RecordingFileDetails(
                     id: $0.identifier,
                     fileURL: URL(string: $0.fileURL)!,
                     name: $0.name,
                     date: $0.date,
                     duration: $0.duration
                 )
+                
+                print("this is list of mapppppeeedddd realm data: @@@@@: \(sample)")
+                return sample
             }
     }
     
@@ -112,21 +130,25 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
         let results = realm
             .objects(RecordingsDetailsRealmModel.self)
             .sorted(by: \.date, ascending: false)
+        
+        print("this is list of realm data: %%%%: \(results)")
+        
         let subject = PassthroughSubject<[RecordingFileDetails], ListRecordingError>()
-        let token = results.observe { [weak self] changes in
-            guard let self = self else { return }
+        let token = results.observe { changes in
             switch changes {
             case .initial(let results), .update(let results, _, _, _):
                 subject.send(
                     Array(
                         results.map {
-                            RecordingFileDetails(
+                            let sample = RecordingFileDetails(
                                 id: $0.identifier,
                                 fileURL: URL(string: $0.fileURL)!,
                                 name: $0.name,
                                 date: $0.date,
                                 duration: $0.duration
                             )
+                            print("this is list of mapppppeeedddd realm data: @@@@@: \(sample)")
+                            return sample
                         }
                     )
                 )

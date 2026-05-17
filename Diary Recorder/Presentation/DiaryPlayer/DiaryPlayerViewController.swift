@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 import Combine
+import AVFAudio
 
 class DiaryPlayerViewController: UIViewController {
     
@@ -22,9 +23,11 @@ class DiaryPlayerViewController: UIViewController {
     private let dateLabel = UILabel()
     private let progressSliderView = UIView()
     private let progressSlider = UISlider()
+    private let minimumTrackTimeLabel = UILabel()
+    private let maximumTrackTimeLabel = UILabel()
     private let buttonsGroupView = UIView()
     private let buttonsVStackView = UIStackView()
-    private let playAndPauseButton = UIButton()
+    private let playButton = UIButton()
     private let pauseButton = UIButton()
     private let stopButton = UIButton()
     private let plus15secondsButton = UIButton()
@@ -51,6 +54,15 @@ class DiaryPlayerViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        do {
+            try AVAudioSession.sharedInstance().setActive(false)
+            print(">>>", Self.self, #function, "session setActive: false.")
+        } catch {
+            print(">>>", Self.self, #function, "error: \(error)")
+        }
+    }
+    
     static func make(diary: RecordingFileDetails) -> DiaryPlayerViewController {
         let viewModel = DiaryPlayerViewModel(diary: diary)
         let router = DiaryPlayerRouter()
@@ -62,6 +74,16 @@ class DiaryPlayerViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         bindViewModel()
+    }
+    
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        viewModel.audioPlayerService.setupAudioSession()
+//    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        viewModel.audioPlayerService.deactiveAudioSession()
     }
     
     func setupUI() {
@@ -82,6 +104,7 @@ class DiaryPlayerViewController: UIViewController {
         vStackView.alignment = .fill
         vStackView.distribution = .fill
         vStackView.isLayoutMarginsRelativeArrangement = true
+        vStackView.layoutMargins = .init(top: 25, left: 15, bottom: 15, right: 15)
         
         view.addSubview(vStackView)
         vStackView.snp.makeConstraints { make in
@@ -127,12 +150,35 @@ class DiaryPlayerViewController: UIViewController {
         progressSlider.maximumValue = 1.0
         progressSlider.preferredBehavioralStyle = .automatic
         progressSlider.isContinuous = true
-        progressSlider.setThumbImage(UIImage(systemName: "figure.walk"), for: .normal)
+        progressSlider.setThumbImage(UIImage(systemName: "music.note"), for: .normal)
         progressSlider.tintColor = .systemPink
         
         progressSliderView.addSubview(progressSlider)
         progressSlider.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(5)
+            make.top.horizontalEdges.equalToSuperview().inset(5)
+            make.bottom.equalToSuperview().inset(25)
+        }
+        
+        minimumTrackTimeLabel.text = viewModel.minimumTrackTimeString
+        minimumTrackTimeLabel.font = .systemFont(ofSize: 10)
+        minimumTrackTimeLabel.textColor = .label
+        minimumTrackTimeLabel.textAlignment = .left
+        
+        progressSliderView.addSubview(minimumTrackTimeLabel)
+        minimumTrackTimeLabel.snp.makeConstraints { make in
+            make.top.equalTo(progressSliderView.snp.bottom).offset(-25)
+            make.left.equalTo(progressSliderView.snp.left).inset(5)
+        }
+        
+        maximumTrackTimeLabel.text = viewModel.maximumTrackTimeString
+        maximumTrackTimeLabel.font = .systemFont(ofSize: 10)
+        maximumTrackTimeLabel.textColor = .label
+        maximumTrackTimeLabel.textAlignment = .right
+        
+        progressSliderView.addSubview(maximumTrackTimeLabel)
+        maximumTrackTimeLabel.snp.makeConstraints { make in
+            make.top.equalTo(progressSliderView.snp.bottom).offset(-25)
+            make.right.equalTo(progressSliderView.snp.right).inset(5)
         }
         
         vStackView.addArrangedSubview(progressSliderView)
@@ -144,7 +190,7 @@ class DiaryPlayerViewController: UIViewController {
         hStackView.axis = .horizontal
         hStackView.spacing = 20
         hStackView.distribution = .fill
-        hStackView.alignment = .center
+        hStackView.alignment = .top
         hStackView.snp.makeConstraints { make in
             make.verticalEdges.centerX.equalToSuperview()
         }
@@ -178,11 +224,11 @@ class DiaryPlayerViewController: UIViewController {
         buttonsVStackView.distribution = .fill
         buttonsVStackView.alignment = .fill
         
-        playAndPauseButton.setImage(UIImage(systemName: "play.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 25)), for: .normal)
-        playAndPauseButton.tintColor = .systemGreen
-        playAndPauseButton.backgroundColor = .label
-        playAndPauseButton.layer.cornerRadius = 30
-        playAndPauseButton.snp.makeConstraints { make in
+        playButton.setImage(UIImage(systemName: "play.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 25)), for: .normal)
+        playButton.tintColor = .systemGreen
+        playButton.backgroundColor = .label
+        playButton.layer.cornerRadius = 30
+        playButton.snp.makeConstraints { make in
             make.size.equalTo(60)
         }
         
@@ -202,7 +248,7 @@ class DiaryPlayerViewController: UIViewController {
             make.size.equalTo(60)
         }
         
-        buttonsVStackView.addArrangedSubview(playAndPauseButton)
+        buttonsVStackView.addArrangedSubview(playButton)
         buttonsVStackView.addArrangedSubview(pauseButton)
         buttonsVStackView.addArrangedSubview(stopButton)
         
@@ -210,7 +256,7 @@ class DiaryPlayerViewController: UIViewController {
     }
     
     private func updateView() {
-        playAndPauseButton.isHidden = !(state == .idle || state == .paused)
+        playButton.isHidden = !(state == .idle || state == .paused)
         pauseButton.isHidden = !(state == .playing)
         stopButton.isHidden = !(state == .paused || state == .playing)
 
@@ -228,8 +274,9 @@ class DiaryPlayerViewController: UIViewController {
             viewModel.play(diary)
             self.state = .playing
         }
-        
-        playAndPauseButton.addAction(playAction, for: .touchUpInside)
+        let playActionId = UIAction.Identifier("playActionId")
+        playButton.removeAction(identifiedBy: playActionId, for: .touchUpInside)
+        playButton.addAction(playAction, for: .touchUpInside)
         
         
         let pauseAction = UIAction { [unowned self] _ in
@@ -242,25 +289,17 @@ class DiaryPlayerViewController: UIViewController {
             }
         }
         
+        let pauseActionId = UIAction.Identifier("pauseActionId")
+        pauseButton.removeAction(identifiedBy: pauseActionId, for: .touchUpInside)
         pauseButton.addAction(pauseAction, for: .touchUpInside)
-        
-//        let resumeAction = UIAction { [unowned self] _ in
-////            guard let diary = viewModel.currentlyPlaying else { return }
-//            if viewModel.isPlaying {
-//                viewModel.resume()
-//            } else {
-//                print("there is not diary to play that you can resume")
-//            }
-//        }
-//        
-//        resumeButton.addAction(resumeAction, for: .touchUpInside)
-        
-
+    
         let stopAction = UIAction { [unowned self] _ in
             viewModel.stop()
             self.state = .idle
         }
         
+        let stopActionId = UIAction.Identifier("stopActionId")
+        stopButton.removeAction(identifiedBy: stopActionId, for: .touchUpInside)
         stopButton.addAction(stopAction, for: .touchUpInside)
         
     }
@@ -301,6 +340,22 @@ class DiaryPlayerViewController: UIViewController {
                     guard let self else { return }
                     self.state = .idle
                 }
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$minimumTrackTimeString
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] text in
+                guard let self else { return }
+                self.minimumTrackTimeLabel.text = text
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$maximumTrackTimeString
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] text in
+                guard let self else { return }
+                self.maximumTrackTimeLabel.text = text
             }
             .store(in: &cancellables)
         

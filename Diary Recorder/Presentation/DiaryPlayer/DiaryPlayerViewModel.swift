@@ -13,10 +13,12 @@ import DSWaveformImageViews
 class DiaryPlayerViewModel: ObservableObject {
     
     @Published var isPlaying = false
-    @Published var isFinished = true
+    @Published var isFinished = false
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
     @Published var currentlyPlaying: RecordingFileDetails?
+    @Published var minimumTrackTimeString: String = "00:00:00"
+    @Published var maximumTrackTimeString: String = "00:00:00"
     
     private var dateFormatter: DateFormatter
     let audioPlayerService = AudioPlayerService()
@@ -26,7 +28,7 @@ class DiaryPlayerViewModel: ObservableObject {
     init(diary: RecordingFileDetails) {
         audioPlayerService.currentlyPlayingFileDetails = diary
         self.dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy MM dd HH:mm:ss"
+        dateFormatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
         
         audioPlayerService.$isPLaying
             .assign(to: \.isPlaying, on: self)
@@ -46,6 +48,22 @@ class DiaryPlayerViewModel: ObservableObject {
         
         audioPlayerService.$currentlyPlayingFileDetails
             .assign(to: \.currentlyPlaying, on: self)
+            .store(in: &cancellables)
+        
+        audioPlayerService.$minimumTrackTimeToShow
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] minimumTrackTime in
+                guard let self else { return }
+                self.minimumTrackTimeString = changeDuration(minimumTrackTime)
+            }
+            .store(in: &cancellables)
+        
+        audioPlayerService.$maximumTrackTimeToShow
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] maximumTrackTime in
+                guard let self else { return }
+                self.maximumTrackTimeString =  "-" + changeDuration(maximumTrackTime)
+            }
             .store(in: &cancellables)
     }
     
@@ -72,5 +90,20 @@ class DiaryPlayerViewModel: ObservableObject {
    
     func changeDateAndTime(_ date: Date) -> String {
         return dateFormatter.string(from: date)
+    }
+    
+    func changeDuration(_ duration: TimeInterval) -> String {
+        let hours = Int(duration) / 3600
+        let minutes = (Int(duration) % 3600 / 60)
+        let seconds = Int(duration) % 60
+        let milliseconds = Int((duration.truncatingRemainder(dividingBy: 1)) * 100)
+        let timeString = String(
+            format: "%02d:%02d:%02d",
+            hours,
+            minutes,
+            seconds,
+            milliseconds
+        )
+        return timeString
     }
 }

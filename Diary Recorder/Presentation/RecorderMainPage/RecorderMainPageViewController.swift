@@ -16,26 +16,20 @@ class RecorderMainPageViewController: UIViewController {
     private let router: RecorderMainPageRouter
     
     private let vStackView = UIStackView()
-    private let voiceRecorderLabelView = UIView()
-    private let voiceRecorderLabel = UILabel()
     private let voiceRecorderImageViewViewView = UIView()
     private let voiceRecorderImageViewView = UIView()
     private let voiceRecorderImageView = UIImageView()
     private let voiceTimerLabelView = UIView()
     private let voiceTimerLabel = UILabel()
     private let voiceDiagramView = UIView()
-//    private let voiceDiagramImageView = UIImageView()
     private let waveformLiveView = WaveformLiveView()
+    private let buttonsView = UIView()
     private let buttonsVStackView = UIStackView()
-    private let recordButtonView = UIView()
     private let recordButton = UIButton()
-    private let pauseButtonView = UIView()
     private let pauseButton = UIButton()
-    private let resumeButtonView = UIView()
     private let resumeButton = UIButton()
-    private let stopButtonView = UIView()
     private let stopButton = UIButton()
-    @objc private let savedDiaryBarButton = UIBarButtonItem()
+    private var savedDiaryBarButton = UIBarButtonItem()
     private var cancellables = Set<AnyCancellable>()
 
     
@@ -71,6 +65,10 @@ class RecorderMainPageViewController: UIViewController {
         bindViewModel()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        viewModel.audioRecorderService.setupAudioSession()
+    }
+    
     private func navigationBarSetupUI() {
         navigationItem.title = "Diary Recorder"
         let appearance = UINavigationBarAppearance()
@@ -85,193 +83,214 @@ class RecorderMainPageViewController: UIViewController {
         navigationItem.compactScrollEdgeAppearance = appearance
         
         let largeConfigue = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
-        let savedDiaryBarButton = UIBarButtonItem(
+        savedDiaryBarButton = UIBarButtonItem(
             image: UIImage(systemName: "list.triangle",withConfiguration: largeConfigue),
             style: .plain,
             target: self,
-            action: #selector(closeButtonClicked(_:))
+            action: #selector(diariesListBarButtonTapped(_:))
         )
         navigationItem.rightBarButtonItem = savedDiaryBarButton
         navigationItem.backButtonTitle = ""
     }
     
-    @objc func closeButtonClicked(_ sender: UIBarButtonItem) {
+    @objc func diariesListBarButtonTapped(_ sender: UIBarButtonItem) {
         print("navbutton tapped")
         self.router.navigateToDiaryList()
     }
     
+    
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        view.addSubview(vStackView)
+        
+        setupViewsMainStackView()
+        setupVoiceRecorderImageView()
+        setupTimerLabelView()
+        setupVoiceDiagramView()
+        setupViewsButtonsGroupStackView()
+        setupActions()
+        updateView()
+    }
+    
+    private func setupViewsMainStackView() {
         vStackView.axis = .vertical
         vStackView.spacing = 20
         vStackView.distribution = .fill
         vStackView.alignment = .fill
+        vStackView.isLayoutMarginsRelativeArrangement = true
+        
+        view.addSubview(vStackView)
         vStackView.snp.makeConstraints { make in
-            //make.verticalEdges.equalToSuperview()
-            make.horizontalEdges.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(30)
+            make.top.horizontalEdges.equalToSuperview()
         }
-        
-        vStackView.addArrangedSubview(voiceRecorderImageViewViewView)
-        voiceRecorderImageViewViewView.backgroundColor = .clear
-        
-        voiceRecorderImageViewViewView.addSubview(voiceRecorderImageViewView)
+    }
+    
+    private func setupVoiceRecorderImageView() {
+
         voiceRecorderImageViewView.backgroundColor = .label
         voiceRecorderImageViewView.layer.cornerRadius = 100
+        
+        voiceRecorderImageViewViewView.addSubview(voiceRecorderImageViewView)
         voiceRecorderImageViewView.snp.makeConstraints { make in
-            make.height.width.equalTo(200)
+            make.size.equalTo(200)
             make.verticalEdges.equalToSuperview().inset(10)
             make.center.equalToSuperview()
         }
         
-        voiceRecorderImageViewView.addSubview(voiceRecorderImageView)
         voiceRecorderImageView.image = UIImage(systemName: "microphone")
         voiceRecorderImageView.layer.cornerRadius = 30
         voiceRecorderImageView.tintColor = .systemBackground
         voiceRecorderImageView.backgroundColor = .clear
-        //voiceRecorderImageView.layer.borderWidth = 1
-        //voiceRecorderImageView.layer.backgroundColor = UIColor.label.cgColor
+        
+        voiceRecorderImageViewView.addSubview(voiceRecorderImageView)
         voiceRecorderImageView.snp.makeConstraints { make in
             make.height.width.equalTo(60)
             make.center.equalToSuperview()
         }
         
-        vStackView.addArrangedSubview(voiceTimerLabelView)
-        voiceTimerLabelView.backgroundColor = .blue
-        voiceTimerLabel.snp.makeConstraints { make in
-            //make.width.equalTo(200)
-        }
+        vStackView.addArrangedSubview(voiceRecorderImageViewViewView)
+    }
+    
+    private func setupTimerLabelView() {
         
-        voiceTimerLabelView.addSubview(voiceTimerLabel)
         voiceTimerLabel.text = "00:00:00.00"
-        voiceTimerLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 30, weight: .regular)
+        voiceTimerLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 50, weight: .regular)
         voiceTimerLabel.textAlignment = .center
         voiceTimerLabel.textColor = .label
-        voiceTimerLabel.backgroundColor = .red
-        voiceTimerLabel.snp.makeConstraints { make in
-            make.verticalEdges.equalToSuperview()
-            make.width.equalTo(200)
-            make.centerX.equalToSuperview()
-        }
         
-        vStackView.addArrangedSubview(voiceDiagramView)
-        voiceDiagramView.backgroundColor = .green
-        voiceDiagramView.layer.borderWidth = 3
-        voiceDiagramView.layer.borderColor = UIColor.systemPink.cgColor
-        voiceDiagramView.layer.cornerRadius = 10
+        vStackView.addArrangedSubview(voiceTimerLabel)
+    }
+    
+    private func setupVoiceDiagramView() {
+        
         voiceDiagramView.snp.makeConstraints { make in
             make.height.equalTo(120)
-            make.width.equalToSuperview()
         }
         
-        voiceDiagramView.addSubview(waveformLiveView)
+        waveformLiveView.shouldDrawSilencePadding = true
         waveformLiveView.configuration = Waveform.Configuration(
-            //size: CGSize(width: 300, height: 100),
             backgroundColor: .systemBackground,
             style: .striped(
                 .init(
                     color: .systemRed,
-                    width: 2,
-                    spacing: 1,
+                    width: 1,
+                    spacing: 2,
                     lineCap: .round
                 )
             ),
             scale: 1.0
         )
-        waveformLiveView.shouldDrawSilencePadding = true
         
-//        waveformLiveView.waveformView.configuration = Waveform.Configuration(
-//            size: CGSize(width: 300, height: 100),
-//            backgroundColor: .clear,
-//            style: .striped(.init(color: .systemRed, width: 3, spacing: 2, lineCap: .round)),
-//            damping: 0.7,
-//            scale: 1.0
-//        )
-//        waveformLiveView.waveformView.highlightColor = .systemRed
+        voiceDiagramView.addSubview(waveformLiveView)
         waveformLiveView.snp.makeConstraints { make in
-            make.height.equalTo(100)
+            make.height.equalToSuperview().inset(10)
             make.horizontalEdges.equalToSuperview()
-            make.centerY.equalToSuperview()
         }
         
-        vStackView.addArrangedSubview(recordButtonView)
-        recordButtonView.backgroundColor = .green
+        vStackView.addArrangedSubview(voiceDiagramView)
+    }
+    
+    private func setupViewsButtonsGroupStackView() {
+        buttonsVStackView.axis = .vertical
+        buttonsVStackView.spacing = 5
+        buttonsVStackView.distribution = .fill
+        buttonsVStackView.alignment = .fill
         
-        recordButtonView.addSubview(recordButton)
         recordButton.backgroundColor = .label
         recordButton.setImage(UIImage(systemName: "circle.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 30)), for: .normal)
         recordButton.tintColor = .systemRed
         recordButton.layer.cornerRadius = 40
+        
         recordButton.snp.makeConstraints { make in
-            make.height.width.equalTo(80)
-            make.verticalEdges.equalToSuperview()
-            make.centerX.equalToSuperview()
+            make.size.equalTo(80)
         }
         
+        pauseButton.backgroundColor = .label
+        pauseButton.setImage(UIImage(systemName: "pause.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 30)), for: .normal)
+        pauseButton.tintColor = .systemBackground
+        pauseButton.layer.cornerRadius = 40
+        
+        
+        pauseButton.snp.makeConstraints { make in
+            make.size.equalTo(80)
+        }
+        
+        resumeButton.backgroundColor = .label
+        resumeButton.setImage(UIImage(systemName: "circle.righthalf.filled.inverse",withConfiguration: UIImage.SymbolConfiguration(pointSize: 30)), for: .normal)
+        resumeButton.tintColor = .systemRed
+        resumeButton.layer.cornerRadius = 40
+        
+        
+        resumeButton.snp.makeConstraints { make in
+            make.size.equalTo(80)
+        }
+        
+        stopButton.backgroundColor = .label
+        stopButton.setImage(UIImage(systemName: "stop.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 30)), for: .normal)
+        stopButton.tintColor = .systemBackground
+        stopButton.layer.cornerRadius = 40
+        
+        stopButton.snp.makeConstraints { make in
+            make.size.equalTo(80)
+        }
+        
+        buttonsView.addSubview(buttonsVStackView)
+        buttonsVStackView.snp.makeConstraints { make in
+            make.verticalEdges.equalToSuperview()
+            make.center.equalToSuperview()
+        }
+        
+        buttonsVStackView.addArrangedSubview(recordButton)
+        buttonsVStackView.addArrangedSubview(pauseButton)
+        buttonsVStackView.addArrangedSubview(resumeButton)
+        buttonsVStackView.addArrangedSubview(stopButton)
+        
+        vStackView.addArrangedSubview(buttonsView)
+    }
+
+    private func setupActions() {
         let recordButtonAction = UIAction { [unowned self]
             _ in
-            recordDiary()
+            viewModel.startRecording()
             state = .recording
+            print("##### Record Button tapped")
         }
         
         recordButton.addAction(recordButtonAction, for: .touchUpInside)
         
-        vStackView.addArrangedSubview(pauseButtonView)
-        pauseButtonView.backgroundColor = .purple
-        
-        pauseButtonView.addSubview(pauseButton)
-        pauseButton.backgroundColor = .label
-        pauseButton.setTitle("Pause", for: .normal)
-        pauseButton.tintColor = .systemBackground
-        pauseButton.layer.cornerRadius = 30
-        pauseButton.snp.makeConstraints { make in
-            make.height.equalTo(60)
-            make.width.equalTo(150)
-            make.centerX.equalToSuperview()
-            make.verticalEdges.equalToSuperview()
+        let pauseButtonAction = UIAction { [unowned self]
+            _ in
+            if viewModel.isRecording {
+                viewModel.pauseRecording()
+                state = .paused
+                print("##### Pause Button tapped")
+            } else {
+                print("there is no recording to pause")
+            }
         }
-        vStackView.setCustomSpacing(10, after: pauseButtonView)
         
-        vStackView.addArrangedSubview(resumeButtonView)
-        resumeButtonView.backgroundColor = .blue
+        pauseButton.addAction(pauseButtonAction, for: .touchUpInside)
         
-        resumeButtonView.addSubview(resumeButton)
-        resumeButton.backgroundColor = .label
-        resumeButton.setTitle("Resume", for: .normal)
-        resumeButton.tintColor = .systemBackground
-        resumeButton.layer.cornerRadius = 30
-        resumeButton.snp.makeConstraints { make in
-            make.height.equalTo(60)
-            make.width.equalTo(150)
-            make.centerX.equalToSuperview()
-            make.verticalEdges.equalToSuperview()
+        let resumeButtonAction = UIAction { [unowned self]
+            _ in
+            
+            if viewModel.isPaused {
+                viewModel.resumeRecording()
+                state = .recording
+                print("##### Resume Button tapped")
+            }
         }
-        vStackView.setCustomSpacing(10, after: resumeButtonView)
         
-        vStackView.addArrangedSubview(stopButtonView)
-        stopButtonView.backgroundColor = .brown
-        
-        stopButtonView.addSubview(stopButton)
-        stopButton.backgroundColor = .label
-        stopButton.setImage(UIImage(systemName: "stop.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 30)), for: .normal)
-        stopButton.tintColor = .systemBackground
-        stopButton.layer.cornerRadius = 30
-        stopButton.snp.makeConstraints { make in
-            make.height.width.equalTo(80)
-            make.verticalEdges.equalToSuperview()
-            make.centerX.equalToSuperview()
-        }
+        resumeButton.addAction(resumeButtonAction, for: .touchUpInside)
         
         let stopButtonAction = UIAction { [unowned self]
             _ in
-            stopRecordDiary()
+            viewModel.stopRecording()
             state = .idle
+            waveformLiveView.reset()
+            print("##### Stop Button tapped")
         }
         
         stopButton.addAction(stopButtonAction, for: .touchUpInside)
-        
-        updateView()
     }
     
     private func bindViewModel() {
@@ -288,7 +307,7 @@ class RecorderMainPageViewController: UIViewController {
             .receive(on: RunLoop.main)
             .sink { [weak self] waveformSamples in
                 guard let self else { return }
-                let zeroArray: [Float] = []// .init(repeating: 1.0, count: 999)
+                let zeroArray: [Float] =  .init(repeating: 1.0, count: 999)
                 let newWaveformSamples = zeroArray + waveformSamples
                 self.waveformLiveView.add(samples: newWaveformSamples)
             }
@@ -296,38 +315,23 @@ class RecorderMainPageViewController: UIViewController {
     }
     
     private func updateView() {
-        switch state {
-        case .idle:
+        recordButton.isHidden = !(state == .idle)
+        pauseButton.isHidden = !(state == .recording)
+        resumeButton.isHidden = !(state == .paused)
+        stopButton.isHidden = !(state == .recording)
+        
+        if state == .recording || state == .paused {
+            navigationItem.rightBarButtonItem = nil
+        } else {
+            navigationItem.rightBarButtonItem = savedDiaryBarButton
+        }
+        
+        if state == .idle || state == .paused {
             voiceRecorderImageViewView.backgroundColor = .label
-            recordButtonView.isHidden = false
-            pauseButtonView.isHidden = true
-            resumeButtonView.isHidden = true
-            stopButtonView.isHidden = true
-        case .recording:
+        } else {
             voiceRecorderImageViewView.backgroundColor = .systemRed
-            recordButtonView.isHidden = true
-            pauseButtonView.isHidden = true
-            resumeButtonView.isHidden = true
-            stopButtonView.isHidden = false
-        case .paused:
-            voiceRecorderImageViewView.backgroundColor = .systemRed
-            recordButtonView.isHidden = true
-            pauseButtonView.isHidden = true
-            resumeButtonView.isHidden = false
-            stopButtonView.isHidden = false
         }
     }
-    
-    private func recordDiary() {
-        viewModel.getAudioPermissionAndStartRecording()
-    }
-    
-    private func stopRecordDiary() {
-        viewModel.stopRecording()
-        waveformLiveView.reset()
-    }
-    
-    
     
     enum MainState {
         case idle

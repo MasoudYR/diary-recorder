@@ -14,8 +14,11 @@ class AudioPlayerService: NSObject {
     
     @Published var isPLaying = false
     @Published var isFinished = false
+    @Published var isPaused = false
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
+    @Published var maximumTrackTimeToShow: TimeInterval = 0
+    @Published var minimumTrackTimeToShow: TimeInterval = 0
     @Published var currentlyPlayingFileDetails: RecordingFileDetails?
     
     private var audioPlayer: AVAudioPlayer?
@@ -26,7 +29,7 @@ class AudioPlayerService: NSObject {
         setupAudioSession()
     }
     
-    private func setupAudioSession() {
+    func setupAudioSession() {
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback, mode: .default)
@@ -36,20 +39,37 @@ class AudioPlayerService: NSObject {
         }
     }
     
+    func deactiveAudioSession() {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setActive(false, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("failed to deactivation of session avaudio")
+        }
+    }
+    
     func play(diaryRecorded: RecordingFileDetails) {
+        
+        guard !isPaused else {
+            resume()
+            return
+        }
+        
         stop()
         
         do {
             print(">>>", Self.self, #function, "fileURL: \(diaryRecorded.fileURL)")
             let b = try diaryRecorded.fileURL.checkResourceIsReachable()
             print(">>>", Self.self, #function, "checkResourceIsReachable: \(b)")
+            
             audioPlayer = try AVAudioPlayer(contentsOf: diaryRecorded.fileURL)
             audioPlayer?.delegate = self
-            audioPlayer?.prepareToPlay()
+            //audioPlayer?.prepareToPlay()
             audioPlayer?.play()
             
             isPLaying = true
             isFinished = false
+            isPaused = false
             currentlyPlayingFileDetails = diaryRecorded
             duration = audioPlayer?.duration ?? 0
             
@@ -62,14 +82,15 @@ class AudioPlayerService: NSObject {
     func pause() {
         audioPlayer?.pause()
         isPLaying = false
+        isPaused = true
         displayLink?.isPaused = true
-        let pauseTime = currentTime
-        
     }
     
     func resume() {
+        //guard !isFinished else { return }
         audioPlayer?.play()
         isPLaying = true
+        isPaused = false
         displayLink?.isPaused = false
     }
     
@@ -79,6 +100,7 @@ class AudioPlayerService: NSObject {
         stopDisplayLink()
         
         isPLaying = false
+        isPaused = false
         currentTime = 0
     }
     
@@ -102,17 +124,33 @@ class AudioPlayerService: NSObject {
         guard let audioPlayer = audioPlayer,
               audioPlayer.isPlaying else { return }
         currentTime = audioPlayer.currentTime
+        maximumTrackTimeToShow = duration - currentTime
+        minimumTrackTimeToShow = currentTime
+        print(">>>>this is currentTime: \(currentTime)")
+        
+        if (duration - currentTime) < 0.2 {
+            DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+                self.stop()
+                print("didfinish called &&&&&&&&&&&&&&&&")
+                self.isFinished = true
+                self.isPaused = false
+            }
+        }
     }
     
 }
 
 extension AudioPlayerService: AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.stop()
-            print("didfinish called &&&&&&&&&&&&&&&&")
-            self.isFinished = true
-        }
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self else { return }
+//            self.stop()
+//            print("didfinish called &&&&&&&&&&&&&&&&")
+//            self.isFinished = true
+//            self.isPaused = false
+//        }
     }
+    
+    
 }
