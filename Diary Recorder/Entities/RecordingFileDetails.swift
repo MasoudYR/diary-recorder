@@ -9,7 +9,7 @@ import Foundation
 
 struct RecordingFileDetails: Identifiable, Codable {
     let id: UUID
-    let fileURL: URL
+    let fileName: String
     let name: String
     let date: Date
     let duration: TimeInterval

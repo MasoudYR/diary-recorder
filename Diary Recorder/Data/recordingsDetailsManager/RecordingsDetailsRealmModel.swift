@@ -14,7 +14,7 @@ final class RecordingsDetailsRealmModel: Object {
     private(set) var identifier: UUID = UUID()
     
     @Persisted
-    private(set) var fileURL: String = ""
+    private(set) var fileName: String = ""
     
     @Persisted
     var name: String = ""
@@ -27,14 +27,14 @@ final class RecordingsDetailsRealmModel: Object {
     
     convenience init(
         identifier: UUID,
-        fileURL: String,
+        fileName: String,
         name: String,
         date: Date,
         duration: TimeInterval
     ) {
         self.init()
         self.identifier = identifier
-        self.fileURL = fileURL
+        self.fileName = fileName
         self.name = name
         self.date = date
         self.duration = duration

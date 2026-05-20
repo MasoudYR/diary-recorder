@@ -9,28 +9,6 @@ import Foundation
 import AVFoundation
 import Combine
 
-
-extension URL {
-    static func makeDiaryAudioFileURL(withName fileName: String) -> URL {
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        return documentsURL.appendingPathComponent(fileName)
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     
     @Published var isRecording = false
@@ -39,20 +17,19 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     @Published var timeString: String = "00:00:00.00"
     @Published var waveformSamples: [Float] = []
     @Published var recordings: [RecordingFileDetails] = []
-    @Published var currentRecordingURL: URL?
+    @Published var currentRecordingFileName: String?
     
     private var audioRecorder: AVAudioRecorder?
     private var displayLink: CADisplayLink?
     
     private var startTime: Date?
-    
+    private let fileURLProvider: RecordingDiaryFileURLProvider
     private let fileManager = FileManager.default
-    private let documentsURL: URL
     private let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
     
     
-    override init() {
-        self.documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    init(fileURLProvider: RecordingDiaryFileURLProvider = .default()) {
+        self.fileURLProvider = fileURLProvider
         super.init()
         setupAudioSession()
         //try? recordingsDetailsRealmManager.removeAllRecordings()
@@ -110,8 +87,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         stopRecording()
         print("@@@@@ Recording func in audiorecorder is running")
         let fileName = "\(UUID().uuidString).m4a"
-        let fileURL = documentsURL.appendingPathComponent(fileName)
-        
+        let fileURL = fileURLProvider.makeDiaryFileURL(named: fileName)
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: 12000,
@@ -128,7 +104,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
             isRecording = true
             isPaused = false
             isFinished = false
-            currentRecordingURL = fileURL
+            currentRecordingFileName = fileName
             startTime = Date()
             
             waveformSamples = []
@@ -172,12 +148,12 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         timeString = "00:00:00.00"
         waveformSamples = []
         
-        if let url = currentRecordingURL {
-            print(">>>", Self.self, #function, url.isFileURL, "'\(url.absoluteString)'")
+        if let fileName = currentRecordingFileName {
+            let url = fileURLProvider.makeDiaryFileURL(named: fileName)
             let duration = getAudioDuration(url: url)
             let newRecording = RecordingFileDetails(
                 id: UUID(),
-                fileURL: url,
+                fileName: fileName,
                 name: "Recording \(Date().formatted())",
                 date: Date(),
                 duration: duration
@@ -185,7 +161,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
             recordings.insert(newRecording, at: 0)
             saveRecordings(newRecording: newRecording)
             print("📁 File saved at: \(url.path)")
-            currentRecordingURL = nil
+            currentRecordingFileName = nil
         }
     }
     
@@ -242,7 +218,8 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     
     private func listRecordings() {
         do {
-            let files = try FileManager.default.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
+            let folder = fileURLProvider.makeDiaryFileURL(named: "temp.temp").deletingLastPathComponent()
+            let files = try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
             print("Saved recordings:", files.map { $0.lastPathComponent })
         } catch {
             print(error)

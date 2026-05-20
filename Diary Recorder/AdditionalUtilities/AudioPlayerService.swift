@@ -21,10 +21,12 @@ class AudioPlayerService: NSObject {
     @Published var minimumTrackTimeToShow: TimeInterval = 0
     @Published var currentlyPlayingFileDetails: RecordingFileDetails?
     
+    private let fileURLProvider: RecordingDiaryFileURLProvider
     private var audioPlayer: AVAudioPlayer?
     private var displayLink: CADisplayLink?
     
-    override init() {
+    init(fileURLProvider: RecordingDiaryFileURLProvider = .default()) {
+        self.fileURLProvider = fileURLProvider
         super.init()
         setupAudioSession()
     }
@@ -58,13 +60,12 @@ class AudioPlayerService: NSObject {
         stop()
         
         do {
-            print(">>>", Self.self, #function, "fileURL: \(diaryRecorded.fileURL)")
-            let b = try diaryRecorded.fileURL.checkResourceIsReachable()
-            print(">>>", Self.self, #function, "checkResourceIsReachable: \(b)")
+            print(">>>", Self.self, #function, "fileURL: \(diaryRecorded.fileName)")
             
-            audioPlayer = try AVAudioPlayer(contentsOf: diaryRecorded.fileURL)
+            let fileURL = fileURLProvider.makeDiaryFileURL(named: diaryRecorded.fileName)
+            audioPlayer = try AVAudioPlayer(contentsOf: fileURL)
             audioPlayer?.delegate = self
-            //audioPlayer?.prepareToPlay()
+            audioPlayer?.prepareToPlay()
             audioPlayer?.play()
             
             isPLaying = true
@@ -102,6 +103,8 @@ class AudioPlayerService: NSObject {
         isPLaying = false
         isPaused = false
         currentTime = 0
+        
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ stop function is callliinnnggggg ")
     }
     
     func seek(to time: TimeInterval) {

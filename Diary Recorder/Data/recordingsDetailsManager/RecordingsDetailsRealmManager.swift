@@ -11,18 +11,19 @@ import Combine
 
 public final class RecordingsDetailsRealmManager {
     
-    public static var shared: RecordingsDetailsRealmManager {
-        return RecordingsDetailsRealmManager()
+    public static var shared: RecordingsDetailsRealmManager { 
+        return RecordingsDetailsRealmManager(fileURLProvider: .default())
     }
     
     var realm: Realm {
         getRealmObject()
     }
     
+    private let fileURLProvider: RecordingDiaryFileURLProvider
     private var tokens: [NotificationToken] = []
     
-    private init() {
-        
+    private init(fileURLProvider: RecordingDiaryFileURLProvider) {
+        self.fileURLProvider = fileURLProvider
     }
     
     deinit {
@@ -44,11 +45,10 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
     
     func saveRecording(_ recording: RecordingFileDetails) throws(SaveRecordingError) {
         let realm = self.realm
-        let stringURL = recording.fileURL.absoluteString
-        print("this is string url of the fil &&&&: \(stringURL)")
+        print("this is string url of the fil &&&&: \(recording.fileName)")
         let realmInstance = RecordingsDetailsRealmModel(
             identifier: recording.id,
-            fileURL: stringURL,
+            fileName: recording.fileName,
             name: recording.name,
             date: recording.date,
             duration: recording.duration
@@ -66,14 +66,14 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
             throw .recordingNotFound
         }
         
-        let fileURL = realmInstance.fileURL
-        print(">>>>>>>>>> my file url to delete is: \(fileURL)")
+        let fileName = realmInstance.fileName
+        print(">>>>>>>>>> my file url to delete is: \(fileName)")
         realm.safeWrite {
             realm.delete(realmInstance)
         }
         
         do {
-            let url = URL(string: fileURL)!
+            let url = fileURLProvider.makeDiaryFileURL(named: fileName)
             try FileManager.default.removeItem(at: url)
         } catch (let error) {
             print("delete file from the file manager doesnt work because: \(error)")
@@ -85,6 +85,8 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
         realm.safeWrite {
             realm.deleteAll()
         }
+        
+        // TODO: remove all files
     }
     
     func renameRecording(_ recording: RecordingFileDetails, to newName: String) throws(RenameRecordingError) {
@@ -115,7 +117,7 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
             .map {
                 let sample = RecordingFileDetails(
                     id: $0.identifier,
-                    fileURL: URL(string: $0.fileURL)!,
+                    fileName: $0.fileName,
                     name: $0.name,
                     date: $0.date,
                     duration: $0.duration
@@ -142,7 +144,7 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
                         results.map {
                             let sample = RecordingFileDetails(
                                 id: $0.identifier,
-                                fileURL: URL(string: $0.fileURL)!,
+                                fileName: $0.fileName,
                                 name: $0.name,
                                 date: $0.date,
                                 duration: $0.duration

@@ -15,12 +15,13 @@ class DiaryListViewModel {
     
     private let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
     private var dateFormatter: DateFormatter
-    
+    private let fileURLProvider: RecordingDiaryFileURLProvider
     private var cancellables = Set<AnyCancellable>()
     
     
-    init() {
+    init(fileURLProvider: RecordingDiaryFileURLProvider = .default()) {
         //readDiarylistData()
+        self.fileURLProvider = fileURLProvider
         self.dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
         binding()
@@ -57,7 +58,13 @@ class DiaryListViewModel {
         }
     }
     
-    func changeDuration(_ duration: TimeInterval) -> String {
+    func shareRecording(_ diary: RecordingFileDetails) -> URL? {
+        let url = fileURLProvider.makeDiaryFileURL(named: diary.fileName)
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        return url
+    }
+    
+    func transformTimeToString(_ duration: TimeInterval) -> String {
         let hours = Int(duration) / 3600
         let minutes = (Int(duration) % 3600 / 60)
         let seconds = Int(duration) % 60

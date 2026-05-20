@@ -95,7 +95,7 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = diaryListTableView.dequeueReusableCell(withIdentifier: DiaryListTableViewCell.identifier) as! DiaryListTableViewCell
         let name = viewModel.diaryListDataCollection[indexPath.row].name
-        let duration = viewModel.changeDuration(viewModel.diaryListDataCollection[indexPath.row].duration)
+        let duration = viewModel.transformTimeToString(viewModel.diaryListDataCollection[indexPath.row].duration)
         let dateAndTime = viewModel.changeDateAndTime(viewModel.diaryListDataCollection[indexPath.row].date)
         cell.configure(
             name: name,
@@ -130,7 +130,22 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
         deleteAction.image = UIImage(systemName: "trash.fill")
         //deleteAction.backgroundColor = .systemRed
         
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        let shareAction = UIContextualAction(style: .normal, title: "") { [weak self] _, _, completion in
+            guard let self else { return }
+            let diary = viewModel.diaryListDataCollection[indexPath.row]
+            guard let url = viewModel.shareRecording(diary) else {
+                completion(true)
+                return
+            }
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.router.navigateToShareActivityViewController(fileURL: url)
+            }
+            completion(true)
+        }
+        shareAction.image = UIImage(systemName: "square.and.arrow.up")
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, shareAction])
         return configuration
     }
 }
