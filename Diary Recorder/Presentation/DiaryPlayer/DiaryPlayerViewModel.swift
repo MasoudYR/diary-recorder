@@ -30,7 +30,7 @@ class DiaryPlayerViewModel: ObservableObject {
         self.dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
         
-        audioPlayerService.$isPLaying
+        audioPlayerService.$isPlaying
             .assign(to: \.isPlaying, on: self)
             .store(in: &cancellables)
         
@@ -86,6 +86,14 @@ class DiaryPlayerViewModel: ObservableObject {
     func seek(to progress: Double) {
         let time = progress * audioPlayerService.duration
         audioPlayerService.seek(to: time)
+    }
+    
+    func seekForward(to seconds: TimeInterval = 5) {
+        audioPlayerService.seekForward(by: seconds)
+    }
+    
+    func seekBackward(to seconds: TimeInterval = 5) {
+        audioPlayerService.seekBackward(by: seconds)
     }
    
     func changeDateAndTime(_ date: Date) -> String {

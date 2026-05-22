@@ -23,16 +23,18 @@ class RecorderMainPageViewModel: ObservableObject {
     let audioRecorderService = AudioRecorderService()
     private var displayLink: CADisplayLink?
     private var startTime: Date?
-
-//    private var audioPlayer: AVAudioPlayer?
-//    private let fileManager = FileManager.default
-//    private let documentsURL: URL
-//    private let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
+    
+    var nameCurrentValueSubject: PassthroughSubject<String, Never> = .init()
 
     private var cancellables = Set<AnyCancellable>()
     
     
     init() {
+        binding()
+    }
+    
+    private func binding() {
+        
         audioRecorderService.$isRecording
             .assign(to: \.isRecording, on: self)
             .store(in: &cancellables)
@@ -53,7 +55,13 @@ class RecorderMainPageViewModel: ObservableObject {
             .assign(to: \.waveformSamples, on: self)
             .store(in: &cancellables)
         
-        
+        nameCurrentValueSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] name in
+                guard let self else { return }
+                self.saveRecording(name: name)
+            }
+            .store(in: &cancellables)
     }
     
     func startRecording() {
@@ -70,6 +78,10 @@ class RecorderMainPageViewModel: ObservableObject {
     
     func pauseRecording() {
         audioRecorderService.pauseRecording()
+    }
+    
+    func saveRecording(name: String) {
+        audioRecorderService.saveRecording(name: name)
     }
     
 }

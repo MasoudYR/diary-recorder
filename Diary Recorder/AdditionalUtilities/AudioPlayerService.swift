@@ -12,7 +12,7 @@ import Combine
 class AudioPlayerService: NSObject {
     //static let shared = AudioPlayerService()
     
-    @Published var isPLaying = false
+    @Published var isPlaying = false
     @Published var isFinished = false
     @Published var isPaused = false
     @Published var currentTime: TimeInterval = 0
@@ -22,8 +22,12 @@ class AudioPlayerService: NSObject {
     @Published var currentlyPlayingFileDetails: RecordingFileDetails?
     
     private let fileURLProvider: RecordingDiaryFileURLProvider
-    private var audioPlayer: AVAudioPlayer?
+    private var player: AVPlayer = AVPlayer()
     private var displayLink: CADisplayLink?
+    
+    private var subscriptions = Set<AnyCancellable>()
+    private var boundryObserver: Any?
+    
     
     init(fileURLProvider: RecordingDiaryFileURLProvider = .default()) {
         self.fileURLProvider = fileURLProvider
@@ -59,48 +63,139 @@ class AudioPlayerService: NSObject {
         
         stop()
         
-        do {
-            print(">>>", Self.self, #function, "fileURL: \(diaryRecorded.fileName)")
-            
-            let fileURL = fileURLProvider.makeDiaryFileURL(named: diaryRecorded.fileName)
-            audioPlayer = try AVAudioPlayer(contentsOf: fileURL)
-            audioPlayer?.delegate = self
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
-            
-            isPLaying = true
-            isFinished = false
-            isPaused = false
-            currentlyPlayingFileDetails = diaryRecorded
-            duration = audioPlayer?.duration ?? 0
-            
-            startDisplayLink()
-        } catch {
-            print("Playback failed: \(error)")
+        print(">>>", Self.self, #function, "fileURL: \(diaryRecorded.fileName)")
+        
+        let fileURL = fileURLProvider.makeDiaryFileURL(named: diaryRecorded.fileName)
+        
+        let asset = AVAsset(url: fileURL)
+        let playerItem = AVPlayerItem(
+            asset: asset,
+            automaticallyLoadedAssetKeys: [
+                .tracks,
+                .duration,
+                .commonMetadata
+            ]
+        )
+        
+        observePlayerItem(playerItem)
+        observeFinish(for: playerItem)
+        
+        player.replaceCurrentItem(with: playerItem)
+        player.play()
+        
+        isPlaying = true
+        isFinished = false
+        isPaused = false
+        currentlyPlayingFileDetails = diaryRecorded
+        
+        startDisplayLink()
+    }
+    
+    private func observePlayerItem(_ playerItem: AVPlayerItem) {
+        playerItem.publisher(for: \.status)
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] status in
+                guard let self else { return }
+                switch status {
+                case .readyToPlay:
+                    let seconds = playerItem.duration.seconds
+                    guard seconds.isFinite, seconds > 0 else { return }
+                    self.duration = seconds
+                    self.setupBoundryObserver( duration: seconds)
+                    print("READY to play - duration: \(seconds)")
+                case .failed:
+                    print("❌ PlayerItem failed: \(playerItem.error?.localizedDescription ?? "unknown")")
+                    self.stop()
+                default:
+                    break
+                }
+            }
+            .store(in: &subscriptions)
+        
+        playerItem.publisher(for: \.isPlaybackLikelyToKeepUp)
+            .receive(on: DispatchQueue.main)
+            .sink { isReady in
+                print("isPlaybackLikelyToKeepUp: \(isReady)")
+            }
+            .store(in: &subscriptions)
+    }
+    
+    private func setupBoundryObserver(duration: TimeInterval) {
+        removeBoundryObserver()
+        
+        let triggerTime = max (0, duration - 0.2)
+        let coreMediaTime = CMTime(seconds: triggerTime, preferredTimescale: 600)
+        
+        boundryObserver = player.addBoundaryTimeObserver(
+            forTimes: [NSValue(time: coreMediaTime)],
+            queue: .main,
+            using: { [weak self] in
+                guard let self else { return }
+                print("🎯 BoundaryObserver fired — 0.2s before end")
+                //self.handleFinish()
+            }
+        )
+    }
+    
+    private func removeBoundryObserver() {
+        if let observer = boundryObserver {
+            player.removeTimeObserver(observer)
+            boundryObserver = nil
         }
     }
     
+    private func observeFinish(for playerItem: AVPlayerItem) {
+        NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime, object: playerItem)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                print("🏁 AVPlayerItemDidPlayToEndTime fired")
+                self.handleFinish()
+            }
+            .store(in: &subscriptions)
+        
+        NotificationCenter.default.publisher(for: .AVPlayerItemFailedToPlayToEndTime, object: playerItem)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
+                let error = notification.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error
+                print("❌ Failed to play to end: \(error?.localizedDescription ?? "unknown")")
+                self?.stop()
+            }
+            .store(in: &subscriptions)
+    }
+    
+    private func handleFinish() {
+        stop()
+        isFinished = true
+        isPaused = false
+    }
+    
     func pause() {
-        audioPlayer?.pause()
-        isPLaying = false
+        player.pause()
+        isPlaying = false
         isPaused = true
         displayLink?.isPaused = true
     }
     
     func resume() {
-        //guard !isFinished else { return }
-        audioPlayer?.play()
-        isPLaying = true
+        guard !isFinished else { return }
+        player.play()
+        isPlaying = true
         isPaused = false
         displayLink?.isPaused = false
     }
     
     func stop() {
-        audioPlayer?.stop()
-        audioPlayer = nil
+        removeBoundryObserver()
+        subscriptions.removeAll()
+        
+        player.pause()
+        player.seek(to: .zero)
         stopDisplayLink()
         
-        isPLaying = false
+        
+        isPlaying = false
         isPaused = false
         currentTime = 0
         
@@ -108,8 +203,47 @@ class AudioPlayerService: NSObject {
     }
     
     func seek(to time: TimeInterval) {
-        audioPlayer?.currentTime = max(0, min(time, duration))
-        currentTime = audioPlayer?.currentTime ?? 0
+        let clamped = max(0, min(time, duration))
+        let coreMediaTime = CMTime(seconds: clamped, preferredTimescale: 600)
+        player.seek(
+            to: coreMediaTime,
+            toleranceBefore: .zero,
+            toleranceAfter: .zero
+        )
+        currentTime = clamped
+    }
+    
+    func seekForward(by seconds: TimeInterval = 5.0) {
+        let currentTime = player.currentTime()
+        let newTime = CMTimeAdd(currentTime, CMTime(seconds: seconds, preferredTimescale: 600))
+         
+        let duration = player.currentItem?.duration ?? .zero
+        let finalTime = CMTimeMinimum(newTime, duration)
+        
+        player.seek(to: finalTime, toleranceBefore: .zero, toleranceAfter: .zero) { finished in
+            if finished {
+                print("seeked forward \(seconds) seconds")
+            }
+        }
+    }
+    
+    func seekBackward(by seconds: TimeInterval = 5.0) {
+        let currentTime = player.currentTime()
+        let targetseconds = currentTime.seconds - seconds
+        
+        let finalSeconds = max(0, targetseconds)
+        
+        let targetTime = CMTime(seconds: finalSeconds, preferredTimescale: 600)
+        
+        player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] completed in
+            guard let self else { return }
+            if completed {
+                print("seked backward \(seconds) seconds")
+                self.updateCurrentTime()
+            }
+            
+        }
+        
     }
     
     private func startDisplayLink() {
@@ -124,36 +258,19 @@ class AudioPlayerService: NSObject {
     }
     
     @objc private func updateCurrentTime() {
-        guard let audioPlayer = audioPlayer,
-              audioPlayer.isPlaying else { return }
-        currentTime = audioPlayer.currentTime
-        maximumTrackTimeToShow = duration - currentTime
-        minimumTrackTimeToShow = currentTime
-        print(">>>>this is currentTime: \(currentTime)")
+        guard isPlaying else { return }
         
-        if (duration - currentTime) < 0.2 {
-            DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-                self.stop()
-                print("didfinish called &&&&&&&&&&&&&&&&")
-                self.isFinished = true
-                self.isPaused = false
-            }
-        }
+        let time = player.currentTime().seconds
+        guard time.isFinite else { return }
+        
+        currentTime = time
+        maximumTrackTimeToShow = time
+        minimumTrackTimeToShow = duration - time
+        print(">>>>this is currentTime: \(currentTime)")
     }
     
-}
-
-extension AudioPlayerService: AVAudioPlayerDelegate {
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self else { return }
-//            self.stop()
-//            print("didfinish called &&&&&&&&&&&&&&&&")
-//            self.isFinished = true
-//            self.isPaused = false
-//        }
+    deinit {
+        stop()
     }
-    
     
 }

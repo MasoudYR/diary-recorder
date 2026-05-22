@@ -285,6 +285,8 @@ class RecorderMainPageViewController: UIViewController {
         let stopButtonAction = UIAction { [unowned self]
             _ in
             viewModel.stopRecording()
+            let nameCurrentValueSubject = viewModel.nameCurrentValueSubject
+            router.navigateToNameDiary(nameCurrentValueSubject: nameCurrentValueSubject)
             state = .idle
             waveformLiveView.reset()
             print("##### Stop Button tapped")

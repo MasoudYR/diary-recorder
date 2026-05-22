@@ -147,22 +147,6 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         isFinished = true
         timeString = "00:00:00.00"
         waveformSamples = []
-        
-        if let fileName = currentRecordingFileName {
-            let url = fileURLProvider.makeDiaryFileURL(named: fileName)
-            let duration = getAudioDuration(url: url)
-            let newRecording = RecordingFileDetails(
-                id: UUID(),
-                fileName: fileName,
-                name: "Recording \(Date().formatted())",
-                date: Date(),
-                duration: duration
-            )
-            recordings.insert(newRecording, at: 0)
-            saveRecordings(newRecording: newRecording)
-            print("📁 File saved at: \(url.path)")
-            currentRecordingFileName = nil
-        }
     }
     
     private func startDisplayLink() {
@@ -208,12 +192,31 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         }
     }
     
-    private func saveRecordings(newRecording: RecordingFileDetails) {
+    func saveRecording(name: String) {
+        
+        guard let fileName = currentRecordingFileName,
+              isFinished else { return }
+        
+        let url = fileURLProvider.makeDiaryFileURL(named: fileName)
+        let duration = getAudioDuration(url: url)
+        let newRecording = RecordingFileDetails(
+            id: UUID(),
+            fileName: fileName,
+            name: name,
+            date: Date(),
+            duration: duration
+        )
+        
         do {
             try recordingsDetailsRealmManager.saveRecording(newRecording)
+            recordings.insert(newRecording, at: 0)
+            print("📁 File saved at: \(url.path)")
         } catch {
             print("Save recording error: \(error)")
         }
+        
+        currentRecordingFileName = nil
+        
     }
     
     private func listRecordings() {

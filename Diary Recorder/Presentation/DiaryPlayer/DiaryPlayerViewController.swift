@@ -30,8 +30,8 @@ class DiaryPlayerViewController: UIViewController {
     private let playButton = UIButton()
     private let pauseButton = UIButton()
     private let stopButton = UIButton()
-    private let plus15secondsButton = UIButton()
-    private let minus15secondsButton = UIButton()
+    private let seekForwardSecondsButton = UIButton()
+    private let seekBackwardSecondsButton = UIButton()
     
     private var progressTimer: Timer?
     private var state: DiaryPlayerMainState = .idle {
@@ -199,23 +199,23 @@ class DiaryPlayerViewController: UIViewController {
     }
     
     private func setupViewsButtonsGroupStackViewArrangedSubviews() {
-        minus15secondsButton.setImage(UIImage(systemName: "15.arrow.trianglehead.counterclockwise",withConfiguration: UIImage.SymbolConfiguration(pointSize: 35)), for: .normal)
-        minus15secondsButton.tintColor = .label
-        minus15secondsButton.layer.cornerRadius = 25
-        minus15secondsButton.snp.makeConstraints { make in
+        seekBackwardSecondsButton.setImage(UIImage(systemName: "5.arrow.trianglehead.counterclockwise",withConfiguration: UIImage.SymbolConfiguration(pointSize: 35)), for: .normal)
+        seekBackwardSecondsButton.tintColor = .label
+        seekBackwardSecondsButton.layer.cornerRadius = 25
+        seekBackwardSecondsButton.snp.makeConstraints { make in
             make.size.equalTo(50)
         }
         
-        plus15secondsButton.setImage(UIImage(systemName: "15.arrow.trianglehead.clockwise",withConfiguration: UIImage.SymbolConfiguration(pointSize: 35)), for: .normal)
-        plus15secondsButton.tintColor = .label
-        plus15secondsButton.layer.cornerRadius = 25
-        plus15secondsButton.snp.makeConstraints { make in
+        seekForwardSecondsButton.setImage(UIImage(systemName: "5.arrow.trianglehead.clockwise",withConfiguration: UIImage.SymbolConfiguration(pointSize: 35)), for: .normal)
+        seekForwardSecondsButton.tintColor = .label
+        seekForwardSecondsButton.layer.cornerRadius = 25
+        seekForwardSecondsButton.snp.makeConstraints { make in
             make.size.equalTo(50)
         }
         
-        hStackView.addArrangedSubview(minus15secondsButton)
+        hStackView.addArrangedSubview(seekBackwardSecondsButton)
         setupViewsButtonsGroupMiddleGroupViews()
-        hStackView.addArrangedSubview(plus15secondsButton)
+        hStackView.addArrangedSubview(seekForwardSecondsButton)
     }
     
     private func setupViewsButtonsGroupMiddleGroupViews() {
@@ -301,6 +301,24 @@ class DiaryPlayerViewController: UIViewController {
         let stopActionId = UIAction.Identifier("stopActionId")
         stopButton.removeAction(identifiedBy: stopActionId, for: .touchUpInside)
         stopButton.addAction(stopAction, for: .touchUpInside)
+        
+        let seekForwardSecondsActionId = UIAction.Identifier("seekForwardSecondsActionId")
+        
+        let seekForwardSecondsAction = UIAction { [unowned self] _ in
+            viewModel.seekForward(to: 5)
+        }
+        seekForwardSecondsButton.removeAction(identifiedBy: seekForwardSecondsActionId, for: .touchUpInside)
+        seekForwardSecondsButton
+            .addAction(seekForwardSecondsAction, for: .touchUpInside)
+        
+        let seekBackwardSecondsActionId = UIAction.Identifier("seekBackwardSecondsActionId")
+        
+        let seekBackwardSecondsAction = UIAction { [unowned self] _ in
+            viewModel.seekBackward(to: 5)
+        }
+        seekBackwardSecondsButton.removeAction(identifiedBy: seekBackwardSecondsActionId, for: .touchUpInside)
+        seekBackwardSecondsButton
+            .addAction(seekBackwardSecondsAction, for: .touchUpInside)
         
     }
     

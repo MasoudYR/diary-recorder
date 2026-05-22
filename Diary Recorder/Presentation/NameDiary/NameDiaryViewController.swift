@@ -33,8 +33,8 @@ class NameDiaryViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    static func make() -> NameDiaryViewController {
-        let viewModel = NameDiaryViewModel()
+    static func make(nameCurrentValueSubject: PassthroughSubject<String, Never>) -> NameDiaryViewController {
+        let viewModel = NameDiaryViewModel(nameCurrentValueSubject: nameCurrentValueSubject)
         let router = NameDiaryRouter()
         let viewController = NameDiaryViewController(
             viewModel: viewModel,
@@ -45,10 +45,11 @@ class NameDiaryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        setupUI()
     }
     
     private func setupUI() {
+        view.backgroundColor = .systemBackground
         setupVStack()
         setupNameLabel()
         setupTextFieldView()
@@ -60,10 +61,10 @@ class NameDiaryViewController: UIViewController {
     private func setupVStack() {
         vStackView.axis = .vertical
         vStackView.distribution = .fill
-        vStackView.alignment = .center
+        vStackView.alignment = .fill
         vStackView.spacing = 15
         vStackView.isLayoutMarginsRelativeArrangement = true
-        vStackView.layoutMargins = .init(top: 30, left: 15, bottom: 15, right: 15)
+        vStackView.layoutMargins = .init(top: 30, left: 30, bottom: 15, right: 30)
         
         view.addSubview(vStackView)
         vStackView.snp.makeConstraints { make in
@@ -85,14 +86,15 @@ class NameDiaryViewController: UIViewController {
         nameTextFieldView.layer.cornerRadius = 8
         
         nameTextField.delegate = self
+        nameTextField.text = viewModel.text
         nameTextField.placeholder = "Maximum 50 characters"
-        nameTextField.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        nameTextField.font = UIFont.systemFont(ofSize: 18, weight: .regular)
         nameTextField.textColor = .label
         nameTextField.backgroundColor = .systemBackground
         
         nameTextFieldView.addSubview(nameTextField)
         nameTextField.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(5)
+            make.edges.equalToSuperview().inset(10)
         }
         
         vStackView.addArrangedSubview(nameTextFieldView)
@@ -100,7 +102,7 @@ class NameDiaryViewController: UIViewController {
     
     private func setupButtonsHStackView() {
         buttonsHStackView.axis = .horizontal
-        buttonsHStackView.distribution = .fill
+        buttonsHStackView.distribution = .fillEqually
         buttonsHStackView.alignment = .fill
         buttonsHStackView.spacing = 40
         
@@ -108,19 +110,6 @@ class NameDiaryViewController: UIViewController {
     }
     
     private func setupButtons() {
-        saveButton.setTitle("Save", for: .normal)
-        saveButton.tintColor = .label
-        saveButton.layer.cornerRadius = 8
-        saveButton.layer.borderWidth = 1
-        saveButton.layer.borderColor = UIColor.label.cgColor
-        
-        saveButton.snp.makeConstraints { make in
-            make.height.equalTo(50)
-            make.width.equalTo(110)
-        }
-        
-        buttonsHStackView.addArrangedSubview(saveButton)
-        
         cancelButton.setTitle("Cancel", for: .normal)
         cancelButton.tintColor = .label
         cancelButton.layer.cornerRadius = 8
@@ -129,18 +118,31 @@ class NameDiaryViewController: UIViewController {
         
         saveButton.snp.makeConstraints { make in
             make.height.equalTo(50)
-            make.width.equalTo(110)
+            //make.width.equalTo(110)
         }
         
         buttonsHStackView.addArrangedSubview(cancelButton)
+        
+        saveButton.setTitle("Save", for: .normal)
+        saveButton.tintColor = .label
+        saveButton.layer.cornerRadius = 8
+        saveButton.layer.borderWidth = 1
+        saveButton.layer.borderColor = UIColor.label.cgColor
+        
+        saveButton.snp.makeConstraints { make in
+            make.height.equalTo(50)
+            //make.width.equalTo(110)
+        }
+        
+        buttonsHStackView.addArrangedSubview(saveButton)
     }
     
     private func setupActions() {
         let saveButtonActionId = UIAction.Identifier("saveButtonActionId")
         let saveButtonAction = UIAction { [weak self] _ in
             guard let self else { return }
-            
-            //
+            self.viewModel.saveDiary()
+            self.dismiss(animated: true)
         }
         
         saveButton.removeAction(identifiedBy: saveButtonActionId, for: .touchUpInside)
@@ -149,8 +151,7 @@ class NameDiaryViewController: UIViewController {
         let cancelButtonActionId = UIAction.Identifier("cancelButtonActionId")
         let cancelButtonAction = UIAction { [weak self] _ in
             guard let self else { return }
-            
-            //
+            self.dismiss(animated: true)
         }
         
         cancelButton.removeAction(identifiedBy: cancelButtonActionId, for: .touchUpInside)
@@ -179,4 +180,21 @@ extension NameDiaryViewController: UITextFieldDelegate {
         return true
     }
     
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == nameTextField {
+            textField.resignFirstResponder()
+        }
+        return true
+    }
+    
+    func dismissKeyboardTappingOutsideTextfield() {
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGestureRecognizer.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGestureRecognizer)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+        print("gesture recognizer is working incorrectly")
+    }
 }
