@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import Combine
 
 class DiaryListRouter {
     weak var diaryListViewController: DiaryListViewController?
@@ -15,9 +16,9 @@ class DiaryListRouter {
         
     }
     
-    func navigateToDiaryPlayer(diary: RecordingFileDetails){
+    func navigateToDiaryPlayer(diaryIndex: Int, diaryListDataCollection: [RecordingFileDetails]){
         guard let diaryListViewController else { return }
-        let diaryPlayerViewController = DiaryPlayerViewController.make(diary: diary)
+        let diaryPlayerViewController = DiaryPlayerViewController.make(diaryIndex: diaryIndex, diaryListDataCollection: diaryListDataCollection)
         if let sheet = diaryPlayerViewController.sheetPresentationController {
             sheet.detents = [
                 .custom { context in
@@ -69,5 +70,25 @@ class DiaryListRouter {
         //diaryListViewController.modalTransitionStyle = .flipHorizontal
         //diaryListViewController.modalTransitionStyle = .partialCurl
         diaryListViewController.present(activityViewController, animated: true)
+    }
+    
+    func navigateToRenameDiary(selectedDiary: RecordingFileDetails, nameCurrentValueSubject: PassthroughSubject<String, Never>) {
+        guard let diaryListViewController else { return }
+        print("we have to show name diary")
+        let nameDiaryViewController = NameDiaryViewController.make(lastSavedDiary: selectedDiary, nameCurrentValueSubject: nameCurrentValueSubject)
+        
+        if let sheet  = nameDiaryViewController.sheetPresentationController {
+            sheet.detents = [
+                .custom { context in
+                    return 200
+                }
+            ]
+            
+            sheet.prefersEdgeAttachedInCompactHeight = true
+            sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
+            sheet.preferredCornerRadius = 16
+        }
+        nameDiaryViewController.isModalInPresentation = true
+        diaryListViewController.present(nameDiaryViewController, animated: true)
     }
 }

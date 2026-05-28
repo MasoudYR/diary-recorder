@@ -32,6 +32,8 @@ class DiaryPlayerViewController: UIViewController {
     private let stopButton = UIButton()
     private let seekForwardSecondsButton = UIButton()
     private let seekBackwardSecondsButton = UIButton()
+    private let nextButton = UIButton()
+    private let previousButton = UIButton()
     
     private var progressTimer: Timer?
     private var state: DiaryPlayerMainState = .idle {
@@ -63,8 +65,8 @@ class DiaryPlayerViewController: UIViewController {
         }
     }
     
-    static func make(diary: RecordingFileDetails) -> DiaryPlayerViewController {
-        let viewModel = DiaryPlayerViewModel(diary: diary)
+    static func make(diaryIndex: Int, diaryListDataCollection: [RecordingFileDetails] ) -> DiaryPlayerViewController {
+        let viewModel = DiaryPlayerViewModel(diaryIndex: diaryIndex, diaryListDataCollection: diaryListDataCollection)
         let router = DiaryPlayerRouter()
         let diaryPlayerViewController = DiaryPlayerViewController(viewModel: viewModel, router: router)
         return diaryPlayerViewController
@@ -74,6 +76,7 @@ class DiaryPlayerViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         bindViewModel()
+        viewModel.prepareToPlay()
     }
     
 //    override func viewWillAppear(_ animated: Bool) {
@@ -199,6 +202,15 @@ class DiaryPlayerViewController: UIViewController {
     }
     
     private func setupViewsButtonsGroupStackViewArrangedSubviews() {
+        
+        nextButton.setImage(UIImage(systemName: "forward.end.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 25)), for: .normal)
+        nextButton.tintColor = .systemBackground
+        nextButton.backgroundColor = .label
+        nextButton.layer.cornerRadius = 30
+        nextButton.snp.makeConstraints { make in
+            make.size.equalTo(60)
+        }
+        
         seekBackwardSecondsButton.setImage(UIImage(systemName: "5.arrow.trianglehead.counterclockwise",withConfiguration: UIImage.SymbolConfiguration(pointSize: 35)), for: .normal)
         seekBackwardSecondsButton.tintColor = .label
         seekBackwardSecondsButton.layer.cornerRadius = 25
@@ -213,9 +225,21 @@ class DiaryPlayerViewController: UIViewController {
             make.size.equalTo(50)
         }
         
+        previousButton.setImage(UIImage(systemName: "backward.end.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 25)), for: .normal)
+        previousButton.tintColor = .systemBackground
+        previousButton.backgroundColor = .label
+        previousButton.layer.cornerRadius = 30
+        previousButton.snp.makeConstraints { make in
+            make.size.equalTo(60)
+        }
+        
+        
         hStackView.addArrangedSubview(seekBackwardSecondsButton)
+        hStackView.addArrangedSubview(previousButton)
         setupViewsButtonsGroupMiddleGroupViews()
+        hStackView.addArrangedSubview(nextButton)
         hStackView.addArrangedSubview(seekForwardSecondsButton)
+        
     }
     
     private func setupViewsButtonsGroupMiddleGroupViews() {
@@ -319,6 +343,33 @@ class DiaryPlayerViewController: UIViewController {
         seekBackwardSecondsButton.removeAction(identifiedBy: seekBackwardSecondsActionId, for: .touchUpInside)
         seekBackwardSecondsButton
             .addAction(seekBackwardSecondsAction, for: .touchUpInside)
+        
+        let nextDiaryActionId = UIAction.Identifier("nextDiaryActionId")
+        
+        let nextDiaryAction = UIAction { [unowned self] _ in
+            viewModel.playNextDiary()
+//            self.state = .idle
+//            guard let diary = viewModel.currentlyPlaying else { return }
+//            viewModel.play(diary)
+            self.state = .playing
+        }
+        nextButton.removeAction(identifiedBy: nextDiaryActionId, for: .touchUpInside)
+        nextButton
+            .addAction(nextDiaryAction, for: .touchUpInside)
+        
+        
+        let previousDiaryActionId = UIAction.Identifier("previousDiaryActionId")
+        
+        let previousDiaryAction = UIAction { [unowned self] _ in
+            viewModel.playPreviousDiary()
+            //self.state = .idle
+            guard let diary = viewModel.currentlyPlaying else { return }
+            viewModel.play(diary)
+            self.state = .playing
+        }
+        previousButton.removeAction(identifiedBy: previousDiaryActionId, for: .touchUpInside)
+        previousButton
+            .addAction(previousDiaryAction, for: .touchUpInside)
         
     }
     

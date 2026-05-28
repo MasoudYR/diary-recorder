@@ -9,22 +9,19 @@ import Foundation
 import Combine
 
 class NameDiaryViewModel {
-    @Published var text: String?
+    var text: String
+    var lastsavedDiary:RecordingFileDetails
     
-    private var dateFormatter: DateFormatter
     private var nameCurrentValueSubject: PassthroughSubject<String, Never>
     
-    init(nameCurrentValueSubject: PassthroughSubject<String, Never>) {
-        self.dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy/MM/dd HH:mm:ss"
-        let date = Date()
-        let formattedDate = dateFormatter.string(from: date)
-        self.text = "Diary \(formattedDate)"
+    init(lastSavedDiary:RecordingFileDetails, nameCurrentValueSubject: PassthroughSubject<String, Never>) {
+        self.lastsavedDiary = lastSavedDiary
         self.nameCurrentValueSubject = nameCurrentValueSubject
+        self.text = lastSavedDiary.name
     }
     
-    func saveDiary() {
-        guard let text, !text.isEmpty else {
+    func renameDiary() {
+        guard !text.isEmpty else {
             //show error handle
             return
         }

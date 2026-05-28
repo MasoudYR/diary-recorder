@@ -17,10 +17,22 @@ class AudioPlayerService: NSObject {
     @Published var isPaused = false
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
-    @Published var maximumTrackTimeToShow: TimeInterval = 0
-    @Published var minimumTrackTimeToShow: TimeInterval = 0
     @Published var currentlyPlayingFileDetails: RecordingFileDetails?
     
+//    func minMaxTrackTime(basedOn currentTime: TimeInterval) -> (min: TimeInterval, max: TimeInterval) {
+//        return (
+//            currentTime,
+//            duration - currentTime
+//        )
+//    }
+    
+//    var maximumTrackTimeToShow: TimeInterval {
+//        return duration - currentTime
+//    }
+//    var minimumTrackTimeToShow: TimeInterval {
+//        return currentTime
+//    }
+   
     private let fileURLProvider: RecordingDiaryFileURLProvider
     private var player: AVPlayer = AVPlayer()
     private var displayLink: CADisplayLink?
@@ -54,6 +66,13 @@ class AudioPlayerService: NSObject {
         }
     }
     
+    func prepareToPlay(diaryRecorded: RecordingFileDetails) {
+        let fileURL = fileURLProvider.makeDiaryFileURL(named: diaryRecorded.fileName)
+        
+        let asset = AVAsset(url: fileURL)
+        self.duration = asset.duration.seconds
+    }
+    
     func play(diaryRecorded: RecordingFileDetails) {
         
         guard !isPaused else {
@@ -61,7 +80,7 @@ class AudioPlayerService: NSObject {
             return
         }
         
-        stop()
+        stop(seekToZero: false)
         
         print(">>>", Self.self, #function, "fileURL: \(diaryRecorded.fileName)")
         
@@ -106,7 +125,7 @@ class AudioPlayerService: NSObject {
                     print("READY to play - duration: \(seconds)")
                 case .failed:
                     print("❌ PlayerItem failed: \(playerItem.error?.localizedDescription ?? "unknown")")
-                    self.stop()
+                    self.stop(seekToZero: true)
                 default:
                     break
                 }
@@ -131,7 +150,7 @@ class AudioPlayerService: NSObject {
             forTimes: [NSValue(time: coreMediaTime)],
             queue: .main,
             using: { [weak self] in
-                guard let self else { return }
+                //guard let self else { return }
                 print("🎯 BoundaryObserver fired — 0.2s before end")
                 //self.handleFinish()
             }
@@ -158,15 +177,16 @@ class AudioPlayerService: NSObject {
         NotificationCenter.default.publisher(for: .AVPlayerItemFailedToPlayToEndTime, object: playerItem)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] notification in
+                guard let self else { return }
                 let error = notification.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error
                 print("❌ Failed to play to end: \(error?.localizedDescription ?? "unknown")")
-                self?.stop()
+                stop(seekToZero: true)
             }
             .store(in: &subscriptions)
     }
     
     private func handleFinish() {
-        stop()
+        stop(seekToZero: true)
         isFinished = true
         isPaused = false
     }
@@ -186,20 +206,25 @@ class AudioPlayerService: NSObject {
         displayLink?.isPaused = false
     }
     
-    func stop() {
+    private func stop(seekToZero: Bool) {
         removeBoundryObserver()
         subscriptions.removeAll()
         
-        player.pause()
-        player.seek(to: .zero)
+        if seekToZero {
+            player.pause()
+            player.seek(to: .zero)
+        }
         stopDisplayLink()
-        
         
         isPlaying = false
         isPaused = false
         currentTime = 0
         
         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ stop function is callliinnnggggg ")
+    }
+    
+    func stop() {
+        stop(seekToZero: true)
     }
     
     func seek(to time: TimeInterval) {
@@ -264,13 +289,11 @@ class AudioPlayerService: NSObject {
         guard time.isFinite else { return }
         
         currentTime = time
-        maximumTrackTimeToShow = time
-        minimumTrackTimeToShow = duration - time
         print(">>>>this is currentTime: \(currentTime)")
     }
     
     deinit {
-        stop()
+        stop(seekToZero: true)
     }
     
 }

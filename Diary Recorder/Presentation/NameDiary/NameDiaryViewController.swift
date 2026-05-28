@@ -20,7 +20,7 @@ class NameDiaryViewController: UIViewController {
     private let nameTextFieldView = UIView()
     private let nameTextField = UITextField()
     private let buttonsHStackView = UIStackView()
-    private let saveButton = UIButton()
+    private let renameButton = UIButton()
     private let cancelButton = UIButton()
     
     init(viewModel: NameDiaryViewModel, router: NameDiaryRouter) {
@@ -33,8 +33,11 @@ class NameDiaryViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    static func make(nameCurrentValueSubject: PassthroughSubject<String, Never>) -> NameDiaryViewController {
-        let viewModel = NameDiaryViewModel(nameCurrentValueSubject: nameCurrentValueSubject)
+    static func make(
+        lastSavedDiary: RecordingFileDetails,
+        nameCurrentValueSubject: PassthroughSubject<String, Never>
+    ) -> NameDiaryViewController {
+        let viewModel = NameDiaryViewModel(lastSavedDiary: lastSavedDiary, nameCurrentValueSubject: nameCurrentValueSubject)
         let router = NameDiaryRouter()
         let viewController = NameDiaryViewController(
             viewModel: viewModel,
@@ -116,37 +119,37 @@ class NameDiaryViewController: UIViewController {
         cancelButton.layer.borderWidth = 1
         cancelButton.layer.borderColor = UIColor.label.cgColor
         
-        saveButton.snp.makeConstraints { make in
+        renameButton.snp.makeConstraints { make in
             make.height.equalTo(50)
             //make.width.equalTo(110)
         }
         
         buttonsHStackView.addArrangedSubview(cancelButton)
         
-        saveButton.setTitle("Save", for: .normal)
-        saveButton.tintColor = .label
-        saveButton.layer.cornerRadius = 8
-        saveButton.layer.borderWidth = 1
-        saveButton.layer.borderColor = UIColor.label.cgColor
+        renameButton.setTitle("Save", for: .normal)
+        renameButton.tintColor = .label
+        renameButton.layer.cornerRadius = 8
+        renameButton.layer.borderWidth = 1
+        renameButton.layer.borderColor = UIColor.label.cgColor
         
-        saveButton.snp.makeConstraints { make in
+        renameButton.snp.makeConstraints { make in
             make.height.equalTo(50)
             //make.width.equalTo(110)
         }
         
-        buttonsHStackView.addArrangedSubview(saveButton)
+        buttonsHStackView.addArrangedSubview(renameButton)
     }
     
     private func setupActions() {
-        let saveButtonActionId = UIAction.Identifier("saveButtonActionId")
-        let saveButtonAction = UIAction { [weak self] _ in
+        let renameButtonActionId = UIAction.Identifier("renameButtonActionId")
+        let renameButtonAction = UIAction { [weak self] _ in
             guard let self else { return }
-            self.viewModel.saveDiary()
+            self.viewModel.renameDiary()
             self.dismiss(animated: true)
         }
         
-        saveButton.removeAction(identifiedBy: saveButtonActionId, for: .touchUpInside)
-        saveButton.addAction(saveButtonAction, for: .touchUpInside)
+        renameButton.removeAction(identifiedBy: renameButtonActionId, for: .touchUpInside)
+        renameButton.addAction(renameButtonAction, for: .touchUpInside)
         
         let cancelButtonActionId = UIAction.Identifier("cancelButtonActionId")
         let cancelButtonAction = UIAction { [weak self] _ in
@@ -160,7 +163,7 @@ class NameDiaryViewController: UIViewController {
         let nameTextFieldActionId = UIAction.Identifier("nameTextFieldActionId")
         let nameTextFieldAction = UIAction { [weak self] _ in
             guard let self else { return }
-            viewModel.text = nameTextField.text
+            viewModel.text = nameTextField.text ?? ""
         }
         
         nameTextField.removeAction(identifiedBy: nameTextFieldActionId, for: .editingChanged)

@@ -18,6 +18,7 @@ class RecorderMainPageViewModel: ObservableObject {
     @Published var timeString: String = "00:00:00.00"
     @Published var waveformSamples: [Float] = []
     @Published var currentRecordingURL: URL?
+    @Published var lastSavedDiary: RecordingFileDetails?
 
     //private var audioRecorder: AVAudioRecorder?
     let audioRecorderService = AudioRecorderService()
@@ -55,11 +56,15 @@ class RecorderMainPageViewModel: ObservableObject {
             .assign(to: \.waveformSamples, on: self)
             .store(in: &cancellables)
         
+        audioRecorderService.$lastSavedRecording
+            .assign(to: \.lastSavedDiary, on: self)
+            .store(in: &cancellables)
+        
         nameCurrentValueSubject
             .receive(on: DispatchQueue.main)
             .sink { [weak self] name in
                 guard let self else { return }
-                self.saveRecording(name: name)
+                self.renameRecording(name: name)
             }
             .store(in: &cancellables)
     }
@@ -80,8 +85,9 @@ class RecorderMainPageViewModel: ObservableObject {
         audioRecorderService.pauseRecording()
     }
     
-    func saveRecording(name: String) {
-        audioRecorderService.saveRecording(name: name)
+    func renameRecording(name: String) {
+        guard let recording = audioRecorderService.lastSavedRecording else { return }
+        audioRecorderService.renameRecording(recording: recording, to: name)
     }
     
 }

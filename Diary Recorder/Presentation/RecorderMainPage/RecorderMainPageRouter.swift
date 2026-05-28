@@ -22,10 +22,10 @@ class RecorderMainPageRouter {
         navigationController.pushViewController(diaryListViewController, animated: true)
     }
     
-    func navigateToNameDiary(nameCurrentValueSubject: PassthroughSubject<String, Never>) {
+    func navigateToNameDiary(lastSavedDiary: RecordingFileDetails, nameCurrentValueSubject: PassthroughSubject<String, Never>) {
         guard let recorderMainPageViewController else { return }
         print("we have to show name diary")
-        let nameDiaryViewController = NameDiaryViewController.make(nameCurrentValueSubject: nameCurrentValueSubject)
+        let nameDiaryViewController = NameDiaryViewController.make(lastSavedDiary: lastSavedDiary, nameCurrentValueSubject: nameCurrentValueSubject)
         
         if let sheet  = nameDiaryViewController.sheetPresentationController {
             sheet.detents = [

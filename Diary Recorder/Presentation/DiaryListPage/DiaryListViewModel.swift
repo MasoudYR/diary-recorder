@@ -16,6 +16,9 @@ class DiaryListViewModel {
     private let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
     private var dateFormatter: DateFormatter
     private let fileURLProvider: RecordingDiaryFileURLProvider
+    
+    var selectedDiary: RecordingFileDetails?
+    var renameCurrentValueSubject: PassthroughSubject<String, Never> = .init()
     private var cancellables = Set<AnyCancellable>()
     
     
@@ -40,6 +43,14 @@ class DiaryListViewModel {
             } receiveValue: { list in
                 print(">>>", Self.self, #function, "count: \(list.count)")
                 self.diaryListDataCollection = list
+            }
+            .store(in: &cancellables)
+        
+        renameCurrentValueSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] name in
+                guard let self else { return }
+                self.renameRecording(name: name)
             }
             .store(in: &cancellables)
     }
@@ -75,5 +86,14 @@ class DiaryListViewModel {
     
     func changeDateAndTime(_ date: Date) -> String {
         return dateFormatter.string(from: date)
+    }
+    
+    func renameRecording(name: String) {
+        guard let selectedDiary else { return }
+        do {
+            try recordingsDetailsRealmManager.renameRecording(selectedDiary, to: name)
+        } catch {
+            print("rename diary Error: \(error)")
+        }
     }
 }

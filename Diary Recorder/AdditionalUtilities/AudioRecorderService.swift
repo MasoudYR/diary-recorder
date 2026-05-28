@@ -16,11 +16,13 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     @Published var isPaused = false
     @Published var timeString: String = "00:00:00.00"
     @Published var waveformSamples: [Float] = []
+    @Published var lastSavedRecording: RecordingFileDetails?
     @Published var recordings: [RecordingFileDetails] = []
     @Published var currentRecordingFileName: String?
     
     private var audioRecorder: AVAudioRecorder?
     private var displayLink: CADisplayLink?
+    private var dateFormatter: DateFormatter = DateFormatter()
     
     private var startTime: Date?
     private let fileURLProvider: RecordingDiaryFileURLProvider
@@ -31,6 +33,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     init(fileURLProvider: RecordingDiaryFileURLProvider = .default()) {
         self.fileURLProvider = fileURLProvider
         super.init()
+        initDateFormatter()
         setupAudioSession()
         //try? recordingsDetailsRealmManager.removeAllRecordings()
     }
@@ -142,11 +145,20 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         displayLink?.invalidate()
         displayLink = nil
         audioRecorder = nil
-        
+
         isRecording = false
         isFinished = true
         timeString = "00:00:00.00"
         waveformSamples = []
+        saveRecording()
+    }
+    
+    func renameRecording(recording: RecordingFileDetails,to newName: String) {
+        do{
+            try recordingsDetailsRealmManager.renameRecording(recording, to: newName)
+        } catch {
+            print("Rename recording Error: \(error)")
+        }
     }
     
     private func startDisplayLink() {
@@ -192,24 +204,27 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         }
     }
     
-    func saveRecording(name: String) {
-        
+    private func saveRecording() {
+
         guard let fileName = currentRecordingFileName,
               isFinished else { return }
+        let date = Date()
         
         let url = fileURLProvider.makeDiaryFileURL(named: fileName)
         let duration = getAudioDuration(url: url)
-        let newRecording = RecordingFileDetails(
+        let currentRecordingFileDetails = RecordingFileDetails(
             id: UUID(),
             fileName: fileName,
-            name: name,
-            date: Date(),
+            name: dateToString(date: date),
+            date: date,
             duration: duration
-        )
+            )
+
         
         do {
-            try recordingsDetailsRealmManager.saveRecording(newRecording)
-            recordings.insert(newRecording, at: 0)
+            try recordingsDetailsRealmManager.saveRecording(currentRecordingFileDetails)
+            recordings.insert(currentRecordingFileDetails, at: 0)
+            self.lastSavedRecording = currentRecordingFileDetails
             print("📁 File saved at: \(url.path)")
         } catch {
             print("Save recording error: \(error)")
@@ -228,6 +243,17 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
             print(error)
         }
     }
+    
+    private func initDateFormatter() {
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    }
+    
+    private func dateToString(date: Date) -> String {
+        let formattedDate = dateFormatter.string(from: date)
+        let text = "Diary \(formattedDate)"
+        return text
+    }
+    
     
 }
 

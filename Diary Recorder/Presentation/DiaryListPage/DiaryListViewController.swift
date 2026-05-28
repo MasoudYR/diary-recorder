@@ -109,12 +109,17 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
         _ tableView: UITableView,
         didSelectRowAt indexPath: IndexPath
     ) {
-        router.navigateToDiaryPlayer(diary: viewModel.diaryListDataCollection[indexPath.row])
+        let diaryIndex = indexPath.row
+        let diaryListDataCollection = viewModel.diaryListDataCollection
+        router.navigateToDiaryPlayer(
+            diaryIndex: diaryIndex,
+            diaryListDataCollection: diaryListDataCollection
+        )
         print(">>>>>, thie is file selected: \(viewModel.diaryListDataCollection[indexPath.row])")
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let deleteAction = UIContextualAction(style: .destructive, title: "") { [weak self] _, _, completion in
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completion in
             guard let self else { return }
             self.router.navigateToDeleteAlert(
                 deleteHandler: { [weak self] in
@@ -130,7 +135,7 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
         deleteAction.image = UIImage(systemName: "trash.fill")
         //deleteAction.backgroundColor = .systemRed
         
-        let shareAction = UIContextualAction(style: .normal, title: "") { [weak self] _, _, completion in
+        let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] _, _, completion in
             guard let self else { return }
             let diary = viewModel.diaryListDataCollection[indexPath.row]
             guard let url = viewModel.shareRecording(diary) else {
@@ -145,7 +150,21 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
         }
         shareAction.image = UIImage(systemName: "square.and.arrow.up")
         
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, shareAction])
+        let renameAction = UIContextualAction(style: .normal, title: "Rename") { [weak self] _, _, completion in
+            guard let self else { return }
+            let selectedDiary = viewModel.diaryListDataCollection[indexPath.row]
+            viewModel.selectedDiary = selectedDiary
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.router.navigateToRenameDiary(selectedDiary: selectedDiary, nameCurrentValueSubject: viewModel.renameCurrentValueSubject)
+            }
+            completion(true)
+        }
+        renameAction.image = UIImage(systemName: "pencil")
+        renameAction.backgroundColor = .systemGreen
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, renameAction, shareAction])
         return configuration
     }
 }
