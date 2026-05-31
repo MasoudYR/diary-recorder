@@ -9,59 +9,10 @@ import Foundation
 import AVFoundation
 import Combine
 
-
-enum PlayingState: Equatable, Hashable {
-    case idle
-    case playing
-    case paused
-    case finished
-}
-
-struct PlayingStateDescriptor: Equatable, Hashable {
-    fileprivate(set) var item: RecordingFileDetails
-    fileprivate(set) var duration: TimeInterval
-    fileprivate(set) var currentTime: TimeInterval
-    fileprivate(set) var playingState: PlayingState
-}
-
-extension PlayingStateDescriptor {
-    
-    mutating func update<V>(_ keyPath: WritableKeyPath<Self, V>, to value: V) {
-        self[keyPath: keyPath] = value
-    }
-    
-    func updated<V>(_ keyPath: WritableKeyPath<Self, V>, to value: V) -> Self {
-        var copy = self
-        copy[keyPath: keyPath] = value
-        return copy
-    }
-}
-
 class AudioPlayerService: NSObject {
     //static let shared = AudioPlayerService()
     
     @Published var playingStateDescriptor: PlayingStateDescriptor?
-    
-//    @Published var isPlaying = false
-//    @Published var isFinished = false
-//    @Published var isPaused = false
-//    @Published var currentTime: TimeInterval = 0
-//    @Published var duration: TimeInterval = 0
-//    @Published var currentlyPlayingFileDetails: RecordingFileDetails?
-    
-//    func minMaxTrackTime(basedOn currentTime: TimeInterval) -> (min: TimeInterval, max: TimeInterval) {
-//        return (
-//            currentTime,
-//            duration - currentTime
-//        )
-//    }
-    
-//    var maximumTrackTimeToShow: TimeInterval {
-//        return duration - currentTime
-//    }
-//    var minimumTrackTimeToShow: TimeInterval {
-//        return currentTime
-//    }
    
     private let fileURLProvider: RecordingDiaryFileURLProvider
     private var player: AVPlayer = AVPlayer()

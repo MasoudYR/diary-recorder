@@ -52,10 +52,6 @@ class RecorderMainPageViewModel: ObservableObject {
             .assign(to: \.timeString, on: self)
             .store(in: &cancellables)
         
-        audioRecorderService.$waveformSamples
-            .assign(to: \.waveformSamples, on: self)
-            .store(in: &cancellables)
-        
         audioRecorderService.$lastSavedRecording
             .assign(to: \.lastSavedDiary, on: self)
             .store(in: &cancellables)

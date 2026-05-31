@@ -15,7 +15,10 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     @Published var isFinished = false
     @Published var isPaused = false
     @Published var timeString: String = "00:00:00.00"
-    @Published var waveformSamples: [Float] = []
+    //@Published var waveformSamples: [Float] = []
+    
+    @Published var latestSample: Float = 0
+    
     @Published var lastSavedRecording: RecordingFileDetails?
     @Published var recordings: [RecordingFileDetails] = []
     @Published var currentRecordingFileName: String?
@@ -110,7 +113,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
             currentRecordingFileName = fileName
             startTime = Date()
             
-            waveformSamples = []
+            //waveformSamples = []
             startDisplayLink()
             
             print("Recording started")
@@ -149,7 +152,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         isRecording = false
         isFinished = true
         timeString = "00:00:00.00"
-        waveformSamples = []
+       // waveformSamples = []
         saveRecording()
     }
     
@@ -186,10 +189,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
             
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.waveformSamples.append(normalized)
-            if (self.waveformSamples.count ) > 800 {
-                self.waveformSamples.removeFirst(8)
-            }
+            self.latestSample = normalized
         }
         
     }

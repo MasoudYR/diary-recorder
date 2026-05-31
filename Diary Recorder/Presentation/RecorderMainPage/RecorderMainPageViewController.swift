@@ -165,7 +165,6 @@ class RecorderMainPageViewController: UIViewController {
         voiceDiagramView.snp.makeConstraints { make in
             make.height.equalTo(120)
         }
-        
         waveformLiveView.shouldDrawSilencePadding = true
         waveformLiveView.configuration = Waveform.Configuration(
             backgroundColor: .systemBackground,
@@ -306,15 +305,13 @@ class RecorderMainPageViewController: UIViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.$waveformSamples
-            .receive(on: RunLoop.main)
-            .sink { [weak self] waveformSamples in
+        viewModel.audioRecorderService.$latestSample
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] sample in
                 guard let self else { return }
-                let zeroArray: [Float] =  .init(repeating: 1.0, count: 999)
-                let newWaveformSamples = zeroArray + waveformSamples
-                self.waveformLiveView.add(samples: newWaveformSamples)
+                self.waveformLiveView.add(sample: sample)
             }
-            .store(in:&cancellables)
+            .store(in: &cancellables)
     }
     
     private func updateView() {
