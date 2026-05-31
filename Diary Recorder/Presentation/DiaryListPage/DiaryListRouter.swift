@@ -41,34 +41,12 @@ class DiaryListRouter {
     
     func navigateToShareActivityViewController(fileURL: URL?){
         guard let diaryListViewController else { return }
-        //guard let nv = diaryListViewController.navigationController else { return }
         guard let fileURL else { return }
         let activityItems: [URL] = [fileURL]
         let activityViewController = UIActivityViewController(
             activityItems: activityItems,
             applicationActivities: nil
         )
-        
-//        activityViewController.excludedActivityTypes = [
-//            .assignToContact,
-//            .markupAsPDF,
-//            .openInIBooks,
-//            .print,
-//            .saveToCameraRoll
-//        ]
-        
-//        if let sheet = activityViewController.sheetPresentationController {
-//            sheet.detents = [
-//                //.custom { _ in 400 }
-//                .medium()
-//            ]
-//            sheet.preferredCornerRadius = 16
-//            sheet.prefersEdgeAttachedInCompactHeight = true
-//            sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
-//            sheet.prefersGrabberVisible = false
-//        }
-        //diaryListViewController.modalTransitionStyle = .flipHorizontal
-        //diaryListViewController.modalTransitionStyle = .partialCurl
         diaryListViewController.present(activityViewController, animated: true)
     }
     

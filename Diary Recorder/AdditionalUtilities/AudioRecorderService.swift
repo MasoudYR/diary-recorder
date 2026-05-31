@@ -11,32 +11,19 @@ import Combine
 
 class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     
-    @Published var isRecording = false
-    @Published var isFinished = false
-    @Published var isPaused = false
-    @Published var timeString: String = "00:00:00.00"
-    //@Published var waveformSamples: [Float] = []
-    
+    @Published var recordingStateDescriptor: RecordingStateDescriptor?
     @Published var latestSample: Float = 0
-    
-    @Published var lastSavedRecording: RecordingFileDetails?
     @Published var recordings: [RecordingFileDetails] = []
     @Published var currentRecordingFileName: String?
     
     private var audioRecorder: AVAudioRecorder?
     private var displayLink: CADisplayLink?
-    private var dateFormatter: DateFormatter = DateFormatter()
-    
-    private var startTime: Date?
     private let fileURLProvider: RecordingDiaryFileURLProvider
     private let fileManager = FileManager.default
-    private let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
-    
     
     init(fileURLProvider: RecordingDiaryFileURLProvider = .default()) {
         self.fileURLProvider = fileURLProvider
         super.init()
-        initDateFormatter()
         setupAudioSession()
         //try? recordingsDetailsRealmManager.removeAllRecordings()
     }
@@ -87,13 +74,24 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         }
     }
     
-    func startRecording(name: String? = nil) {
-        //deactiveAudioSession()
+    func prepareToRecord() {
         activeAudioSession()
-        stopRecording()
-        print("@@@@@ Recording func in audiorecorder is running")
         let fileName = "\(UUID().uuidString).m4a"
         let fileURL = fileURLProvider.makeDiaryFileURL(named: fileName)
+        self.recordingStateDescriptor = RecordingStateDescriptor(
+            itemURL: fileURL,
+            itemName: fileName,
+            currentTime: .zero,
+            recordingState: .idle
+        )
+    }
+    
+    func startRecording(name: String? = nil) {
+        prepareToRecord()
+        
+        stopRecording()
+    
+        let fileURL = recordingStateDescriptor!.itemURL
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: 12000,
@@ -107,13 +105,8 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
             audioRecorder?.isMeteringEnabled = true
             audioRecorder?.record()
             
-            isRecording = true
-            isPaused = false
-            isFinished = false
-            currentRecordingFileName = fileName
-            startTime = Date()
-            
-            //waveformSamples = []
+            self.recordingStateDescriptor!.update(\.recordingState, to: .recording)
+
             startDisplayLink()
             
             print("Recording started")
@@ -123,20 +116,24 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     }
     
     func pauseRecording() {
-        guard let recorder = audioRecorder, isRecording, !isPaused else { return }
+        guard let recorder = audioRecorder else { return }
         print("@@@@@ Pause recording func in audiorecorder is running")
+        
         recorder.pause()
-        isPaused = true
+        
+        self.recordingStateDescriptor?.update(\.recordingState, to: .paused)
         
         displayLink?.isPaused = true
         print("Recording paused")
     }
     
     func resumeRecording() {
-        guard let recorder = audioRecorder, isRecording, isPaused else { return }
+        guard let recorder = audioRecorder else { return }
         print("@@@@@ Resume recording func in audiorecorder is running")
+        
         recorder.record()
-        isPaused = false
+        
+        self.recordingStateDescriptor?.update(\.recordingState, to: .recording)
         
         displayLink?.isPaused = false
         print("Recording resumed")
@@ -148,20 +145,12 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         displayLink?.invalidate()
         displayLink = nil
         audioRecorder = nil
-
-        isRecording = false
-        isFinished = true
-        timeString = "00:00:00.00"
-       // waveformSamples = []
-        saveRecording()
-    }
-    
-    func renameRecording(recording: RecordingFileDetails,to newName: String) {
-        do{
-            try recordingsDetailsRealmManager.renameRecording(recording, to: newName)
-        } catch {
-            print("Rename recording Error: \(error)")
-        }
+        
+        guard let recordingStateDescriptor else { return }
+        
+        self.recordingStateDescriptor = recordingStateDescriptor
+            .updated(\.recordingState, to: .finished)
+            .updated(\.currentTime, to: .zero)
     }
     
     private func startDisplayLink() {
@@ -172,66 +161,22 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     }
     
     @objc private func updateTimeAndWaveform() {
-        guard let start = startTime,
-              let recorder = audioRecorder else { return }
-        
-        let elapsed = Date().timeIntervalSince(start)
-        let hours = Int(elapsed) / 3600
-        let minutes = (Int(elapsed) % 3600 / 60)
-        let seconds = Int(elapsed) % 60
-        let milliseconds = Int((elapsed.truncatingRemainder(dividingBy: 1)) * 100)
-        
-        timeString = String(format: "%02d:%02d:%02d.%02d", hours, minutes, seconds, milliseconds)
+        guard let recorder = audioRecorder,
+        let recordingStateDescriptor,
+            recordingStateDescriptor.recordingState == .recording
+        else { return }
+        let time = recorder.currentTime
 
-            recorder.updateMeters()
-            let power = recorder.averagePower(forChannel: 0)
-            let normalized = max(0, min(1, 1 - pow(10, power / 20)))
-            
+        self.recordingStateDescriptor?.update(\.currentTime, to: time)
+
+        recorder.updateMeters()
+        let power = recorder.averagePower(forChannel: 0)
+        let normalized = max(0, min(1, 1 - pow(10, power / 20)))
+        
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.latestSample = normalized
         }
-        
-    }
-    
-    private func getAudioDuration(url: URL) -> TimeInterval {
-        do {
-           let player = try AVAudioPlayer(contentsOf: url)
-            return player.duration
-        } catch {
-            print("Error getting duration: \(error)")
-            return 0
-        }
-    }
-    
-    private func saveRecording() {
-
-        guard let fileName = currentRecordingFileName,
-              isFinished else { return }
-        let date = Date()
-        
-        let url = fileURLProvider.makeDiaryFileURL(named: fileName)
-        let duration = getAudioDuration(url: url)
-        let currentRecordingFileDetails = RecordingFileDetails(
-            id: UUID(),
-            fileName: fileName,
-            name: dateToString(date: date),
-            date: date,
-            duration: duration
-            )
-
-        
-        do {
-            try recordingsDetailsRealmManager.saveRecording(currentRecordingFileDetails)
-            recordings.insert(currentRecordingFileDetails, at: 0)
-            self.lastSavedRecording = currentRecordingFileDetails
-            print("📁 File saved at: \(url.path)")
-        } catch {
-            print("Save recording error: \(error)")
-        }
-        
-        currentRecordingFileName = nil
-        
     }
     
     private func listRecordings() {
@@ -242,16 +187,6 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         } catch {
             print(error)
         }
-    }
-    
-    private func initDateFormatter() {
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-    }
-    
-    private func dateToString(date: Date) -> String {
-        let formattedDate = dateFormatter.string(from: date)
-        let text = "Diary \(formattedDate)"
-        return text
     }
     
     

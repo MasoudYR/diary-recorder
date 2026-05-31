@@ -31,7 +31,6 @@ class DiaryListTableViewCell: UITableViewCell {
         micImageView.tintColor = .systemGreen
         micImageView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(10)
-            //make.verticalEdges.equalToSuperview().inset(5)
             make.size.equalTo(50)
             make.centerY.equalToSuperview()
         }
@@ -44,6 +43,7 @@ class DiaryListTableViewCell: UITableViewCell {
         nameLabel.snp.makeConstraints { make in
             make.top.equalTo(micImageView.snp.top)
             make.left.equalTo(micImageView.snp.right).offset(5)
+            make.right.equalTo(contentView.snp.right).inset(10)
         }
         
         contentView.addSubview(dateAndTimeLabel)

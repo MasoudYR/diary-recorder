@@ -12,8 +12,6 @@ import DSWaveformImageViews
 
 class DiaryPlayerViewModel: ObservableObject {
     
-//    @Published var isPlaying = false
-//    @Published var isFinished = false
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
     @Published var currentlyPlaying: RecordingFileDetails
@@ -58,9 +56,6 @@ class DiaryPlayerViewModel: ObservableObject {
                 self.duration = newDuration
                 
                 self.updateTrackTimes(current: newCurrentTime, duration: newDuration)
-                
-//                self.isPlaying = item.playingState == .playing
-//                self.isFinished = item.playingState == .finished
                 self.currentlyPlaying = item.item
             }
             .store(in: &cancellables)

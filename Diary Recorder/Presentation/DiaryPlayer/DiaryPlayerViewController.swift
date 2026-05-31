@@ -42,7 +42,6 @@ class DiaryPlayerViewController: UIViewController {
 //            updateView()
 //        }
 //    }
-    
     private var cancellables = Set<AnyCancellable>()
     
     init(viewModel: DiaryPlayerViewModel, router: DiaryPlayerRouter) {
@@ -356,14 +355,7 @@ class DiaryPlayerViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] currentlyPlaying in
                 guard let self else { return }
-//                if let name = currentlyPlaying.name {
-//                    self.nameLabel.text = name
-//                }
-                
                 self.nameLabel.text = currentlyPlaying.name
-//                if let date = currentlyPlaying.date {
-//                    self.dateLabel.text = viewModel.changeDateAndTime(date)
-//                }
                 self.dateLabel.text = viewModel.changeDateAndTime(currentlyPlaying.date)
             }
             .store(in: &cancellables)
@@ -383,9 +375,6 @@ class DiaryPlayerViewController: UIViewController {
             .audioPlayerService
             .$playingStateDescriptor
             .compactMap { $0 }
-            .handleEvents(receiveOutput: { output in
-                print("**************this is state: (\(output))")
-            })
             .map(\.playingState)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
@@ -408,7 +397,6 @@ class DiaryPlayerViewController: UIViewController {
                     pauseButton.isHidden = true
                     stopButton.isHidden = true
                 }
-//
 //                playButton.isHidden = !(state == .idle || state == .paused)
 //                pauseButton.isHidden = !(state == .playing)
 //                stopButton.isHidden = !(state == .paused || state == .playing)

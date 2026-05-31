@@ -134,7 +134,6 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         deleteAction.image = UIImage(systemName: "trash.fill")
-        //deleteAction.backgroundColor = .systemRed
         
         let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] _, _, completion in
             guard let self else { return }

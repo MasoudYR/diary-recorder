@@ -23,7 +23,6 @@ class DiaryListViewModel {
     
     
     init(fileURLProvider: RecordingDiaryFileURLProvider = .default()) {
-        //readDiarylistData()
         self.fileURLProvider = fileURLProvider
         self.dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy/MM/dd HH:mm:ss"

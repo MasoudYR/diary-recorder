@@ -25,10 +25,7 @@ class DeleteAlertViewController: UIViewController {
     
     init(deleteAction: @escaping () -> Void) {
         self.deleteAction = deleteAction
-        //self.viewModel = viewModel
-        //self.router = router
         super.init(nibName: nil, bundle: nil)
-        //self.router.deleteAlertViewController = self
     }
     
     required init?(coder: NSCoder) {

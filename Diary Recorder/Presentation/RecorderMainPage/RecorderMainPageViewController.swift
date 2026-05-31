@@ -31,13 +31,6 @@ class RecorderMainPageViewController: UIViewController {
     private let stopButton = UIButton()
     private var savedDiaryBarButton = UIBarButtonItem()
     private var cancellables = Set<AnyCancellable>()
-
-    
-    private var state: MainState = .idle {
-        didSet {
-            updateView()
-        }
-    }
     
     init(viewModel: RecorderMainPageViewModel, router: RecorderMainPageRouter) {
         self.viewModel = viewModel
@@ -52,7 +45,10 @@ class RecorderMainPageViewController: UIViewController {
     
     static func make() -> RecorderMainPageViewController {
         let router = RecorderMainPageRouter()
-        let viewModel = RecorderMainPageViewModel()
+        let viewModel = RecorderMainPageViewModel(
+            recordingsDetailsRealmManager: RecordingsDetailsRealmManager.shared,
+            audioRecorderService: AudioRecorderService()
+        )
         let viewController = RecorderMainPageViewController(viewModel: viewModel, router: router)
         return viewController
     }
@@ -63,6 +59,7 @@ class RecorderMainPageViewController: UIViewController {
         navigationBarSetupUI()
         setupUI()
         bindViewModel()
+        viewModel.prepareToRecord()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -247,61 +244,93 @@ class RecorderMainPageViewController: UIViewController {
     }
 
     private func setupActions() {
-        let recordButtonAction = UIAction { [unowned self]
+        let recordButtonActionId = UIAction.Identifier("recordButtonActionId")
+        let recordButtonAction = UIAction(identifier: recordButtonActionId) { [unowned self]
             _ in
             viewModel.startRecording()
-            state = .recording
             print("##### Record Button tapped")
         }
         
+        recordButton.removeAction(identifiedBy: recordButtonActionId, for: .touchUpInside)
         recordButton.addAction(recordButtonAction, for: .touchUpInside)
         
-        let pauseButtonAction = UIAction { [unowned self]
+        let pauseButtonActionId = UIAction.Identifier("pauseButtonActionId")
+        let pauseButtonAction = UIAction(identifier: pauseButtonActionId) { [unowned self]
             _ in
-            if viewModel.isRecording {
-                viewModel.pauseRecording()
-                state = .paused
-                print("##### Pause Button tapped")
-            } else {
-                print("there is no recording to pause")
-            }
+            viewModel.pauseRecording()
         }
         
+        pauseButton.removeAction(identifiedBy: pauseButtonActionId, for: .touchUpInside)
         pauseButton.addAction(pauseButtonAction, for: .touchUpInside)
         
-        let resumeButtonAction = UIAction { [unowned self]
+        
+        let resumeButtonActionId = UIAction.Identifier("resumeButtonActionId")
+        let resumeButtonAction = UIAction(identifier: resumeButtonActionId) { [unowned self]
             _ in
-            
-            if viewModel.isPaused {
-                viewModel.resumeRecording()
-                state = .recording
-                print("##### Resume Button tapped")
-            }
+            viewModel.resumeRecording()
         }
         
+        resumeButton.removeAction(identifiedBy: resumeButtonActionId, for: .touchUpInside)
         resumeButton.addAction(resumeButtonAction, for: .touchUpInside)
         
-        let stopButtonAction = UIAction { [unowned self]
+        let stopButtonActionId = UIAction.Identifier("stopButtonActionId")
+        let stopButtonAction = UIAction(identifier: stopButtonActionId) { [unowned self]
             _ in
             viewModel.stopRecording()
-            guard let lastSavedDiary = viewModel.lastSavedDiary else { return }
-            let nameCurrentValueSubject = viewModel.nameCurrentValueSubject
-            state = .idle
+            viewModel.saveRecording()
+            print("lastSavedDiaryInViewController: \(String(describing: viewModel.lastSavedDiary))")
             waveformLiveView.reset()
+            guard let lastSavedDiary = viewModel.lastSavedDiary else { return }
+            
+            let nameCurrentValueSubject = viewModel.nameCurrentValueSubject
             print("##### Stop Button tapped")
             router.navigateToNameDiary(lastSavedDiary: lastSavedDiary, nameCurrentValueSubject: nameCurrentValueSubject)
         }
         
+        stopButton.removeAction(identifiedBy: stopButtonActionId, for: .touchUpInside)
         stopButton.addAction(stopButtonAction, for: .touchUpInside)
     }
     
     private func bindViewModel() {
         
-        viewModel.$timeString
-            .receive(on: RunLoop.main)
-            .sink { [weak self] timeString in
+        viewModel
+            .audioRecorderService
+            .$recordingStateDescriptor
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] item in
                 guard let self else { return }
-                self.voiceTimerLabel.text = timeString
+                self.voiceTimerLabel.text = viewModel.transformTime(item.currentTime)
+                
+                recordButton.isHidden =
+                item.recordingState == .recording ||
+                item.recordingState == .paused
+                
+                pauseButton.isHidden =
+                item.recordingState == .idle ||
+                item.recordingState == .paused ||
+                item.recordingState == .finished
+                
+                resumeButton.isHidden =
+                item.recordingState == .idle ||
+                item.recordingState == .recording ||
+                item.recordingState == .finished
+                
+                stopButton.isHidden =
+                item.recordingState == .idle ||
+                item.recordingState == .paused ||
+                item.recordingState == .finished
+                
+                navigationItem.rightBarButtonItem =
+                item.recordingState == .recording ||
+                item.recordingState == .paused
+                ? nil : savedDiaryBarButton
+                
+                voiceRecorderImageViewView.backgroundColor =
+                item.recordingState == .idle ||
+                item.recordingState == .paused ||
+                item.recordingState == .finished
+                ? .label : .systemRed
             }
             .store(in: &cancellables)
         
@@ -315,31 +344,7 @@ class RecorderMainPageViewController: UIViewController {
     }
     
     private func updateView() {
-        recordButton.isHidden = !(state == .idle)
-        pauseButton.isHidden = !(state == .recording)
-        resumeButton.isHidden = !(state == .paused)
-        stopButton.isHidden = !(state == .recording)
-        
-        if state == .recording || state == .paused {
-            navigationItem.rightBarButtonItem = nil
-        } else {
-            navigationItem.rightBarButtonItem = savedDiaryBarButton
-        }
-        
-        if state == .idle || state == .paused {
-            voiceRecorderImageViewView.backgroundColor = .label
-        } else {
-            voiceRecorderImageViewView.backgroundColor = .systemRed
-        }
     }
-    
-    enum MainState {
-        case idle
-        case recording
-        case paused
-    }
-    
-    
 }
 
 
