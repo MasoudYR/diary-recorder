@@ -84,7 +84,7 @@ class NameDiaryViewController: UIViewController {
     }
     
     private func setupTextFieldView() {
-        nameTextFieldView.layer.borderWidth = 2
+        nameTextFieldView.layer.borderWidth = 1
         nameTextFieldView.layer.borderColor = UIColor.label.cgColor
         nameTextFieldView.layer.cornerRadius = 8
         
@@ -114,6 +114,7 @@ class NameDiaryViewController: UIViewController {
     
     private func setupButtons() {
         cancelButton.setTitle("Cancel", for: .normal)
+        cancelButton.setTitleColor(.label, for: .normal)
         cancelButton.tintColor = .label
         cancelButton.layer.cornerRadius = 8
         cancelButton.layer.borderWidth = 1
@@ -127,6 +128,7 @@ class NameDiaryViewController: UIViewController {
         buttonsHStackView.addArrangedSubview(cancelButton)
         
         renameButton.setTitle("Save", for: .normal)
+        renameButton.setTitleColor(.label, for: .normal)
         renameButton.tintColor = .label
         renameButton.layer.cornerRadius = 8
         renameButton.layer.borderWidth = 1

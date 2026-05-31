@@ -12,11 +12,11 @@ import DSWaveformImageViews
 
 class DiaryPlayerViewModel: ObservableObject {
     
-    @Published var isPlaying = false
-    @Published var isFinished = false
+//    @Published var isPlaying = false
+//    @Published var isFinished = false
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
-    @Published var currentlyPlaying: RecordingFileDetails?
+    @Published var currentlyPlaying: RecordingFileDetails
     @Published var minimumTrackTimeString: String = "00:00:00"
     @Published var maximumTrackTimeString: String = "00:00:00"
     
@@ -25,50 +25,44 @@ class DiaryPlayerViewModel: ObservableObject {
     private var diaryIndex: Int
     private var dateFormatter: DateFormatter
     let audioPlayerService = AudioPlayerService()
-    //AudioPlayerService.shared
     private var cancellables = Set<AnyCancellable>()
     
     init(diaryIndex: Int, diaryListDataCollection: [RecordingFileDetails]) {
         self.diaryListDataCollection = diaryListDataCollection
         self.diaryIndex = diaryIndex
-        audioPlayerService.currentlyPlayingFileDetails = diaryListDataCollection[diaryIndex]
+        audioPlayerService.playingStateDescriptor = PlayingStateDescriptor(
+            item: diaryListDataCollection[diaryIndex],
+            duration: diaryListDataCollection[diaryIndex].duration,
+            currentTime: .zero,
+            playingState: .idle
+        )
         self.dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
+        self.currentlyPlaying = diaryListDataCollection[diaryIndex]
         setupBindings()
-        
     }
     
     private func setupBindings() {
         
-        audioPlayerService.$duration
+        audioPlayerService
+            .$playingStateDescriptor
+            .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] duration in
+            .sink { [weak self] item in
                 guard let self, !isChangingTrack else { return }
-                self.duration = duration
-                self.updateTrackTimes(current: self.currentTime, duration: duration)
+                
+                let newDuration = item.duration
+                let newCurrentTime = item.currentTime
+                
+                self.currentTime = newCurrentTime
+                self.duration = newDuration
+                
+                self.updateTrackTimes(current: newCurrentTime, duration: newDuration)
+                
+//                self.isPlaying = item.playingState == .playing
+//                self.isFinished = item.playingState == .finished
+                self.currentlyPlaying = item.item
             }
-            .store(in: &cancellables)
-        
-        audioPlayerService.$currentTime
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] currentTime in
-                guard let self, !isChangingTrack else { return }
-                self.currentTime = currentTime
-                self.updateTrackTimes(current: currentTime, duration: self.duration)
-            }
-            .store(in: &cancellables)
-        
-        audioPlayerService.$isPlaying
-            .assign(to: \.isPlaying, on: self)
-            .store(in: &cancellables)
-        
-        audioPlayerService.$isFinished
-            .assign(to: \.isFinished, on: self)
-            .store(in: &cancellables)
-        
-        audioPlayerService.$currentlyPlayingFileDetails
-            .assign(to: \.currentlyPlaying, on: self)
             .store(in: &cancellables)
     }
     
@@ -88,13 +82,19 @@ class DiaryPlayerViewModel: ObservableObject {
         currentTime = 0
         duration = diary.duration
         updateTrackTimes(current: 0, duration: diary.duration)
-        audioPlayerService.currentlyPlayingFileDetails = diary
+        
+        audioPlayerService.playingStateDescriptor = PlayingStateDescriptor(
+            item: diary,
+            duration: diary.duration,
+            currentTime: .zero,
+            playingState: .idle
+        )
         play(diary)
         isChangingTrack = false
     }
     
     func prepareToPlay() {
-        guard let diaryRecorded = audioPlayerService.currentlyPlayingFileDetails else { return }
+        guard let diaryRecorded = audioPlayerService.playingStateDescriptor?.item else { return }
         audioPlayerService.prepareToPlay(diaryRecorded: diaryRecorded)
     }
     
@@ -115,7 +115,15 @@ class DiaryPlayerViewModel: ObservableObject {
     }
     
     func seek(to progress: Double) {
-        let time = progress * audioPlayerService.duration
+        precondition((0 ... 1).contains(progress), "kossssskesh in chie?...")
+        
+        guard let duration = audioPlayerService
+            .playingStateDescriptor?
+            .item
+            .duration
+        else { return }
+        
+        let time = progress * duration
         audioPlayerService.seek(to: time)
     }
     

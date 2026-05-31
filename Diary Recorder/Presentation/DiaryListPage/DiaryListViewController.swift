@@ -116,6 +116,7 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
             diaryListDataCollection: diaryListDataCollection
         )
         print(">>>>>, thie is file selected: \(viewModel.diaryListDataCollection[indexPath.row])")
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {

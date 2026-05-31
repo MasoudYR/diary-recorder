@@ -36,12 +36,12 @@ class DiaryPlayerViewController: UIViewController {
     private let previousButton = UIButton()
     
     private var progressTimer: Timer?
-    private var state: DiaryPlayerMainState = .idle {
-        didSet {
-            print(">>>", Self.self, #function, "state: \(state)")
-            updateView()
-        }
-    }
+//    private var state: PlayingState = .idle {
+//        didSet {
+//            print(">>>", Self.self, #function, "state: \(state)")
+//            updateView()
+//        }
+//    }
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -77,15 +77,12 @@ class DiaryPlayerViewController: UIViewController {
         setupUI()
         bindViewModel()
         viewModel.prepareToPlay()
+        viewModel.play(viewModel.currentlyPlaying)
     }
-    
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        viewModel.audioPlayerService.setupAudioSession()
-//    }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        viewModel.audioPlayerService.stop()
         viewModel.audioPlayerService.deactiveAudioSession()
     }
     
@@ -280,9 +277,6 @@ class DiaryPlayerViewController: UIViewController {
     }
     
     private func updateView() {
-        playButton.isHidden = !(state == .idle || state == .paused)
-        pauseButton.isHidden = !(state == .playing)
-        stopButton.isHidden = !(state == .paused || state == .playing)
 
     }
     
@@ -294,9 +288,8 @@ class DiaryPlayerViewController: UIViewController {
         progressSlider.addAction(sliderAction, for: .valueChanged)
         
         let playAction = UIAction { [unowned self] _ in
-            guard let diary = viewModel.currentlyPlaying else { return }
-            viewModel.play(diary)
-            self.state = .playing
+//            guard let diary = viewModel.currentlyPlaying else { return }
+            viewModel.play(viewModel.currentlyPlaying)
         }
         let playActionId = UIAction.Identifier("playActionId")
         playButton.removeAction(identifiedBy: playActionId, for: .touchUpInside)
@@ -304,13 +297,7 @@ class DiaryPlayerViewController: UIViewController {
         
         
         let pauseAction = UIAction { [unowned self] _ in
-//            guard let diary = viewModel.currentlyPlaying else { return }
-            if viewModel.isPlaying {
-                viewModel.pause()
-                self.state = .paused
-            } else {
-                print("there is not diary to play that you can pause")
-            }
+            viewModel.pause()
         }
         
         let pauseActionId = UIAction.Identifier("pauseActionId")
@@ -319,7 +306,6 @@ class DiaryPlayerViewController: UIViewController {
     
         let stopAction = UIAction { [unowned self] _ in
             viewModel.stop()
-            self.state = .idle
         }
         
         let stopActionId = UIAction.Identifier("stopActionId")
@@ -348,10 +334,6 @@ class DiaryPlayerViewController: UIViewController {
         
         let nextDiaryAction = UIAction { [unowned self] _ in
             viewModel.playNextDiary()
-//            self.state = .idle
-//            guard let diary = viewModel.currentlyPlaying else { return }
-//            viewModel.play(diary)
-            self.state = .playing
         }
         nextButton.removeAction(identifiedBy: nextDiaryActionId, for: .touchUpInside)
         nextButton
@@ -362,10 +344,6 @@ class DiaryPlayerViewController: UIViewController {
         
         let previousDiaryAction = UIAction { [unowned self] _ in
             viewModel.playPreviousDiary()
-            //self.state = .idle
-            guard let diary = viewModel.currentlyPlaying else { return }
-            viewModel.play(diary)
-            self.state = .playing
         }
         previousButton.removeAction(identifiedBy: previousDiaryActionId, for: .touchUpInside)
         previousButton
@@ -378,13 +356,15 @@ class DiaryPlayerViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] currentlyPlaying in
                 guard let self else { return }
-                if let name = currentlyPlaying?.name {
-                    self.nameLabel.text = name
-                }
+//                if let name = currentlyPlaying.name {
+//                    self.nameLabel.text = name
+//                }
                 
-                if let date = currentlyPlaying?.date {
-                    self.dateLabel.text = viewModel.changeDateAndTime(date)
-                }
+                self.nameLabel.text = currentlyPlaying.name
+//                if let date = currentlyPlaying.date {
+//                    self.dateLabel.text = viewModel.changeDateAndTime(date)
+//                }
+                self.dateLabel.text = viewModel.changeDateAndTime(currentlyPlaying.date)
             }
             .store(in: &cancellables)
         
@@ -396,19 +376,42 @@ class DiaryPlayerViewController: UIViewController {
                 
                 let progress = Float(current / total)
                 self.progressSlider.value = progress
-                
-//                self.currentTimeLabel.text = self.formatTime(current)
-//                self.durationLabel.text = self.formatTime(total)
             }
             .store(in: &cancellables)
         
-        viewModel.$isFinished
+        viewModel
+            .audioPlayerService
+            .$playingStateDescriptor
+            .compactMap { $0 }
+            .handleEvents(receiveOutput: { output in
+                print("**************this is state: (\(output))")
+            })
+            .map(\.playingState)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] isFinished in
-                if isFinished {
-                    guard let self else { return }
-                    self.state = .idle
+            .sink { [weak self] state in
+                guard let self else { return }
+                switch state {
+                case .idle:
+                    playButton.isHidden = false
+                    pauseButton.isHidden = true
+                    stopButton.isHidden = true
+                case .playing:
+                    playButton.isHidden = true
+                    pauseButton.isHidden = false
+                    stopButton.isHidden = false
+                case .paused:
+                    playButton.isHidden = false
+                    pauseButton.isHidden = true
+                    stopButton.isHidden = true
+                case .finished:
+                    playButton.isHidden = false
+                    pauseButton.isHidden = true
+                    stopButton.isHidden = true
                 }
+//
+//                playButton.isHidden = !(state == .idle || state == .paused)
+//                pauseButton.isHidden = !(state == .playing)
+//                stopButton.isHidden = !(state == .paused || state == .playing)
             }
             .store(in: &cancellables)
         
@@ -427,14 +430,6 @@ class DiaryPlayerViewController: UIViewController {
                 self.maximumTrackTimeLabel.text = text
             }
             .store(in: &cancellables)
-        
     }
-    
-    enum DiaryPlayerMainState {
-        case idle
-        case playing
-        case paused
-    }
-    
 }
 

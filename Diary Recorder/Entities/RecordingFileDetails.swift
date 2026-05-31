@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RecordingFileDetails: Identifiable, Codable {
+struct RecordingFileDetails: Identifiable, Codable, Equatable, Hashable {
     let id: UUID
     let fileName: String
     let name: String

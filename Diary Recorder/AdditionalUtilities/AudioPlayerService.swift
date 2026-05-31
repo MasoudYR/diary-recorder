@@ -9,15 +9,45 @@ import Foundation
 import AVFoundation
 import Combine
 
+
+enum PlayingState: Equatable, Hashable {
+    case idle
+    case playing
+    case paused
+    case finished
+}
+
+struct PlayingStateDescriptor: Equatable, Hashable {
+    fileprivate(set) var item: RecordingFileDetails
+    fileprivate(set) var duration: TimeInterval
+    fileprivate(set) var currentTime: TimeInterval
+    fileprivate(set) var playingState: PlayingState
+}
+
+extension PlayingStateDescriptor {
+    
+    mutating func update<V>(_ keyPath: WritableKeyPath<Self, V>, to value: V) {
+        self[keyPath: keyPath] = value
+    }
+    
+    func updated<V>(_ keyPath: WritableKeyPath<Self, V>, to value: V) -> Self {
+        var copy = self
+        copy[keyPath: keyPath] = value
+        return copy
+    }
+}
+
 class AudioPlayerService: NSObject {
     //static let shared = AudioPlayerService()
     
-    @Published var isPlaying = false
-    @Published var isFinished = false
-    @Published var isPaused = false
-    @Published var currentTime: TimeInterval = 0
-    @Published var duration: TimeInterval = 0
-    @Published var currentlyPlayingFileDetails: RecordingFileDetails?
+    @Published var playingStateDescriptor: PlayingStateDescriptor?
+    
+//    @Published var isPlaying = false
+//    @Published var isFinished = false
+//    @Published var isPaused = false
+//    @Published var currentTime: TimeInterval = 0
+//    @Published var duration: TimeInterval = 0
+//    @Published var currentlyPlayingFileDetails: RecordingFileDetails?
     
 //    func minMaxTrackTime(basedOn currentTime: TimeInterval) -> (min: TimeInterval, max: TimeInterval) {
 //        return (
@@ -70,12 +100,21 @@ class AudioPlayerService: NSObject {
         let fileURL = fileURLProvider.makeDiaryFileURL(named: diaryRecorded.fileName)
         
         let asset = AVAsset(url: fileURL)
-        self.duration = asset.duration.seconds
+        
+        //self.duration = asset.duration.seconds
+        self.playingStateDescriptor = PlayingStateDescriptor(
+            item: diaryRecorded,
+            duration: asset.duration.seconds,
+            currentTime: .zero,
+            playingState: .idle
+        )
     }
     
     func play(diaryRecorded: RecordingFileDetails) {
         
-        guard !isPaused else {
+        guard
+            let playingStateDescriptor,
+            playingStateDescriptor.playingState != .paused else {
             resume()
             return
         }
@@ -102,10 +141,15 @@ class AudioPlayerService: NSObject {
         player.replaceCurrentItem(with: playerItem)
         player.play()
         
-        isPlaying = true
-        isFinished = false
-        isPaused = false
-        currentlyPlayingFileDetails = diaryRecorded
+        //isPlaying = true
+        //isFinished = false
+        //isPaused = false
+        self.playingStateDescriptor = PlayingStateDescriptor(
+            item: diaryRecorded,
+            duration: asset.duration.seconds,
+            currentTime: .zero,
+            playingState: .playing
+        )
         
         startDisplayLink()
     }
@@ -119,8 +163,11 @@ class AudioPlayerService: NSObject {
                 switch status {
                 case .readyToPlay:
                     let seconds = playerItem.duration.seconds
-                    guard seconds.isFinite, seconds > 0 else { return }
-                    self.duration = seconds
+                    guard let playingStateDescriptor,
+                          seconds.isFinite,
+                          seconds > 0 else { return }
+                    
+                    self.playingStateDescriptor = playingStateDescriptor.updated(\.duration, to: seconds)
                     self.setupBoundryObserver( duration: seconds)
                     print("READY to play - duration: \(seconds)")
                 case .failed:
@@ -132,12 +179,12 @@ class AudioPlayerService: NSObject {
             }
             .store(in: &subscriptions)
         
-        playerItem.publisher(for: \.isPlaybackLikelyToKeepUp)
-            .receive(on: DispatchQueue.main)
-            .sink { isReady in
-                print("isPlaybackLikelyToKeepUp: \(isReady)")
-            }
-            .store(in: &subscriptions)
+//        playerItem.publisher(for: \.isPlaybackLikelyToKeepUp)
+//            .receive(on: DispatchQueue.main)
+//            .sink { isReady in
+//                print("isPlaybackLikelyToKeepUp: \(isReady)")
+//            }
+//            .store(in: &subscriptions)
     }
     
     private func setupBoundryObserver(duration: TimeInterval) {
@@ -186,24 +233,33 @@ class AudioPlayerService: NSObject {
     }
     
     private func handleFinish() {
+        //guard let playingStateDescriptor else { return }
+        print("handle finish is calling before stop")
         stop(seekToZero: true)
-        isFinished = true
-        isPaused = false
+        print("handle finish is calling after stop")
+//        self.playingStateDescriptor = playingStateDescriptor.updated(\.playingState, to: .finished)
     }
     
     func pause() {
+        guard
+            let playingStateDescriptor,
+            let displayLink else { return }
         player.pause()
-        isPlaying = false
-        isPaused = true
-        displayLink?.isPaused = true
+        self.playingStateDescriptor = playingStateDescriptor.updated(\.playingState, to: .paused)
+        
+        displayLink.isPaused = true
     }
     
     func resume() {
-        guard !isFinished else { return }
+        guard let playingStateDescriptor,
+              playingStateDescriptor.playingState != .finished,
+              let displayLink
+        else { return }
         player.play()
-        isPlaying = true
-        isPaused = false
-        displayLink?.isPaused = false
+        
+        self.playingStateDescriptor = playingStateDescriptor.updated(\.playingState, to: .playing)
+        
+        displayLink.isPaused = false
     }
     
     private func stop(seekToZero: Bool) {
@@ -216,9 +272,12 @@ class AudioPlayerService: NSObject {
         }
         stopDisplayLink()
         
-        isPlaying = false
-        isPaused = false
-        currentTime = 0
+        guard let playingStateDescriptor else { return }
+        
+        // TODO: check 'playingState'
+        self.playingStateDescriptor = playingStateDescriptor
+            .updated(\.playingState, to: .finished)
+            .updated(\.currentTime, to: .zero)
         
         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ stop function is callliinnnggggg ")
     }
@@ -228,6 +287,8 @@ class AudioPlayerService: NSObject {
     }
     
     func seek(to time: TimeInterval) {
+        guard let playingStateDescriptor else { return }
+        let duration = playingStateDescriptor.duration
         let clamped = max(0, min(time, duration))
         let coreMediaTime = CMTime(seconds: clamped, preferredTimescale: 600)
         player.seek(
@@ -235,7 +296,7 @@ class AudioPlayerService: NSObject {
             toleranceBefore: .zero,
             toleranceAfter: .zero
         )
-        currentTime = clamped
+        self.playingStateDescriptor = playingStateDescriptor.updated(\.currentTime, to: clamped)
     }
     
     func seekForward(by seconds: TimeInterval = 5.0) {
@@ -273,9 +334,10 @@ class AudioPlayerService: NSObject {
     
     private func startDisplayLink() {
         displayLink = CADisplayLink(target: self, selector: #selector(updateCurrentTime))
-        displayLink?.preferredFramesPerSecond = 60
-        displayLink?.add(to: .main, forMode: .common)
+        displayLink!.preferredFramesPerSecond = 60
+        displayLink!.add(to: .main, forMode: .common)
     }
+    
     
     private func stopDisplayLink() {
         displayLink?.invalidate()
@@ -283,13 +345,15 @@ class AudioPlayerService: NSObject {
     }
     
     @objc private func updateCurrentTime() {
-        guard isPlaying else { return }
-        
+        guard let playingStateDescriptor,
+              playingStateDescriptor.playingState == .playing
+        else { return }
+
         let time = player.currentTime().seconds
         guard time.isFinite else { return }
         
-        currentTime = time
-        print(">>>>this is currentTime: \(currentTime)")
+        self.playingStateDescriptor = playingStateDescriptor.updated(\.currentTime, to: time)
+        print(">>>>this is currentTime: \(time)")
     }
     
     deinit {
