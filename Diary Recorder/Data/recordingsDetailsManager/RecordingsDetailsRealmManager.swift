@@ -161,4 +161,30 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
         tokens.append(token)
         return subject.eraseToAnyPublisher()
     }
+    
+    func getNumberOfDaysRecordsInMonth(date: Date) throws -> [Date: Int] {
+        
+        let calendar = Calendar(identifier: .gregorian)
+        
+        var currentMonthComponents = calendar.dateComponents([.year, .month], from: date)
+        currentMonthComponents.day = 1
+        let currentMonth = calendar.date(from: currentMonthComponents)!
+        
+        let nextMonth = calendar.date(byAdding: .month, value: 1, to: currentMonth)!
+        
+        let results = realm
+            .objects(RecordingsDetailsRealmModel.self)
+            .where { $0.date >= currentMonth && $0.date < nextMonth }
+        
+        print("%%%%%% this is results in func getNumberOfDaysRecordsInMonth: \(results)")
+            
+        var grouped: [Date: Int] = [:]
+        
+        for record in results {
+            let dayKey = calendar.startOfDay(for: record.date)
+            print("******************* this is keyDay: \(dayKey)")
+            grouped[dayKey, default: 0] += 1
+        }
+        return grouped
+    }
 }

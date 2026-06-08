@@ -16,6 +16,7 @@
 		0428A8442FB48EFE00783C6D /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 0428A5A12FB205F500783C6D /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		0428A8482FB4A1D000783C6D /* DSWaveformImage in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A8472FB4A1D000783C6D /* DSWaveformImage */; };
 		0428A84A2FB4A1D000783C6D /* DSWaveformImageViews in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A8492FB4A1D000783C6D /* DSWaveformImageViews */; };
+		042BCCDD2FD188B3009382E0 /* JTAppleCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = 042BCCDC2FD188B3009382E0 /* JTAppleCalendar */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -66,6 +67,7 @@
 				0428A5902FAF5E5600783C6D /* RxMoya in Frameworks */,
 				0428A5A22FB205F500783C6D /* RealmSwift in Frameworks */,
 				0428A84A2FB4A1D000783C6D /* DSWaveformImageViews in Frameworks */,
+				042BCCDD2FD188B3009382E0 /* JTAppleCalendar in Frameworks */,
 				0428A4372FAF5DAE00783C6D /* SnapKit in Frameworks */,
 				0428A58C2FAF5E5600783C6D /* Moya in Frameworks */,
 				0428A58E2FAF5E5600783C6D /* ReactiveMoya in Frameworks */,
@@ -129,6 +131,7 @@
 				0428A5A12FB205F500783C6D /* RealmSwift */,
 				0428A8472FB4A1D000783C6D /* DSWaveformImage */,
 				0428A8492FB4A1D000783C6D /* DSWaveformImageViews */,
+				042BCCDC2FD188B3009382E0 /* JTAppleCalendar */,
 			);
 			productName = "Diary Recorder";
 			productReference = 0428A41D2FAF5C8600783C6D /* Diary Recorder.app */;
@@ -163,6 +166,7 @@
 				0428A43A2FAF5E0F00783C6D /* XCRemoteSwiftPackageReference "Moya" */,
 				0428A59E2FB205F500783C6D /* XCRemoteSwiftPackageReference "realm-swift" */,
 				0428A8462FB4A1D000783C6D /* XCRemoteSwiftPackageReference "DSWaveformImage" */,
+				042BCCDB2FD188B3009382E0 /* XCRemoteSwiftPackageReference "JTAppleCalendar" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0428A41E2FAF5C8600783C6D /* Products */;
@@ -430,6 +434,14 @@
 				minimumVersion = 14.3.0;
 			};
 		};
+		042BCCDB2FD188B3009382E0 /* XCRemoteSwiftPackageReference "JTAppleCalendar" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/patchthecode/JTAppleCalendar.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.5;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -472,6 +484,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0428A8462FB4A1D000783C6D /* XCRemoteSwiftPackageReference "DSWaveformImage" */;
 			productName = DSWaveformImageViews;
+		};
+		042BCCDC2FD188B3009382E0 /* JTAppleCalendar */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 042BCCDB2FD188B3009382E0 /* XCRemoteSwiftPackageReference "JTAppleCalendar" */;
+			productName = JTAppleCalendar;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

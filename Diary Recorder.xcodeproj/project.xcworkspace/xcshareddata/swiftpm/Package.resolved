@@ -1,5 +1,5 @@
 {
-  "originHash" : "37c248515e37c597b2fe4899622bfd4ee3efe1161f3e5cc47ba0508ac3a31df2",
+  "originHash" : "daaec93908135edfbdd4b56fe75d2c88ba6ceb062cde417f6f869ab1a8385f45",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "a7a96cf4478c6fa084e76c175bcf7f4c9a38f80a",
         "version" : "14.3.0"
+      }
+    },
+    {
+      "identity" : "jtapplecalendar",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/patchthecode/JTAppleCalendar.git",
+      "state" : {
+        "revision" : "718f0ab68ba0fcd2bc134f6e9d30edc1b9b038e1",
+        "version" : "8.0.5"
       }
     },
     {

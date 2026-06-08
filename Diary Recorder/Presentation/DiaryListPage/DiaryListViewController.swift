@@ -14,7 +14,7 @@ class DiaryListViewController: UIViewController {
     private let viewModel: DiaryListViewModel
     private let router: DiaryListRouter
     
-    private let diaryListTableView = UITableView()
+    private let diaryListTableView = UITableView(frame: .zero, style: .insetGrouped)
     
     private var cancellables = Set<AnyCancellable>()
 
@@ -53,8 +53,10 @@ class DiaryListViewController: UIViewController {
         appearance.configureWithOpaqueBackground()
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.label,
-            .font: UIFont.systemFont(ofSize: 18)
+            .font: UIFont.roundedFont(ofSize: 20, weight: .semibold)
         ]
+        appearance.shadowColor = .clear
+        appearance.backgroundColor = UIColor.init(named: "MainColor")
         navigationItem.standardAppearance = appearance
         navigationItem.compactAppearance = appearance
         navigationItem.scrollEdgeAppearance = appearance
@@ -62,15 +64,19 @@ class DiaryListViewController: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = .systemBackground
-        view.addSubview(diaryListTableView)
-        diaryListTableView.backgroundColor = .gray
+        view.backgroundColor = UIColor.init(named: "MainColor")
+        
+        diaryListTableView.backgroundColor = UIColor.init(named: "MainColor")
         diaryListTableView.bounces = false
         diaryListTableView.separatorInset = .zero
         diaryListTableView.showsVerticalScrollIndicator = false
-        diaryListTableView.rowHeight = 70
+        diaryListTableView.rowHeight = 60
+        
+        view.addSubview(diaryListTableView)
+        
         diaryListTableView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide.snp.edges)
+            make.top.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
+            make.bottom.equalToSuperview()
         }
         
     }
@@ -168,3 +174,6 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
         return configuration
     }
 }
+
+
+

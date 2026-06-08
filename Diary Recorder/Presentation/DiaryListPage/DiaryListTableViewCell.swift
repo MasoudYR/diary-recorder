@@ -11,7 +11,8 @@ import UIKit
 class DiaryListTableViewCell: UITableViewCell {
     static let identifier = "diarytableviewcell"
     
-    private let micImageView = UIImageView()
+    private let iconView = UIView()
+    private let iconImageView = UIImageView()
     private let nameLabel = UILabel()
     private let durationLabel = UILabel()
     private let dateAndTimeLabel = UILabel()
@@ -26,44 +27,61 @@ class DiaryListTableViewCell: UITableViewCell {
     }
     
     private func setupUI() {
-        contentView.addSubview(micImageView)
-        micImageView.image = UIImage(systemName: "microphone")
-        micImageView.tintColor = .systemGreen
-        micImageView.snp.makeConstraints { make in
+        
+        iconView.backgroundColor = .systemGray6
+        iconView.layer.cornerRadius = 20
+        iconView.layer.borderWidth = 1
+        iconView.layer.borderColor = UIColor.label.cgColor
+        
+        contentView.addSubview(iconView)
+        
+        iconView.snp.makeConstraints { make in
+            make.size.equalTo(40)
             make.left.equalToSuperview().offset(10)
-            make.size.equalTo(50)
             make.centerY.equalToSuperview()
         }
         
+        
+        iconImageView.image = UIImage(systemName: "play.fill")
+        iconImageView.tintColor = .label
+        
+        iconView.addSubview(iconImageView)
+        
+        iconImageView.snp.makeConstraints { make in
+            //make.size.equalTo(20)
+            make.center.equalToSuperview()
+        }
+       
+        
         contentView.addSubview(nameLabel)
-        nameLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        nameLabel.font = UIFont.roundedFont(ofSize: 18, weight: .semibold)
         nameLabel.text = "unknown name"
         nameLabel.textColor = .label
         nameLabel.textAlignment = .left
         nameLabel.snp.makeConstraints { make in
-            make.top.equalTo(micImageView.snp.top)
-            make.left.equalTo(micImageView.snp.right).offset(5)
+            make.top.equalToSuperview().offset(5)
+            make.left.equalTo(iconView.snp.right).offset(10)
             make.right.equalTo(contentView.snp.right).inset(10)
         }
         
         contentView.addSubview(dateAndTimeLabel)
-        dateAndTimeLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        dateAndTimeLabel.font = UIFont.roundedFont(ofSize: 15, weight: .regular)
         dateAndTimeLabel.text = ""
-        dateAndTimeLabel.textColor = .label
+        dateAndTimeLabel.textColor = .secondaryLabel
         dateAndTimeLabel.textAlignment = .left
         dateAndTimeLabel.snp.makeConstraints { make in
-            make.left.equalTo(micImageView.snp.right).offset(5)
-            make.bottom.equalTo(micImageView.snp.bottom)
+            make.left.equalTo(iconView.snp.right).offset(10)
+            make.bottom.equalToSuperview().inset(5)
         }
         
         contentView.addSubview(durationLabel)
-        durationLabel.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        durationLabel.font = UIFont.roundedFont(ofSize: 15, weight: .regular)
         durationLabel.text = "00:00:00.00"
-        durationLabel.textColor = .label
+        durationLabel.textColor = .secondaryLabel
         durationLabel.textAlignment = .left
         durationLabel.snp.makeConstraints { make in
             make.right.equalToSuperview().inset(10)
-            make.bottom.equalTo(dateAndTimeLabel.snp.bottom)
+            make.bottom.equalToSuperview().inset(5)
         }
         
         

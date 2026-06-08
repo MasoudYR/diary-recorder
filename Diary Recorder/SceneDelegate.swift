@@ -16,7 +16,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        let viewController = RecorderMainPageViewController.make()
+        let viewController = Calendar2ViewController.make()
+        
+        //UIView.appearance().semanticContentAttribute = .forceRightToLeft
+        //RecorderMainPageViewController.make()
         let navigationController = UINavigationController(rootViewController: viewController)
         window?.tintColor = .label
         window?.rootViewController = navigationController

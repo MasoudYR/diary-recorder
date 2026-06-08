@@ -72,8 +72,10 @@ class RecorderMainPageViewController: UIViewController {
         appearance.configureWithOpaqueBackground()
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.label,
-            .font: UIFont.systemFont(ofSize: 18)
+            .font: UIFont.roundedFont(ofSize: 25, weight: .semibold)
         ]
+        appearance.shadowColor = .clear
+        appearance.backgroundColor = UIColor.init(named: "MainColor")
         navigationItem.standardAppearance = appearance
         navigationItem.compactAppearance = appearance
         navigationItem.scrollEdgeAppearance = appearance
@@ -81,7 +83,7 @@ class RecorderMainPageViewController: UIViewController {
         
         let largeConfigue = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
         savedDiaryBarButton = UIBarButtonItem(
-            image: UIImage(systemName: "list.triangle",withConfiguration: largeConfigue),
+            image: UIImage(systemName: "play.square.stack",withConfiguration: largeConfigue),
             style: .plain,
             target: self,
             action: #selector(diariesListBarButtonTapped(_:))
@@ -97,7 +99,7 @@ class RecorderMainPageViewController: UIViewController {
     
     
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = UIColor.init(named: "MainColor")
         
         setupViewsMainStackView()
         setupVoiceRecorderImageView()
@@ -117,7 +119,8 @@ class RecorderMainPageViewController: UIViewController {
         
         view.addSubview(vStackView)
         vStackView.snp.makeConstraints { make in
-            make.top.horizontalEdges.equalToSuperview()
+            make.horizontalEdges.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(30)
         }
     }
     
@@ -125,7 +128,6 @@ class RecorderMainPageViewController: UIViewController {
 
         voiceRecorderImageViewView.backgroundColor = .label
         voiceRecorderImageViewView.layer.cornerRadius = 100
-        
         voiceRecorderImageViewViewView.addSubview(voiceRecorderImageViewView)
         voiceRecorderImageViewView.snp.makeConstraints { make in
             make.size.equalTo(200)
@@ -150,7 +152,7 @@ class RecorderMainPageViewController: UIViewController {
     private func setupTimerLabelView() {
         
         voiceTimerLabel.text = "00:00:00.00"
-        voiceTimerLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 50, weight: .regular)
+        voiceTimerLabel.font = UIFont.monospacedRoundedSystemFont(ofSize: 40, weight: .regular)
         voiceTimerLabel.textAlignment = .center
         voiceTimerLabel.textColor = .label
         
@@ -160,11 +162,11 @@ class RecorderMainPageViewController: UIViewController {
     private func setupVoiceDiagramView() {
         
         voiceDiagramView.snp.makeConstraints { make in
-            make.height.equalTo(120)
+            make.height.equalTo(150)
         }
         waveformLiveView.shouldDrawSilencePadding = true
         waveformLiveView.configuration = Waveform.Configuration(
-            backgroundColor: .systemBackground,
+            backgroundColor: UIColor.init(named: "MainColor")!,
             style: .striped(
                 .init(
                     color: .systemRed,
@@ -173,7 +175,8 @@ class RecorderMainPageViewController: UIViewController {
                     lineCap: .round
                 )
             ),
-            scale: 1.0
+            //scale: 1.0,
+            verticalScalingFactor: 0.9
         )
         
         voiceDiagramView.addSubview(waveformLiveView)
@@ -211,7 +214,7 @@ class RecorderMainPageViewController: UIViewController {
         }
         
         resumeButton.backgroundColor = .label
-        resumeButton.setImage(UIImage(systemName: "circle.righthalf.filled.inverse",withConfiguration: UIImage.SymbolConfiguration(pointSize: 30)), for: .normal)
+        resumeButton.setImage(UIImage(systemName: "pause.circle.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 30)), for: .normal)
         resumeButton.tintColor = .systemRed
         resumeButton.layer.cornerRadius = 40
         
@@ -279,7 +282,6 @@ class RecorderMainPageViewController: UIViewController {
             viewModel.stopRecording()
             viewModel.saveRecording()
             print("lastSavedDiaryInViewController: \(String(describing: viewModel.lastSavedDiary))")
-            waveformLiveView.reset()
             guard let lastSavedDiary = viewModel.lastSavedDiary else { return }
             
             let nameCurrentValueSubject = viewModel.nameCurrentValueSubject
@@ -301,38 +303,57 @@ class RecorderMainPageViewController: UIViewController {
             .sink { [weak self] item in
                 guard let self else { return }
                 self.voiceTimerLabel.text = viewModel.transformTime(item.currentTime)
-                
-                recordButton.isHidden =
-                item.recordingState == .recording ||
-                item.recordingState == .paused
-                
-                pauseButton.isHidden =
-                item.recordingState == .idle ||
-                item.recordingState == .paused ||
-                item.recordingState == .finished
-                
-                resumeButton.isHidden =
-                item.recordingState == .idle ||
-                item.recordingState == .recording ||
-                item.recordingState == .finished
-                
-                stopButton.isHidden =
-                item.recordingState == .idle ||
-                item.recordingState == .paused ||
-                item.recordingState == .finished
-                
-                navigationItem.rightBarButtonItem =
-                item.recordingState == .recording ||
-                item.recordingState == .paused
-                ? nil : savedDiaryBarButton
-                
-                voiceRecorderImageViewView.backgroundColor =
-                item.recordingState == .idle ||
-                item.recordingState == .paused ||
-                item.recordingState == .finished
-                ? .label : .systemRed
             }
             .store(in: &cancellables)
+        
+        viewModel
+            .audioRecorderService
+            .$recordingStateDescriptor
+            .compactMap { $0 }
+            .map(\.recordingState)
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard let self else { return }
+                
+                recordButton.isHidden =
+                state == .recording ||
+                state == .paused
+                
+                pauseButton.isHidden =
+                state == .idle ||
+                state == .paused ||
+                state == .finished
+                
+                resumeButton.isHidden =
+                state == .idle ||
+                state == .recording ||
+                state == .finished
+                
+                stopButton.isHidden =
+                state == .idle ||
+                state == .paused ||
+                state == .finished
+                
+                navigationItem.rightBarButtonItem =
+                state == .recording ||
+                state == .paused
+                ? nil : savedDiaryBarButton
+                
+                if state == .finished || state == .idle {
+                    waveformLiveView.reset()
+                }
+                
+                if state == .recording {
+                    print("the state is just: \(state)")
+                    startPulsingAnimation(view: voiceRecorderImageViewView, fromColor: .label, toColor: .systemRed, fromScale: 0.98, toScale: 1.1, duration: 1.2)
+                } else {
+                    stopPulsingAnimation(view: voiceRecorderImageViewView)
+                }
+            }
+            .store(in: &cancellables)
+        
+        
         
         viewModel.audioRecorderService.$latestSample
             .receive(on: DispatchQueue.main)
@@ -345,6 +366,51 @@ class RecorderMainPageViewController: UIViewController {
     
     private func updateView() {
     }
+    
+    private func startPulsingAnimation(
+        view: UIView,
+        fromColor: UIColor,
+        toColor: UIColor,
+        fromScale: CGFloat,
+        toScale: CGFloat,
+        duration: CFTimeInterval
+    ) {
+        
+        view.layer.removeAllAnimations()
+        
+        let scaleAnimation = CABasicAnimation(keyPath: "transform.scale")
+        scaleAnimation.fromValue = fromScale
+        scaleAnimation.toValue = toScale
+        
+//        let colorAnimation = CABasicAnimation(keyPath: "backgroundColor")
+//        colorAnimation.fromValue = fromColor.cgColor
+//        colorAnimation.toValue = toColor.cgColor
+        
+        let group = CAAnimationGroup()
+        group.animations = [scaleAnimation]
+        group.duration = duration
+        group.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        group.autoreverses = true
+        group.repeatCount = .infinity
+        
+        view.layer.add(group, forKey: "pulsing")
+    }
+    
+    private func stopPulsingAnimation(view: UIView) {
+        let presentationTransform = view.layer.presentation()?.transform ?? view.layer.transform
+        //let presentationColor = view.layer.presentation()?.backgroundColor ?? view.layer.backgroundColor
+        
+        view.layer.transform = presentationTransform
+        //view.layer.backgroundColor = presentationColor
+
+        view.layer.removeAnimation(forKey: "pulsing")
+        
+        UIView.animate(withDuration: 0.8) {
+            view.transform = .identity
+            //view.backgroundColor = .label
+        }
+    }
+    
 }
 
 
