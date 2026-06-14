@@ -36,10 +36,9 @@ class WeekDayTitlesRowHeader: UICollectionReusableView {
     
     private func setupDayTitlesUI() {
         hStackView.axis = .horizontal
-        hStackView.spacing = 0
+        hStackView.spacing = Self.appearance.spaceBetweenWeekDays
         hStackView.alignment = .center
         hStackView.distribution = .fillEqually
-        
         addSubview(hStackView)
         
         hStackView.snp.makeConstraints { make in

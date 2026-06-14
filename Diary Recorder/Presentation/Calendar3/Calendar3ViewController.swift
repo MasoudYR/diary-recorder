@@ -25,7 +25,6 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
     }
     
     static func make() -> Calendar3ViewController {
-        //let viewModel = Calendar3ViewModel()
         let viewController = Calendar3ViewController()
         return viewController
     }
@@ -43,12 +42,10 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
             startDate: Date().startOfMonth,
             endDate: Date().adding(months: 12).endOfMonth,
             firstWeekday: 7,
-            showOutOfMonthDays: false,
-            outOfMonthDaysAlpha: 0,
             cellInRowSpacing: 2,
             rowsSpacing: 2,
             weekDayTitlesRowHeight: 30,
-            sectionInset: .init(top: 10, leading: 10, bottom: 10, trailing: 10)
+            sectionInset: .init(top: 0, leading: 10, bottom: 0, trailing: 10)
         )
         
         DayCell.appearance = DayAppearance(
@@ -59,18 +56,19 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
             todayFont: .roundedFont(ofSize: 18, weight: .semibold),
             todayColor: .systemRed,
             todayBackgroundColor: .systemBackground,
-            todayBadgeNum: 1,
+            todayBadgeNum: 0,
             selectedFont: .roundedFont(ofSize: 18, weight: .semibold),
             selectedColor: .label,
-            selectedBackgroundColor: .blue,
-            selectedBadgeNum: 3,
-            weekendColor: .label,
-            cornerRadius: 20
+            selectedBackgroundColor: .orange,
+            selectedBadgeNum: 0,
+            cornerRadius: 20,
+            badgeFontSize: 10
         )
         
         WeekDayTitlesRowHeader.appearance = WeekDayTitlesAppearance(
-            font: .roundedFont(ofSize: 25, weight: .bold),
-            color: .darkGray
+            font: .roundedFont(ofSize: 20, weight: .bold),
+            color: .darkGray,
+            spaceBetweenWeekDays: 2
         )
         
         calendarView = CalendarView(config: config)
@@ -85,8 +83,7 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
         calendarView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.horizontalEdges.equalToSuperview()
-            //make.centerX.equalToSuperview()
-            make.height.equalTo(400)
+            make.height.equalTo(350)
         }
     }
 }

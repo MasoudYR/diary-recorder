@@ -25,9 +25,11 @@ struct DayAppearance {
     var selectedBackgroundColor: UIColor
     var selectedBadgeNum: Int
     
-    var weekendColor: UIColor
+    //var refrenceCellHeight: CGFloat
     
     var cornerRadius: CGFloat
+    
+    var badgeFontSize: CGFloat
     
     static var `default`: DayAppearance {
         .init(
@@ -35,16 +37,22 @@ struct DayAppearance {
             normalColor: .label,
             normalBackgroundColor: .clear,
             normalBadgeNum: 0,
+            
             todayFont: .roundedFont(ofSize: 18, weight: .semibold),
             todayColor: .label,
             todayBackgroundColor: .clear,
             todayBadgeNum: 0,
+            
             selectedFont: .roundedFont(ofSize: 18, weight: .semibold),
             selectedColor: .systemBlue,
             selectedBackgroundColor: .main,
             selectedBadgeNum: 0,
-            weekendColor: .label,
-            cornerRadius: 20
+            
+           // weekendColor: .label,
+            
+           // refrenceCellHeight: 44,
+            cornerRadius: 20,
+            badgeFontSize: 10,
             )
     }
 }

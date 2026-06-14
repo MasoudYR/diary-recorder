@@ -11,15 +11,15 @@ import Combine
 class Calendar3ViewModel {
     
     @Published private(set) var months: [CalendarMonth] = []
-    @Published private(set) var selectedDate: Date? = nil
+    @Published var selectedDate: Date? = nil
     
     @Published var config: CalendarConfig {
         didSet{ rebuild() }
     }
     
-    var selectionPublisher: AnyPublisher<Date?, Never> {
-        $selectedDate.eraseToAnyPublisher()
-    }
+//    var selectionPublisher: AnyPublisher<Date?, Never> {
+//        $selectedDate.eraseToAnyPublisher()
+//    }
     
     private var calendar = Calendar.current
     
@@ -56,7 +56,7 @@ class Calendar3ViewModel {
         
         var result: [CalendarMonth] = []
         var cursor = config.startDate.startOfMonth
-        var last = config.endDate.endOfMonth
+        let last = config.endDate.endOfMonth
         
         while cursor <= last {
             result.append(buildMonth(cursor))
@@ -101,12 +101,12 @@ class Calendar3ViewModel {
         
         // محاسبه روزهای ماه بعدی فکر میکنم چون ممکنه تعداد روزهای ماه بعدی از این ماه بیشتر از یک هفته باشد(‌در تعداد کل ۴۲ تایی. پس باقیمانده تقسیم به ۷ را ازش محاسبه میکنم تا فقط روزهای انتهایی بماند تا آخرین روز از آخرین هفته این ماه.
         let nextFirst = firstDay.adding(months: 1)
-        for d in 1...max(1, (trailingCount % 7) ) {
-            let date = dateFor(year: nextFirst.year, month: nextFirst.month, day: d)
-            days.append(makeDay(date: date, isCurrentMonth: false))
+        if trailingCount % 7 > 0 {
+            for d in 1...max(1, (trailingCount % 7) ) {
+                let date = dateFor(year: nextFirst.year, month: nextFirst.month, day: d)
+                days.append(makeDay(date: date, isCurrentMonth: false))
+            }
         }
-        
-        //let trimmed =
         
         let fmt = DateFormatter()
         fmt.dateFormat = "MMMM yyyy"

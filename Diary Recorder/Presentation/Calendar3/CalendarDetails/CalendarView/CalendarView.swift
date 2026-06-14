@@ -22,6 +22,8 @@ final class CalendarView: UIView {
         set {viewModel.config = newValue}
     }
     
+    private let weekDayHeaderView = WeekDayTitlesRowHeader()
+    
     private(set) var collectionView: UICollectionView!
     private var diffableDataSource: UICollectionViewDiffableDataSource<CalendarSection, CalendarItem>!
     
@@ -31,14 +33,16 @@ final class CalendarView: UIView {
     private var currentDetailView: UIView?
     /// ino badan eslahesh kon...
     
-    private var collectionHeightConstraint: Constraint!
     private var lastLayoutSize: CGSize = .zero
+    private var currentCellSize: CGSize = .zero
     
+   // private var collectionHeightConstraint: Constraint!
     private var cancellables = Set<AnyCancellable>()
     
     init(config: CalendarConfig = .default) {
         self.viewModel = Calendar3ViewModel(config: config)
         super.init(frame: .zero)
+        setupWeekDayHeader()
         setupCollectionView()
         //buildDetailPanel()
         buildDiffableDataSource()
@@ -57,9 +61,19 @@ final class CalendarView: UIView {
 //            refreshLayout()
 //        }
 //        
-        if bounds.width > 0, bounds.height > 0, bounds.size != lastLayoutSize {
-            lastLayoutSize = bounds.size
+        if collectionView.bounds.width > 0, collectionView.bounds.height > 0, bounds.size != lastLayoutSize {
+            lastLayoutSize = collectionView.bounds.size
             refreshLayout()
+        }
+    }
+    
+    private func setupWeekDayHeader() {
+        addSubview(weekDayHeaderView)
+        weekDayHeaderView.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.leading.equalToSuperview().offset(config.sectionInset.leading)
+            make.trailing.equalToSuperview().inset(config.sectionInset.trailing)
+            make.height.equalTo(config.weekDayTitlesRowHeight)
         }
     }
     
@@ -70,44 +84,23 @@ final class CalendarView: UIView {
         collectionView.isPagingEnabled = true
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.delegate = self
+        
         collectionView.register(
             DayCell.self,
             forCellWithReuseIdentifier: DayCell.identifier
         )
+        
         collectionView.register(
             EmptyCell.self,
             forCellWithReuseIdentifier: EmptyCell.identifier
         )
         
-        collectionView.register(
-            WeekDayTitlesRowHeader.self,
-            forSupplementaryViewOfKind: WeekDayTitlesRowHeader.kind,
-            withReuseIdentifier: WeekDayTitlesRowHeader.identifier
-        )
-        
         addSubview(collectionView)
         
-//        let calendarViewHeight = CalendarCompositionalLayout.totalHeight(config: viewModel.config)
-//        collectionView.snp.makeConstraints { make in
-//            self.collectionHeightConstraint = make.height.equalTo(calendarViewHeight).constraint
-//            make.edges.equalToSuperview()
-//        }
         
         collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-    }
-    
-    //inam badab dorostesh kon
-    private func buildDetailPanel() {
-        detailPanel.clipsToBounds = true
-        addSubview(detailPanel)
-
-        detailPanelHeight = detailPanel.heightAnchor.constraint(equalToConstant: 0)
-        detailPanel.snp.makeConstraints { make in
-            make.top.equalTo(collectionView)
-            make.horizontalEdges.equalToSuperview().inset(15)
-            make.bottom.equalToSuperview()
+            make.top.equalTo(weekDayHeaderView.snp.bottom)
+            make.horizontalEdges.bottom.equalToSuperview()
         }
     }
     
@@ -138,8 +131,8 @@ final class CalendarView: UIView {
                     isToday: day.isToday,
                     isSelected: isSelected,
                     isOutOfMonth: !day.isCurrentMonth,
-                    outOfMonthAlpha: config.outOfMonthDaysAlpha,
-                    badgeNum: nil
+                    badgeNum: nil,
+                    cellSize: currentCellSize
                 )
                 return cell
                 
@@ -149,20 +142,20 @@ final class CalendarView: UIView {
             }
         }
         
-        diffableDataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
-            guard let self else { return nil }
-            
-            if kind == WeekDayTitlesRowHeader.kind {
-                let view = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: kind,
-                    withReuseIdentifier: WeekDayTitlesRowHeader.identifier,
-                    for: indexPath
-                ) as! WeekDayTitlesRowHeader
-                
-                return view
-            }
-            return nil
-        }
+//        diffableDataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
+//            guard let self else { return nil }
+//            
+//            if kind == WeekDayTitlesRowHeader.kind {
+//                let view = collectionView.dequeueReusableSupplementaryView(
+//                    ofKind: kind,
+//                    withReuseIdentifier: WeekDayTitlesRowHeader.identifier,
+//                    for: indexPath
+//                ) as! WeekDayTitlesRowHeader
+//                
+//                return view
+//            }
+//            return nil
+//        }
     }
     
     private func bindViewModel() {
@@ -179,28 +172,33 @@ final class CalendarView: UIView {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self else { return }
-                
-                self.collectionView.visibleCells.forEach { cell in
-                    guard let indexPath = self.collectionView.indexPath(for: cell),
-                          let item = self.diffableDataSource.itemIdentifier(for: indexPath) else { return }
-                    switch item {
-                    case .day(let day):
-                        let dayCell = cell as! DayCell
-                        let isSelected = self.viewModel.isSelected(day)
-                        dayCell.configure(
-                            day: day,
-                            isToday: day.isToday,
-                            isSelected: isSelected,
-                            isOutOfMonth: !day.isCurrentMonth,
-                            outOfMonthAlpha: self.viewModel.config.outOfMonthDaysAlpha,
-                            badgeNum: nil
-                        )
-                    case .outMonthDay(_):
-                        break
-                    }
-                }
+                reconfigureVisibleDayCell()
             }
             .store(in: &cancellables)
+    }
+    
+    private func reconfigureVisibleDayCell() {
+        collectionView.visibleCells.forEach { cell in
+            guard let indexPath = collectionView.indexPath(for: cell),
+                  let item = self.diffableDataSource.itemIdentifier(for: indexPath)  else { return }
+            switch item {
+            case .day(let day):
+                guard let dayCell = cell as? DayCell else { return }
+                
+                let isSelected = self.viewModel.isSelected(day)
+                dayCell.configure(
+                    day: day,
+                    isToday: day.isToday,
+                    isSelected: isSelected,
+                    isOutOfMonth: !day.isCurrentMonth,
+                    badgeNum: 8,
+                    cellSize: currentCellSize
+                )
+            case .outMonthDay(_):
+                break
+                
+            }
+        }
     }
     
     private func applySnapshot(months: [CalendarMonth]) {
@@ -223,10 +221,10 @@ final class CalendarView: UIView {
     }
     
     private func refreshLayout() {
-        guard bounds.width > 0, bounds.height > 0 else { return }
+        guard collectionView.bounds.width > 0, collectionView.bounds.height > 0 else { return }
         print(">>> Refresh layout is  work")
         print("this is boundsWidth: \(bounds.width), and this is boundsHeight: \(bounds.height)")
-        let newLayout = CalendarCompositionalLayout.make(config: viewModel.config, calendarWidth: bounds.width, calendarHeight: bounds.height)
+        let newLayout = CalendarCompositionalLayout.make(config: viewModel.config, calendarWidth: collectionView.bounds.width, calendarHeight: collectionView.bounds.height)
         //let newLayout = CalendarCompositionalLayout.make(config: viewModel.config, pageWidth: bounds.width)
         collectionView.setCollectionViewLayout(newLayout, animated: false)
         
@@ -253,20 +251,33 @@ final class CalendarView: UIView {
     }
     
     // به روزرسانی اندازه ها
-    func updateSize(
-        sectionInset: NSDirectionalEdgeInsets?,
-        cellHeight: CGFloat?,
-        cellInRowSpacing: CGFloat?,
-        rowsSpacing: CGFloat?,
-        weekDayTitlesRowHeight: CGFloat?
-    ) {
-        if let sectionInset { config.sectionInset = sectionInset }
-        //if let cellHeight { config.cellHeight = cellHeight }
-        if let cellInRowSpacing { config.cellInRowSpacing = cellInRowSpacing }
-        if let rowsSpacing { config.rowsSpacing = rowsSpacing }
-        if let weekDayTitlesRowHeight { config.weekDayTitlesRowHeight = weekDayTitlesRowHeight }
-    }
+//    func updateSize(
+//        sectionInset: NSDirectionalEdgeInsets?,
+//        cellHeight: CGFloat?,
+//        cellInRowSpacing: CGFloat?,
+//        rowsSpacing: CGFloat?,
+//        weekDayTitlesRowHeight: CGFloat?
+//    ) {
+//        if let sectionInset { config.sectionInset = sectionInset }
+//        //if let cellHeight { config.cellHeight = cellHeight }
+//        if let cellInRowSpacing { config.cellInRowSpacing = cellInRowSpacing }
+//        if let rowsSpacing { config.rowsSpacing = rowsSpacing }
+//        if let weekDayTitlesRowHeight { config.weekDayTitlesRowHeight = weekDayTitlesRowHeight }
+//    }
     
+    
+    //inam badab dorostesh kon
+    private func buildDetailPanel() {
+        detailPanel.clipsToBounds = true
+        addSubview(detailPanel)
+
+        detailPanelHeight = detailPanel.heightAnchor.constraint(equalToConstant: 0)
+        detailPanel.snp.makeConstraints { make in
+            make.top.equalTo(collectionView)
+            make.horizontalEdges.equalToSuperview().inset(15)
+            make.bottom.equalToSuperview()
+        }
+    }
     /// اینو بعدا درستش کن لطفا
     private func showDetail(for day: CalendarDay) {
         currentDetailView?.removeFromSuperview()
@@ -314,6 +325,7 @@ final class CalendarView: UIView {
         return container
     }
     
+    
 }
 
 extension CalendarView: UICollectionViewDelegate {
@@ -326,6 +338,7 @@ extension CalendarView: UICollectionViewDelegate {
         case .day(let day):
             delegate?.calendarView(self, didSelect: day)
             showDetail(for: day)
+            viewModel.selectedDate = day.date
         case .outMonthDay(_):
             break
         }

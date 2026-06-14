@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import SnapKit
 
 protocol DayCellConfiguration: UICollectionViewCell {
     func configure(
@@ -14,8 +15,8 @@ protocol DayCellConfiguration: UICollectionViewCell {
         isToday: Bool,
         isSelected: Bool,
         isOutOfMonth: Bool,
-        outOfMonthAlpha: CGFloat,
-        badgeNum: Int?
+        badgeNum: Int?,
+        cellSize: CGSize
     )
 }
 
@@ -30,6 +31,11 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
     private let dayLabel = UILabel()
     private let dayDecorateView = UIView()
     private let dayDecorateBadgeLabel = UILabel()
+    
+    private var dayLabelTopConstraint: Constraint?
+    //private var decorateSizeConstraint: Constraint?
+    
+    private var lastCellSize: CGSize? = .zero
         
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -41,7 +47,9 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
     }
     
     private func setupUI() {
-        contentView.layer.cornerRadius = Self.appearance.cornerRadius
+        contentView.backgroundColor = .systemBackground
+        contentView.clipsToBounds = true
+        dayDecorateView.clipsToBounds = true
         setupStackView()
         setupDayLabel()
         setupDecorateBadgeView()
@@ -61,35 +69,33 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
     }
     
     private func setupDayLabel() {
-        //dayLabel.font = UIFont.roundedFont(ofSize: 20, weight: .semibold)
         dayLabel.textAlignment = .center
-        dayLabel.adjustsFontSizeToFitWidth = true
-        dayLabel.minimumScaleFactor = 0.6
+        dayLabel.adjustsFontSizeToFitWidth = true //in dare size numbre rooz ro kam mikine!
+        dayLabel.minimumScaleFactor = 0.9
         
         dayLabelView.addSubview(dayLabel)
         
         dayLabel.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.bottom.equalToSuperview()
-            make.top.equalToSuperview().offset(5)
+            dayLabelTopConstraint = make.top.equalToSuperview().offset(10).constraint
         }
         
         vStackView.addArrangedSubview(dayLabelView)
     }
     
     private func setupDecorateBadgeView() {
-        dayDecorateView.snp.makeConstraints { make in
-            make.size.equalTo(16)
-        }
-        
-        dayDecorateBadgeLabel.font = UIFont.roundedFont(ofSize: 8, weight: .regular)
         dayDecorateBadgeLabel.textColor = .label
         dayDecorateBadgeLabel.textAlignment = .center
+        dayDecorateBadgeLabel.adjustsFontSizeToFitWidth = true //in dare size numbre rooz ro kam mikine!
+        dayDecorateBadgeLabel.minimumScaleFactor = 0.8
         
         dayDecorateView.addSubview(dayDecorateBadgeLabel)
         
         dayDecorateBadgeLabel.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().inset(2)
+            make.top.equalToSuperview()
         }
         
         vStackView.addArrangedSubview(dayDecorateView)
@@ -100,42 +106,55 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
         isToday: Bool,
         isSelected: Bool,
         isOutOfMonth: Bool,
-        outOfMonthAlpha: CGFloat,
-        badgeNum: Int?
+        badgeNum: Int?,
+        cellSize: CGSize
     ) {
         let a = Self.appearance
         self.dayLabel.text = "\(day.dayNumber)"
         
-        contentView.layer.cornerRadius = a.cornerRadius
+        if cellSize.width > 0, cellSize.height > 0, cellSize != lastCellSize {
+            print("@@@there is a new cell size")
+            lastCellSize = cellSize
+            //applyProportionalLayout(cellSize: cellSize, appearance: a)
+        }
 
         if let num = badgeNum, num != 0 {
-            //dayDecorateView.isHidden = false
             dayDecorateBadgeLabel.text = "\(num)"
         } else {
-            //dayDecorateView.isHidden = true
             dayDecorateBadgeLabel.text = ""
         }
         
+        let baseFont: UIFont
+        let textColor: UIColor
+        let bg: UIColor
+        
         if isToday {
-            if isSelected {
-                dayLabel.font = a.todayFont
-                dayLabel.textColor = a.todayColor
-                contentView.backgroundColor = a.selectedBackgroundColor
-            } else {
-                dayLabel.font = a.todayFont
-                dayLabel.textColor = a.todayColor
-                contentView.backgroundColor = a.todayColor
-            }
+            baseFont = a.todayFont
+            textColor = a.todayColor
+            bg = isSelected ? a.selectedBackgroundColor : a.todayBackgroundColor
+        } else if isSelected {
+            baseFont = a.selectedFont
+            textColor = a.selectedColor
+            bg = a.selectedBackgroundColor
         } else {
-            if isSelected {
-                dayLabel.font = a.selectedFont
-                dayLabel.textColor = a.selectedColor
-                contentView.backgroundColor = a.selectedBackgroundColor
-            } else {
-                dayLabel.font = a.normalFont
-                dayLabel.textColor = a.normalColor
-                contentView.backgroundColor = a.normalBackgroundColor
-            }
+            baseFont = a.normalFont
+            textColor = a.normalColor
+            bg = a.normalBackgroundColor
         }
+        
+//        guard let lastCellSize else { return }
+//        let topConstraintScale = Float(lastCellSize.height * 0.25)
+//        print("@@this is top constraint value: \(lastCellSize)")
+//        guard let dayLabelTopConstraint else { return }
+//        dayLabelTopConstraint.update(offset: topConstraintScale)
+        
+        dayLabel.font = baseFont
+        dayLabel.textColor = textColor
+        
+        bg.withAlphaComponent(0.7)
+        contentView.backgroundColor = bg
+        
+        dayDecorateBadgeLabel.font = .roundedFont(ofSize: a.badgeFontSize, weight: .regular)
+        contentView.layer.cornerRadius = a.cornerRadius
     }
 }

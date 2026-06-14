@@ -11,11 +11,13 @@ import UIKit
 struct WeekDayTitlesAppearance {
     var font: UIFont
     var color: UIColor
+    var spaceBetweenWeekDays: CGFloat = 0
     
     static var `default`: WeekDayTitlesAppearance {
         .init(
             font: UIFont.roundedFont(ofSize: 18, weight: .semibold),
-            color: UIColor.label
+            color: UIColor.label,
+            spaceBetweenWeekDays: 0
         )
     }
 }
