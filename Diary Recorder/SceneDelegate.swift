@@ -16,7 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        let viewController = Calendar2ViewController.make()
+        let viewController = Calendar3ViewController.make()
         
         //UIView.appearance().semanticContentAttribute = .forceRightToLeft
         //RecorderMainPageViewController.make()

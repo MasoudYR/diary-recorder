@@ -9,15 +9,28 @@ import Foundation
 
 class Calendar2ViewModel {
     
+    let dataHandler = MonthsDataHandler.shared
+    
     @Published var selectedDate: Date?
+    
     
     private let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
     let calendar = Calendar(identifier: .gregorian)
-    @Published var currentMonthData: [Date: Int] = [:]
-    @Published var nextMonthData: [Date: Int] = [:]
-    @Published var previousMonthData: [Date: Int] = [:]
+    let threeMonthsOfYear: [YearMonth] = []
     
     init() {
+        let date = Date()
+        
+        for num in -10 ... -2 {
+            let newDate = calendar.date(byAdding: .month, value: num, to: date)!
+                .addingTimeInterval(3 * 86400)
+            
+            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
+            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
+            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
+            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
+        }
+    
     }
     
     private func binding() {
@@ -41,28 +54,35 @@ class Calendar2ViewModel {
         //
     }
     
-    func getDaysOfMonthDiaries(date: Date) {
-        
+    func loadThreeMonthsDataInCache(date: Date) {
+        dataHandler.loadMonthDataCache(date: date)
     }
     
-    func loadMonthData(date: Date) {
+    func threeMonthsOfYearData(date: Date) -> [YearMonth: [Date: Int]?] {
+        let threeMonths = dataHandler.makeThreeContinuesMonths(from: date)
         
-        var currentMonthComponents = calendar.dateComponents([.year, .month], from: date)
-        currentMonthComponents.day = 1
+        let previousMonthData = dataHandler.dataCache[threeMonths.previousMonth]
+        let currentMonthData = dataHandler.dataCache[threeMonths.currentMonth]
+        let nextMonthData = dataHandler.dataCache[threeMonths.nextMonth]
         
-        guard let firstDayOfCurrentMonth = calendar.date(from: currentMonthComponents),
-        let firstDayOfNextMonth = calendar.date(byAdding: .month, value: 1, to: firstDayOfCurrentMonth),
-        let firstDayOfPreviousMonth = calendar.date(byAdding: .month, value: -1, to: firstDayOfCurrentMonth)
-        else { return }
+        return [
+            threeMonths.previousMonth: previousMonthData,
+            threeMonths.currentMonth: currentMonthData,
+            threeMonths.nextMonth: nextMonthData
+        ]
+    }
+    
+    private var bool = true
+    func counter(for date: Date) -> Int {
+        if bool {
+            print(">>>", #function, "data:", dataHandler.dataCache)
+            bool.toggle()
+        }
         
-        let currentMonthResult = try? recordingsDetailsRealmManager.getNumberOfDaysRecordsInMonth(date: firstDayOfCurrentMonth)
-        let nextMonthResult = try?
-        recordingsDetailsRealmManager.getNumberOfDaysRecordsInMonth(date: firstDayOfNextMonth)
-        let previousMonthResult = try?
-        recordingsDetailsRealmManager.getNumberOfDaysRecordsInMonth(date: firstDayOfPreviousMonth)
+        let omid = dataHandler.makeYearMonthStructure(from: date)
+        print(">>>", #function, "date: \(date)")
+        guard let month = dataHandler.dataCache[omid] else { return 0 }
         
-        currentMonthData = currentMonthResult ?? [:]
-        nextMonthData = nextMonthResult ?? [:]
-        previousMonthData = previousMonthResult ?? [:]
+        return month[date, default: 0]
     }
 }

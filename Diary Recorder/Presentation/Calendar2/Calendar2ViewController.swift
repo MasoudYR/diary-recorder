@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import SnapKit
+import Combine
 import JTAppleCalendar
 
 class Calendar2ViewController: UIViewController {
@@ -44,6 +45,8 @@ class Calendar2ViewController: UIViewController {
     
     private let button: UIButton = .init(configuration: .filled())
     
+    private var cancellables = Set<AnyCancellable>()
+    
     init(viewModel: Calendar2ViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -63,6 +66,7 @@ class Calendar2ViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupCalendar()
+        viewModel.loadThreeMonthsDataInCache(date: .now)
         calendarView.selectDates([.now])
         scrollToToday(animated: false)
     }
@@ -97,9 +101,9 @@ class Calendar2ViewController: UIViewController {
             dateComponents.month = 5
             dateComponents.day = 1
             
-            let oneMonthBefore = Calendar(identifier: .gregorian).date(from: dateComponents)
+            //let oneMonthBefore = Calendar(identifier: .gregorian).date(from: dateComponents)
             
-            viewModel.getDaysOfMonthDiaries(date: oneMonthBefore!)
+            //viewModel.getDaysOfMonthDiaries(date: oneMonthBefore!)
         }
         
         button.addAction(buttonAction, for: .touchUpInside)
@@ -230,7 +234,7 @@ class Calendar2ViewController: UIViewController {
         calendarView.allowsMultipleSelection = false
         calendarView.allowsRangedSelection = false
         calendarView.register(CalendarDateCell.self, forCellWithReuseIdentifier: CalendarDateCell.identifier)
-        calendarView.register(EmptyCell.self, forCellWithReuseIdentifier: EmptyCell.identifier)
+        calendarView.register(EmptyCell2.self, forCellWithReuseIdentifier: EmptyCell2.identifier)
         calendarView.calendarDelegate = self
         calendarView.calendarDataSource = self
     }
@@ -263,6 +267,13 @@ class Calendar2ViewController: UIViewController {
     }
     
     
+    lazy var dateFromatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy/MM/dd"
+        
+        return formatter
+    }()
 }
 
 extension Calendar2ViewController: JTACMonthViewDataSource, JTACMonthViewDelegate {
@@ -290,7 +301,7 @@ extension Calendar2ViewController: JTACMonthViewDataSource, JTACMonthViewDelegat
     
     func calendar(_ calendar: JTACMonthView, cellForItemAt date: Date, cellState: CellState, indexPath: IndexPath) -> JTACDayCell {
         if cellState.dateBelongsTo != .thisMonth {
-            return calendar.dequeueReusableJTAppleCell(withReuseIdentifier: EmptyCell.identifier, for: indexPath)
+            //return calendar.dequeueReusableJTAppleCell(withReuseIdentifier: EmptyCell.identifier, for: indexPath)
         }
         
         let cell = calendar.dequeueReusableJTAppleCell(withReuseIdentifier: CalendarDateCell.identifier, for: indexPath) as! CalendarDateCell
@@ -299,9 +310,8 @@ extension Calendar2ViewController: JTACMonthViewDataSource, JTACMonthViewDelegat
     }
     
     func calendar(_ calendar: JTAppleCalendar.JTACMonthView, willDisplay cell: JTAppleCalendar.JTACDayCell, forItemAt date: Date, cellState: JTAppleCalendar.CellState, indexPath: IndexPath) {
-        guard let cell = cell as? CalendarDateCell else { return }
-        
-        configure(cell: cell, date: date, cellState: cellState)
+        //guard let cell = cell as? CalendarDateCell else { return }
+        //configure(cell: cell, date: date, cellState: cellState)
     }
     
     func calendar(_ calendar: JTACMonthView, shouldSelectDate date: Date, cell: JTACDayCell?, cellState: CellState, indexPath: IndexPath) -> Bool {
@@ -335,12 +345,13 @@ extension Calendar2ViewController: JTACMonthViewDataSource, JTACMonthViewDelegat
         let monthYearString = viewModel.transformDateToMonthAndYear(date: date)
         monthYearButton.setMonthYearTitle(monthYear: monthYearString)
         //viewModel.getDaysOfMonthDiaries(date: date)
+        viewModel.loadThreeMonthsDataInCache(date: date)
     }
     
     func calendar(_ calendar: JTACMonthView, willScrollToDateSegmentWith visibleDates: DateSegmentInfo) {
         print(">>>", Self.self, #function, ">", visibleDates.monthDates.first!.date)
-        guard let date = visibleDates.monthDates.first?.date else { return }
-        viewModel.getDaysOfMonthDiaries(date: date)
+        //guard let date = visibleDates.monthDates.first?.date else { return }
+        //viewModel.getDaysOfMonthDiaries(date: date)
     }
     
     func scrollToToday(animated: Bool = true) {
@@ -360,18 +371,22 @@ extension Calendar2ViewController: JTACMonthViewDataSource, JTACMonthViewDelegat
 //        calendarView.scrollToDate(date)
 //    }
     
-    
     private func configure(cell: JTACDayCell, date:  Date, cellState: CellState) {
         guard let cell = cell as? CalendarDateCell else { return }
         
+        let debugString = dateFromatter.string(from: date)
+        print(">>>", #function, "debugString:", debugString)
+        
         let isSelected = cellState.isSelected
         let isToday = Calendar.current.isDateInToday(date)
-        //let isOutMonth = cellState.dateBelongsTo != .thisMonth
+        
+        let number = viewModel.counter(for: date)
+        let string = number > 0 ? "\(number)" : nil
+        
         
         cell.configure(
             dayNumber: cellState.text,
-            decorateBadgeText: "5",
-            decorateBadgeColor: .orange,
+            decorateBadgeText: string,
             isSelected: isSelected,
             isToday: isToday
         )

@@ -187,4 +187,11 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
         }
         return grouped
     }
+    
+    func getNumberOfRecordsInOneDay(date: Date) throws -> Int {
+        let result = realm
+            .objects(RecordingsDetailsRealmModel.self)
+            .where {$0.date == date}
+        return result.count
+    }
 }

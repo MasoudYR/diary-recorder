@@ -10,7 +10,7 @@ import UIKit
 import SnapKit
 import JTAppleCalendar
 
-class EmptyCell: JTACDayCell {
+class EmptyCell2: JTACDayCell {
     static var identifier: String { String(describing: Self.self) }
 }
 
@@ -39,7 +39,7 @@ class CalendarDateCell: JTACDayCell {
         contentView.layer.cornerRadius = 20
         setupStackView()
         setupDayLabel()
-        setupDecorateView()
+        setupDecorateBadgeView()
     }
     
     private func setupStackView() {
@@ -76,12 +76,12 @@ class CalendarDateCell: JTACDayCell {
         
     }
     
-    private func setupDecorateView() {
+    private func setupDecorateBadgeView() {
         
-        dayDecorateBadgeView.backgroundColor = .systemRed
+        dayDecorateBadgeView.backgroundColor = .systemGray
         dayDecorateBadgeView.layer.cornerRadius = 8
-        dayDecorateBadgeView.layer.borderWidth = 2
-        dayDecorateBadgeView.layer.borderColor = UIColor.systemGray.cgColor
+//        dayDecorateBadgeView.layer.borderWidth = 2
+//        dayDecorateBadgeView.layer.borderColor = UIColor.systemGray.cgColor
         
         dayDecorateView.addSubview(dayDecorateBadgeView)
         
@@ -105,13 +105,18 @@ class CalendarDateCell: JTACDayCell {
     
     func configure(
         dayNumber: String,
-        decorateBadgeText: String,
-        decorateBadgeColor: UIColor,
+        decorateBadgeText: String?,
         isSelected: Bool,
         isToday: Bool
     ) {
         self.dayLabel.text = dayNumber
-        self.dayDecorateBadgeLabel.text = decorateBadgeText
+        
+        if let text = decorateBadgeText {
+            dayDecorateBadgeView.isHidden = false
+            dayDecorateBadgeLabel.text = text
+        } else {
+            dayDecorateBadgeView.isHidden = true
+        }
         
         if isToday {
             if isSelected {
@@ -138,3 +143,4 @@ class CalendarDateCell: JTACDayCell {
         contentView.backgroundColor = .clear
     }
 }
+
