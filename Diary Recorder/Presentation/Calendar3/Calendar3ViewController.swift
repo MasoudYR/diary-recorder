@@ -93,11 +93,11 @@ extension Calendar3ViewController {
     func calendarView(_ cv: CalendarView, didSelect day: CalendarDay) {
         print("✅ انتخاب شد: \(day.date)")
     }
-
-    func calendarView(_ cv: CalendarView, didDeselect day: CalendarDay) {
-        print("❌ انتخاب برداشته شد: \(day.date)")
+    
+    func calendarView(_ calendarView: CalendarView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        print("this is next indexPath: \(indexPath)")
     }
-
+    
     func calendarView(_ cv: CalendarView, didChangeTo month: CalendarMonth) {
         //navigationItem..subtitle = month.title
     }

@@ -36,6 +36,10 @@ final class CalendarView: UIView {
     private var lastLayoutSize: CGSize = .zero
     private var currentCellSize: CGSize = .zero
     
+//    ina 2 taro pak nakon baraye badan bedard mikhore...
+//    private var lastContentOffsetX: CGFloat = 0.0
+//    private var hasTriggeredScroll: ScrollState = .noMove
+    
    // private var collectionHeightConstraint: Constraint!
     private var cancellables = Set<AnyCancellable>()
     
@@ -131,8 +135,7 @@ final class CalendarView: UIView {
                     isToday: day.isToday,
                     isSelected: isSelected,
                     isOutOfMonth: !day.isCurrentMonth,
-                    badgeNum: nil,
-                    cellSize: currentCellSize
+                    badgeNum: nil
                 )
                 return cell
                 
@@ -191,8 +194,7 @@ final class CalendarView: UIView {
                     isToday: day.isToday,
                     isSelected: isSelected,
                     isOutOfMonth: !day.isCurrentMonth,
-                    badgeNum: 8,
-                    cellSize: currentCellSize
+                    badgeNum: 8
                 )
             case .outMonthDay(_):
                 break
@@ -221,18 +223,44 @@ final class CalendarView: UIView {
     }
     
     private func refreshLayout() {
-        guard collectionView.bounds.width > 0, collectionView.bounds.height > 0 else { return }
+        guard collectionView.bounds.width > 0,
+              collectionView.bounds.height > 0 else { return }
+        
         print(">>> Refresh layout is  work")
         print("this is boundsWidth: \(bounds.width), and this is boundsHeight: \(bounds.height)")
-        let newLayout = CalendarCompositionalLayout.make(config: viewModel.config, calendarWidth: collectionView.bounds.width, calendarHeight: collectionView.bounds.height)
-        //let newLayout = CalendarCompositionalLayout.make(config: viewModel.config, pageWidth: bounds.width)
-        collectionView.setCollectionViewLayout(newLayout, animated: false)
         
-        //let newHeight = CalendarCompositionalLayout.totalHeight(config: viewModel.config)
-//        collectionView.snp.makeConstraints { make in
-//            self.collectionHeightConstraint = make.height.equalTo(400).constraint
-//        }
-
+//        let newLayout = CalendarCompositionalLayout.make(
+//            config: viewModel.config,
+//            calendarWidth: collectionView.bounds.width,
+//            calendarHeight: collectionView.bounds.height,
+//            for: <#CalendarMonth#>
+//        )
+        
+//        collectionView.setCollectionViewLayout(newLayout, animated: false)
+        
+        let layout = UICollectionViewCompositionalLayout(
+            sectionProvider: {
+                [weak self] sectionIndex,
+                environment in
+                guard let self,
+                      sectionIndex < self.viewModel.months.count else { return CalendarCompositionalLayout.emptySection() }
+                
+                let month = self.viewModel.months[sectionIndex]
+                
+                return CalendarCompositionalLayout.make(
+                    config: self.viewModel.config,
+                    calendarWidth: self.collectionView.bounds.width,
+                    calendarHeight: self.collectionView.bounds.height,
+                    for: month
+                )
+            }
+        )
+        let layoutConfig = UICollectionViewCompositionalLayoutConfiguration()
+        layoutConfig.scrollDirection = .horizontal
+        layoutConfig.interSectionSpacing = 0
+        layout.configuration = layoutConfig
+        
+        collectionView.setCollectionViewLayout(layout, animated: false)
     }
     
     // اسکرول به یک ماه خاص
@@ -249,22 +277,6 @@ final class CalendarView: UIView {
             scroll(to: month, animated: animated)
         }
     }
-    
-    // به روزرسانی اندازه ها
-//    func updateSize(
-//        sectionInset: NSDirectionalEdgeInsets?,
-//        cellHeight: CGFloat?,
-//        cellInRowSpacing: CGFloat?,
-//        rowsSpacing: CGFloat?,
-//        weekDayTitlesRowHeight: CGFloat?
-//    ) {
-//        if let sectionInset { config.sectionInset = sectionInset }
-//        //if let cellHeight { config.cellHeight = cellHeight }
-//        if let cellInRowSpacing { config.cellInRowSpacing = cellInRowSpacing }
-//        if let rowsSpacing { config.rowsSpacing = rowsSpacing }
-//        if let weekDayTitlesRowHeight { config.weekDayTitlesRowHeight = weekDayTitlesRowHeight }
-//    }
-    
     
     //inam badab dorostesh kon
     private func buildDetailPanel() {
@@ -343,23 +355,73 @@ extension CalendarView: UICollectionViewDelegate {
             break
         }
     }
+}
+
+extension CalendarView {
     
-    //تشخیص ماه بعد از اسکرول شدن. یا تغییر کردن!!!
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        print("this is my next month indexpath: \(indexPath)")
+        delegate?.calendarView(self, willDisplay: cell, forItemAt: indexPath)
+    }
+    
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        notifyCurrentMonth()
+        let pageWidth = scrollView.bounds.width
+        let currentIndex = Int(round(scrollView.contentOffset.x / pageWidth))
+        
+        print("سکشن فعلی: \(currentIndex)")
+        
+        guard currentIndex < viewModel.months.count else { return }
+        
+        let currentMonth = viewModel.months[currentIndex]
+        delegate?.calendarView(self, didChangeTo: currentMonth)
     }
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        notifyCurrentMonth()
-    }
-    
-    private func notifyCurrentMonth() {
-        let cx = collectionView.contentOffset.x + collectionView.bounds.width / 2
-        let cy = collectionView.bounds.height / 2
-        guard let indexPath = collectionView.indexPathForItem(at: CGPoint(x: cx, y: cy)),
-              indexPath.section < viewModel.months.count else { return }
-        let month = viewModel.months[indexPath.section]
-        //viewModel.config  // just access
-        delegate?.calendarView(self, didChangeTo: month)
-    }
-  
+}
+
+
+extension CalendarView {
+//    inaro pak nakon baraye scroll badab be dard mikhore...
+//    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+//       lastContentOffsetX = scrollView.contentOffset.x
+//        hasTriggeredScroll = .noMove
+//    }
+//    
+//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        let currentOffsetX = scrollView.contentOffset.x
+//        
+//        guard currentOffsetX != lastContentOffsetX else { return }
+//        
+//        if currentOffsetX > lastContentOffsetX + 8, hasTriggeredScroll != .right {
+//                hasTriggeredScroll = .right
+//                didStartScrollToNextMonth()
+//        } else if currentOffsetX < lastContentOffsetX - 8, hasTriggeredScroll != .left {
+//                hasTriggeredScroll = .left
+//            didStartScrollToPreviousMonth()
+//        }
+//        
+//    }
+//    
+//    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+//        if !decelerate {
+//            resetScrollState()
+//        }
+//    }
+//    
+//    private func didStartScrollToNextMonth() {
+//        print("اسکرول به راست شروع شد - دریافت دیتای ماه بعد")
+//    }
+//    
+//    private func didStartScrollToPreviousMonth() {
+//        print("اسکرول به چپ شروع شد - دریافت دیتای ماه قبل")
+//    }
+//    
+//    private func resetScrollState() {
+//        hasTriggeredScroll = .noMove
+//        lastContentOffsetX = 0.0
+//    }
+}
+
+enum ScrollState {
+    case noMove
+    case right
+    case left
 }

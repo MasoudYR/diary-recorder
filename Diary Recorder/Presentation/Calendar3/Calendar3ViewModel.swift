@@ -43,8 +43,6 @@ class Calendar3ViewModel {
         if let e = endDate {
             config.endDate = e
         }
-        
-        
     }
     
     private func setupCalendar() {
@@ -108,6 +106,8 @@ class Calendar3ViewModel {
             }
         }
         
+        let numberOfWeeks = days.count / 7
+        
         let fmt = DateFormatter()
         fmt.dateFormat = "MMMM yyyy"
         let title = fmt.string(from: firstDay)
@@ -116,6 +116,7 @@ class Calendar3ViewModel {
             id: firstDay.monthId,
             title: title,
             firstDay: firstDay,
+            numberOfWeeks: numberOfWeeks,
             days: days
         )
         

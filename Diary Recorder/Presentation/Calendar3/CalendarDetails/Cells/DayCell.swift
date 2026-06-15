@@ -15,8 +15,7 @@ protocol DayCellConfiguration: UICollectionViewCell {
         isToday: Bool,
         isSelected: Bool,
         isOutOfMonth: Bool,
-        badgeNum: Int?,
-        cellSize: CGSize
+        badgeNum: Int?
     )
 }
 
@@ -106,17 +105,10 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
         isToday: Bool,
         isSelected: Bool,
         isOutOfMonth: Bool,
-        badgeNum: Int?,
-        cellSize: CGSize
+        badgeNum: Int?
     ) {
         let a = Self.appearance
         self.dayLabel.text = "\(day.dayNumber)"
-        
-        if cellSize.width > 0, cellSize.height > 0, cellSize != lastCellSize {
-            print("@@@there is a new cell size")
-            lastCellSize = cellSize
-            //applyProportionalLayout(cellSize: cellSize, appearance: a)
-        }
 
         if let num = badgeNum, num != 0 {
             dayDecorateBadgeLabel.text = "\(num)"

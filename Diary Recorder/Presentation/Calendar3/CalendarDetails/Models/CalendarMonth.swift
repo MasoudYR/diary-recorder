@@ -11,7 +11,7 @@ struct CalendarMonth: Hashable {
     let id: String     // "2026-01"
     let title: String
     let firstDay: Date
-   // let numberOfWeeks: Int
+    let numberOfWeeks: Int
     let days: [CalendarDay]
     
     func hash(into hasher: inout Hasher) {

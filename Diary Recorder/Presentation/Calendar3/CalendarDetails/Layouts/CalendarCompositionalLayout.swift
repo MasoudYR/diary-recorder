@@ -14,7 +14,7 @@ enum CalendarCompositionalLayout {
         config: CalendarConfig,
         calendarWidth: CGFloat,
         calendarHeight: CGFloat,
-        numberOfWeeks: Int = 6
+        numberOfWeeks: CGFloat
     ) -> CGSize {
         let inset = config.sectionInset
         let vSpace = config.cellInRowSpacing
@@ -25,7 +25,7 @@ enum CalendarCompositionalLayout {
         let usableHeight = calendarHeight - inset.top - inset.bottom
 
         let cellWidth  = (usableWidth  - hSpace * 6) / 7
-        let cellHeight = (usableHeight - vSpace * CGFloat(numberOfWeeks - 1)) / CGFloat(numberOfWeeks)
+        let cellHeight = (usableHeight - (vSpace * (numberOfWeeks - 1))) / numberOfWeeks
 
         return CGSize(width: max(0, cellWidth), height: max(0, cellHeight))
     }
@@ -34,9 +34,10 @@ enum CalendarCompositionalLayout {
         config: CalendarConfig,
         calendarWidth: CGFloat,
         calendarHeight: CGFloat,
-        numberOfWeeks: Int = 6
-    ) -> UICollectionViewCompositionalLayout {
+        for month: CalendarMonth
+    ) -> NSCollectionLayoutSection {
         
+        let numberOfWeeks = CGFloat(month.numberOfWeeks)
         let inset = config.sectionInset
         let vSpace = config.cellInRowSpacing
         let hSpace = config.rowsSpacing
@@ -86,7 +87,7 @@ enum CalendarCompositionalLayout {
         
         let monthGroup = NSCollectionLayoutGroup.vertical(
             layoutSize: monthGroupSize,
-            subitems: [rowWeekGroup]
+            subitems: Array(repeating: rowWeekGroup, count: month.numberOfWeeks)
         )
         
         monthGroup.interItemSpacing = .fixed(vSpace)
@@ -94,35 +95,21 @@ enum CalendarCompositionalLayout {
         let section = NSCollectionLayoutSection(group: monthGroup)
         section.contentInsets = inset
         
-//        let weekDayTitlesSize = NSCollectionLayoutSize(
-//            widthDimension: .absolute(headerWidth),
-//            heightDimension: .absolute(headerHeight)
-//        )
-//        
-//        let weekDayTitlesHeader = NSCollectionLayoutBoundarySupplementaryItem(
-//            layoutSize: weekDayTitlesSize,
-//            elementKind: WeekDayTitlesRowHeader.kind,
-//            alignment: .top
-//        )
-        
-//        weekDayTitlesHeader.pinToVisibleBounds =  true
-//        section.boundarySupplementaryItems = [weekDayTitlesHeader]
-        //section.orthogonalScrollingBehavior = .groupPagingCentered
-        
-       // let layout = UICollectionViewCompositionalLayout(section: section)
-        let layoutConfig = UICollectionViewCompositionalLayoutConfiguration()
-        layoutConfig.scrollDirection = .horizontal
-        layoutConfig.interSectionSpacing = 0
-        
-        
-        return UICollectionViewCompositionalLayout(section: section, configuration: layoutConfig)
+        return section
+//        let layoutConfig = UICollectionViewCompositionalLayoutConfiguration()
+//        layoutConfig.scrollDirection = .horizontal
+//        layoutConfig.interSectionSpacing = 0
+        //
+        //        return UICollectionViewCompositionalLayout(section: section, configuration: layoutConfig)
     }
     
-//    static func totalHeight(config: CalendarConfig) -> CGFloat {
-//        config.weekDayTitlesRowHeight
-//        + config.cellHeight * 6
-//        + config.rowsSpacing * 5
-//        + config.sectionInset.top
-//        + config.sectionInset.bottom
-//    }
+    static func emptySection() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .absolute(0),
+            heightDimension: .absolute(0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: itemSize, subitems: [item])
+        return NSCollectionLayoutSection(group: group)
+    }
 }
