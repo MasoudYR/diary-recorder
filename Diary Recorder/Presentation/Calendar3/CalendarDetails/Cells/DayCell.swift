@@ -21,6 +21,8 @@ protocol DayCellConfiguration: UICollectionViewCell {
 
 class DayCell: UICollectionViewCell, DayCellConfiguration {
     
+    static var counter = 0
+    
     static let identifier = "DayCell"
     
     static var appearance: DayAppearance = .default
@@ -38,6 +40,8 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
         
     override init(frame: CGRect) {
         super.init(frame: frame)
+        Self.counter += 1
+        print(">>>", Self.self, #function, "counter: \(Self.counter)")
         setupUI()
     }
     

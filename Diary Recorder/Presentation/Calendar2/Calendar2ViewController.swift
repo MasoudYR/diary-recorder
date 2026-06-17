@@ -40,7 +40,7 @@ class Calendar2ViewController: UIViewController {
     private lazy var thuLabel: UILabel = makeWeekDayLabel(text: "Thu")
     private lazy var friLabel: UILabel = makeWeekDayLabel(text: "Fri")
     private let calendarView = JTACMonthView()
-    private let monthYearPickerView = MonthYearPickerView()
+    private let monthYearPickerView = MonthYearPickerView(startDate: Date(), endDate: Date().adding(months: 30))
     private let closeMonthYearPickerButton = UIButton()
     
     private let button: UIButton = .init(configuration: .filled())
@@ -409,9 +409,4 @@ extension Calendar2ViewController: MonthYearPickerViewDelegate {
     
     
     
-}
-
-enum DatePickerAndCalendarState {
-    case datePicker
-    case calendar
 }

@@ -50,4 +50,12 @@ extension Date {
     func adding(days n: Int) -> Date {
         Calendar.current.date(byAdding: .day, value: n, to: self)!
     }
+    
+    func transformDateToMonthAndYear(date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM, yyyy"
+        let monthYearString = formatter.string(from: date)
+        
+        return monthYearString
+    }
 }

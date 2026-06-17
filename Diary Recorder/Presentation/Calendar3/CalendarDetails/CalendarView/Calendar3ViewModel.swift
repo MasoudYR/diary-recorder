@@ -14,7 +14,7 @@ class Calendar3ViewModel {
     @Published var selectedDate: Date? = nil
     
     @Published var config: CalendarConfig {
-        didSet{ rebuild() }
+        didSet{ buildAllMonths() }
     }
     
 //    var selectionPublisher: AnyPublisher<Date?, Never> {
@@ -27,7 +27,7 @@ class Calendar3ViewModel {
     init(config: CalendarConfig = .default) {
         self.config = config
         setupCalendar()
-        rebuild()
+        buildAllMonths()
     }
     
     func isSelected(_ day: CalendarDay) -> Bool {
@@ -49,7 +49,7 @@ class Calendar3ViewModel {
         calendar.firstWeekday = config.firstWeekday
     }
     
-    private func rebuild() {
+    private func buildAllMonths() {
         calendar.firstWeekday = config.firstWeekday
         
         var result: [CalendarMonth] = []
@@ -57,14 +57,14 @@ class Calendar3ViewModel {
         let last = config.endDate.endOfMonth
         
         while cursor <= last {
-            result.append(buildMonth(cursor))
+            result.append(buildOneMonth(cursor))
             cursor = cursor.adding(months: 1)
         }
         
         months = result
     }
     
-    private func buildMonth(_ firstDay: Date) -> CalendarMonth {
+    private func buildOneMonth(_ firstDay: Date) -> CalendarMonth {
         
         let totalCells = 42
         

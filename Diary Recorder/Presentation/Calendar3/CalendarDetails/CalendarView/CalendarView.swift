@@ -22,57 +22,113 @@ final class CalendarView: UIView {
         set {viewModel.config = newValue}
     }
     
+    private var datePickerAndCalendarState: DatePickerAndCalendarState = .calendar {
+        didSet {
+            updateView()
+        }
+    }
+    
+    private let monthYearButton = MonthYearButton()
+    private let todayButton = UIButton()
+    private let calendarAndPickerViewParentView = UIView()
     private let weekDayHeaderView = WeekDayTitlesRowHeader()
+    private(set) lazy var collectionView: UICollectionView = makeCollectionView()
+    private lazy var monthYearPickerView = MonthYearPickerView(startDate: config.startDate, endDate: config.endDate)
+    private let closeMonthYearPickerButton = UIButton()
     
-    private(set) var collectionView: UICollectionView!
     private var diffableDataSource: UICollectionViewDiffableDataSource<CalendarSection, CalendarItem>!
-    
-    // panel جزئیات روز انتخاب‌شده
-    private let detailPanel = UIView()
-    private var detailPanelHeight: NSLayoutConstraint!
-    private var currentDetailView: UIView?
-    /// ino badan eslahesh kon...
-    
-    private var lastLayoutSize: CGSize = .zero
-    private var currentCellSize: CGSize = .zero
     
 //    ina 2 taro pak nakon baraye badan bedard mikhore...
 //    private var lastContentOffsetX: CGFloat = 0.0
 //    private var hasTriggeredScroll: ScrollState = .noMove
     
-   // private var collectionHeightConstraint: Constraint!
     private var cancellables = Set<AnyCancellable>()
     
     init(config: CalendarConfig = .default) {
         self.viewModel = Calendar3ViewModel(config: config)
         super.init(frame: .zero)
+        setupMonthYearButton()
+        setupTodayButton()
+        setupCalendarAndPickerView()
         setupWeekDayHeader()
         setupCollectionView()
-        //buildDetailPanel()
+        setupMonthYearPickerView()
         buildDiffableDataSource()
         bindViewModel()
+        updateView()
+        //scrollToToday(animated: false)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
+    private func setupMonthYearButton() {
+        addSubview(monthYearButton)
         
-//        if !(collectionView.collectionViewLayout is UICollectionViewCompositionalLayout) {
-//            print(">>> layout subviews condition is work")
-//            refreshLayout()
-//        }
-//        
-        if collectionView.bounds.width > 0, collectionView.bounds.height > 0, bounds.size != lastLayoutSize {
-            lastLayoutSize = collectionView.bounds.size
-            refreshLayout()
+        monthYearButton.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(15)
+            make.top.equalToSuperview().offset(10)
+            make.width.equalTo(200)
+            make.height.equalTo(50)
+        }
+        
+        let monthYearButtonActionIdentifier = UIAction.Identifier("monthYearButtonActionIdentifier")
+        let monthYearButtonAction = UIAction(identifier: monthYearButtonActionIdentifier) { [unowned self] _ in
+            print("this button tapped")
+            datePickerAndCalendarState = .datePicker
+            let collectionVisibleMonth =  viewModel.months[getCurrentVisibleSection()]
+            let month = collectionVisibleMonth.firstDay.month
+            let year = collectionVisibleMonth.firstDay.year
+
+            monthYearPickerView.select(month: month, year: year)
+        }
+        
+        monthYearButton.removeAction(identifiedBy: monthYearButtonActionIdentifier, for: .touchUpInside)
+        monthYearButton.addAction(monthYearButtonAction, for: .touchUpInside)
+    }
+    
+    private func setupTodayButton() {
+        todayButton.setTitle("Today", for: .normal)
+        todayButton.titleLabel?.font = UIFont.roundedFont(ofSize: 15, weight: .regular)
+        todayButton.setTitleColor(.label, for: .normal)
+        todayButton.tintColor = .label
+        todayButton.layer.cornerRadius = 15
+        todayButton.layer.backgroundColor = UIColor.systemBackground.cgColor
+        todayButton.layer.borderColor = UIColor.label.cgColor
+        todayButton.layer.borderWidth = 1
+        
+        addSubview(todayButton)
+        
+        todayButton.snp.makeConstraints { make in
+            make.right.equalToSuperview().inset(15)
+            make.centerY.equalTo(monthYearButton)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+        
+        let todayButtonActionIdentifier = UIAction.Identifier("todayButtonActionIdentifier")
+        let todayButtonAction = UIAction(identifier: todayButtonActionIdentifier) { [unowned self] _ in
+            print("todayButton tapped")
+            scrollToToday()
+        }
+        
+        todayButton.removeAction(identifiedBy: todayButtonActionIdentifier, for: .touchUpInside)
+        todayButton.addAction(todayButtonAction, for: .touchUpInside)
+    }
+    
+    private func setupCalendarAndPickerView() {
+       addSubview(calendarAndPickerViewParentView)
+        calendarAndPickerViewParentView.backgroundColor = .green
+        calendarAndPickerViewParentView.snp.makeConstraints { make in
+            make.top.equalTo(monthYearButton.snp.bottom)
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview().inset(10)
         }
     }
     
     private func setupWeekDayHeader() {
-        addSubview(weekDayHeaderView)
+        calendarAndPickerViewParentView.addSubview(weekDayHeaderView)
         weekDayHeaderView.snp.makeConstraints { make in
             make.top.equalToSuperview()
             make.leading.equalToSuperview().offset(config.sectionInset.leading)
@@ -82,25 +138,7 @@ final class CalendarView: UIView {
     }
     
     private func setupCollectionView() {
-        let placeholder = UICollectionViewFlowLayout()
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: placeholder)
-        collectionView.backgroundColor = .systemMint
-        collectionView.isPagingEnabled = true
-        collectionView.showsHorizontalScrollIndicator = false
-        collectionView.delegate = self
-        
-        collectionView.register(
-            DayCell.self,
-            forCellWithReuseIdentifier: DayCell.identifier
-        )
-        
-        collectionView.register(
-            EmptyCell.self,
-            forCellWithReuseIdentifier: EmptyCell.identifier
-        )
-        
-        addSubview(collectionView)
-        
+        calendarAndPickerViewParentView.addSubview(collectionView)
         
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(weekDayHeaderView.snp.bottom)
@@ -108,10 +146,59 @@ final class CalendarView: UIView {
         }
     }
     
+    private func setupMonthYearPickerView() {
+        monthYearPickerView.backgroundColor = .white
+        monthYearPickerView.delegate = self
+        
+        calendarAndPickerViewParentView.addSubview(monthYearPickerView)
+
+        monthYearPickerView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.top.equalToSuperview()
+        }
+        
+        monthYearPickerView.select(month: 06, year: 2026)
+        
+        closeMonthYearPickerButton.tintColor = .label
+        let symbolConfigure = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
+        closeMonthYearPickerButton.setImage(UIImage(systemName: "checkmark", withConfiguration: symbolConfigure), for: .normal)
+        
+        calendarAndPickerViewParentView.addSubview(closeMonthYearPickerButton)
+        
+        closeMonthYearPickerButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(5)
+            make.size.equalTo(40)
+            make.right.equalToSuperview().inset(5)
+        }
+        
+        let closeMonthYearPickerButtonActionIdentifier = UIAction.Identifier("closeMonthYearPickerButtonActionIdentifier")
+        let closeMonthYearPickerButtonAction = UIAction(identifier: closeMonthYearPickerButtonActionIdentifier) { [unowned self] _ in
+            print("closeeee button tapped")
+            datePickerAndCalendarState = .calendar
+        }
+        
+        closeMonthYearPickerButton.removeAction(identifiedBy: closeMonthYearPickerButtonActionIdentifier, for: .touchUpInside)
+        closeMonthYearPickerButton.addAction(closeMonthYearPickerButtonAction, for: .touchUpInside)
+    }
+    
+    private func updateView() {
+        let flag = datePickerAndCalendarState == .calendar
+        weekDayHeaderView.isHidden = !flag
+        collectionView.isHidden = !flag
+        monthYearPickerView.isHidden = flag
+        closeMonthYearPickerButton.isHidden = flag
+        monthYearButton.isEnabled = flag
+        todayButton.isHidden = !flag
+        monthYearButton.buttonState = flag ? .calendar : .datePicker
+    }
+    
     private func buildDiffableDataSource() {
         diffableDataSource = UICollectionViewDiffableDataSource<CalendarSection, CalendarItem>(collectionView: collectionView) { [weak self]
             collectionView, indexPath, item in
             guard let self else { return EmptyCell() }
+            
+            print(">>>", Self.self, #function, "indexPath: \(indexPath)")
             
             switch item {
             case .day(let day):
@@ -144,21 +231,6 @@ final class CalendarView: UIView {
                 return cell
             }
         }
-        
-//        diffableDataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
-//            guard let self else { return nil }
-//            
-//            if kind == WeekDayTitlesRowHeader.kind {
-//                let view = collectionView.dequeueReusableSupplementaryView(
-//                    ofKind: kind,
-//                    withReuseIdentifier: WeekDayTitlesRowHeader.identifier,
-//                    for: indexPath
-//                ) as! WeekDayTitlesRowHeader
-//                
-//                return view
-//            }
-//            return nil
-//        }
     }
     
     private func bindViewModel() {
@@ -167,40 +239,8 @@ final class CalendarView: UIView {
             .sink { [weak self] months in
                 guard let self else { return }
                 self.applySnapshot(months: months)
-                self.refreshLayout()
             }
             .store(in: &cancellables)
-        
-        viewModel.$selectedDate
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                reconfigureVisibleDayCell()
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func reconfigureVisibleDayCell() {
-        collectionView.visibleCells.forEach { cell in
-            guard let indexPath = collectionView.indexPath(for: cell),
-                  let item = self.diffableDataSource.itemIdentifier(for: indexPath)  else { return }
-            switch item {
-            case .day(let day):
-                guard let dayCell = cell as? DayCell else { return }
-                
-                let isSelected = self.viewModel.isSelected(day)
-                dayCell.configure(
-                    day: day,
-                    isToday: day.isToday,
-                    isSelected: isSelected,
-                    isOutOfMonth: !day.isCurrentMonth,
-                    badgeNum: 8
-                )
-            case .outMonthDay(_):
-                break
-                
-            }
-        }
     }
     
     private func applySnapshot(months: [CalendarMonth]) {
@@ -219,29 +259,39 @@ final class CalendarView: UIView {
             }
             snapshot.appendItems(items , toSection: section)
         }
+        
         diffableDataSource.apply(snapshot, animatingDifferences: false)
     }
     
-    private func refreshLayout() {
-        guard collectionView.bounds.width > 0,
-              collectionView.bounds.height > 0 else { return }
+    private func makeCollectionView() -> UICollectionView {
+        let layout = makeCollectionViewLayout()
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .systemMint
+        collectionView.isPagingEnabled = true
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.delegate = self
+        collectionView.allowsSelection = true
         
-        print(">>> Refresh layout is  work")
-        print("this is boundsWidth: \(bounds.width), and this is boundsHeight: \(bounds.height)")
+        collectionView.register(
+            DayCell.self,
+            forCellWithReuseIdentifier: DayCell.identifier
+        )
         
-//        let newLayout = CalendarCompositionalLayout.make(
-//            config: viewModel.config,
-//            calendarWidth: collectionView.bounds.width,
-//            calendarHeight: collectionView.bounds.height,
-//            for: <#CalendarMonth#>
-//        )
+        collectionView.register(
+            EmptyCell.self,
+            forCellWithReuseIdentifier: EmptyCell.identifier
+        )
         
-//        collectionView.setCollectionViewLayout(newLayout, animated: false)
-        
+        return collectionView
+    }
+    
+    private func makeCollectionViewLayout() -> UICollectionViewCompositionalLayout {
+         
         let layout = UICollectionViewCompositionalLayout(
             sectionProvider: {
                 [weak self] sectionIndex,
                 environment in
+                
                 guard let self,
                       sectionIndex < self.viewModel.months.count else { return CalendarCompositionalLayout.emptySection() }
                 
@@ -249,23 +299,30 @@ final class CalendarView: UIView {
                 
                 return CalendarCompositionalLayout.make(
                     config: self.viewModel.config,
-                    calendarWidth: self.collectionView.bounds.width,
-                    calendarHeight: self.collectionView.bounds.height,
+                    calendarWidth: environment.container.contentSize.width,
+                    calendarHeight: environment.container.contentSize.height,
                     for: month
                 )
             }
         )
+        
         let layoutConfig = UICollectionViewCompositionalLayoutConfiguration()
         layoutConfig.scrollDirection = .horizontal
         layoutConfig.interSectionSpacing = 0
         layout.configuration = layoutConfig
         
-        collectionView.setCollectionViewLayout(layout, animated: false)
+        return layout
     }
     
     // اسکرول به یک ماه خاص
     func scroll(to month: CalendarMonth, animated: Bool = true) {
         guard let index = viewModel.months.firstIndex(of: month) else { return }
+        
+        guard index < collectionView.numberOfSections else {
+            print("Invalid Index in month")
+            return
+        }
+        
         let indexPath = IndexPath(item: 0, section: index)
         collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: animated)
     }
@@ -278,83 +335,52 @@ final class CalendarView: UIView {
         }
     }
     
-    //inam badab dorostesh kon
-    private func buildDetailPanel() {
-        detailPanel.clipsToBounds = true
-        addSubview(detailPanel)
-
-        detailPanelHeight = detailPanel.heightAnchor.constraint(equalToConstant: 0)
-        detailPanel.snp.makeConstraints { make in
-            make.top.equalTo(collectionView)
-            make.horizontalEdges.equalToSuperview().inset(15)
-            make.bottom.equalToSuperview()
-        }
+    private func getCurrentVisibleSection() -> Int {
+        let pageWidth = collectionView.bounds.width
+        let currentPage = Int(round(collectionView.contentOffset.x / pageWidth))
+        
+        guard currentPage >= 0 && currentPage < viewModel.months.count else {
+                return 0
+            }
+        return currentPage
     }
-    /// اینو بعدا درستش کن لطفا
-    private func showDetail(for day: CalendarDay) {
-        currentDetailView?.removeFromSuperview()
-
-        let view = dataSource?.calendarView(self, detailViewFor: day)
-                    ?? makeDefaultDetailView(day: day)
-
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.alpha = 0
-        detailPanel.addSubview(view)
-        NSLayoutConstraint.activate([
-            view.topAnchor.constraint(equalTo: detailPanel.topAnchor),
-            view.leadingAnchor.constraint(equalTo: detailPanel.leadingAnchor),
-            view.trailingAnchor.constraint(equalTo: detailPanel.trailingAnchor),
-            view.bottomAnchor.constraint(equalTo: detailPanel.bottomAnchor),
-        ])
-        currentDetailView = view
-
-        //
-    }
-    
-    // این یکی هم همینطور
-    private func makeDefaultDetailView(day: CalendarDay) -> UIView {
-        let container = UIView()
-        container.backgroundColor = .secondarySystemBackground
-        container.layer.cornerRadius = 14
-        container.layer.cornerCurve  = .continuous
-
-        let fmt = DateFormatter(); fmt.dateStyle = .full
-        let label = UILabel()
-        label.text          = fmt.string(from: day.date)
-        label.font          = .systemFont(ofSize: 15, weight: .medium)
-        label.textColor     = .label
-        label.textAlignment = .center
-        label.numberOfLines = 2
-        label.translatesAutoresizingMaskIntoConstraints = false
-
-        container.addSubview(label)
-        NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            label.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            label.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-        ])
-        return container
-    }
-    
-    
 }
 
 extension CalendarView: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+        print(">>>>", Self.self, #function, indexPath, collectionView.indexPathsForSelectedItems)
         guard let item = diffableDataSource.itemIdentifier(for: indexPath) else { return }
         
         switch item {
         case .day(let day):
-            delegate?.calendarView(self, didSelect: day)
-            showDetail(for: day)
             viewModel.selectedDate = day.date
+            var snapshot = diffableDataSource.snapshot()
+            snapshot.reconfigureItems([item])
+            diffableDataSource.apply(snapshot)
+            delegate?.calendarView(self, didSelect: day)
         case .outMonthDay(_):
             break
         }
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        print(">>>>", Self.self, #function, indexPath, collectionView.indexPathsForSelectedItems)
+        
+        guard let item = diffableDataSource.itemIdentifier(for: indexPath) else { return }
+        
+        switch item {
+        case .day:
+            viewModel.selectedDate = nil
+            
+            var snapshot = diffableDataSource.snapshot()
+            snapshot.reconfigureItems([item])
+            diffableDataSource.apply(snapshot)
+        case .outMonthDay(_):
+            break
+        }
+    }
+    
 }
 
 extension CalendarView {
@@ -373,8 +399,12 @@ extension CalendarView {
         guard currentIndex < viewModel.months.count else { return }
         
         let currentMonth = viewModel.months[currentIndex]
+
+        let monthYearString = Date().transformDateToMonthAndYear(date: currentMonth.firstDay)
+        monthYearButton.setMonthYearTitle(monthYear: monthYearString)
         delegate?.calendarView(self, didChangeTo: currentMonth)
     }
+    
 }
 
 
@@ -420,8 +450,30 @@ extension CalendarView {
 //    }
 }
 
+extension CalendarView: MonthYearPickerViewDelegate {
+    
+    func monthYearPickerView(_ picker: MonthYearPickerView, didSelect month: Int, year: Int) {
+        var components = DateComponents(year: year, month: month)
+        components.day = 1
+        
+        guard let date = Calendar.current.date(from: components) else { return }
+        
+        if let month = viewModel.months.first(where: { $0.firstDay.year == date.year && $0.firstDay.month == date.month }) {
+            scroll(to: month, animated: false)
+        }
+        let monthYearString = Date().transformDateToMonthAndYear(date: date)
+        
+        monthYearButton.setMonthYearTitle(monthYear: monthYearString)
+    }
+}
+
 enum ScrollState {
     case noMove
     case right
     case left
+}
+
+enum DatePickerAndCalendarState {
+    case datePicker
+    case calendar
 }

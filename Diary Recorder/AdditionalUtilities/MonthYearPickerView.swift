@@ -18,20 +18,33 @@ final class MonthYearPickerView: UIView {
     weak var delegate: MonthYearPickerViewDelegate?
     
     private let months: [String] = Calendar.current.monthSymbols
-    private let years: [Int] = Array(2026...2222)
+    private var years: [Int] = []
+    
+    private var startDate: Date
+    private var endDate: Date
     
     private(set) var selectedMonth: Int = 1
     private(set) var selectedYear: Int = 2026
     
     private var pickerView = UIPickerView()
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(startDate: Date, endDate: Date) {
+        self.startDate = startDate
+        self.endDate = endDate
+        super.init(frame: .zero)
+        setupYears()
         setupUI()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupYears() {
+        let calendar = Calendar.current
+        let startYear = calendar.component(.year, from: startDate)
+        let endYear = calendar.component(.year, from: endDate)
+        years = Array(startYear...endYear)
     }
     
     private func setupUI() {

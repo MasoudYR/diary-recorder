@@ -34,12 +34,17 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
         view.backgroundColor = .systemBackground
         setupCalendar()
         setupLayout()
+        //calendarView.scrollToToday(animated: false)
     }
+    
+//    override func viewWillAppear(_ animated: Bool) {
+//        calendarView.scrollToToday(animated: false)
+//    }
     
     private func setupCalendar() {
 
         let config = CalendarConfig(
-            startDate: Date().startOfMonth,
+            startDate: Date().adding(months: -12).startOfMonth,
             endDate: Date().adding(months: 12).endOfMonth,
             firstWeekday: 7,
             cellInRowSpacing: 2,
@@ -83,7 +88,7 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
         calendarView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.horizontalEdges.equalToSuperview()
-            make.height.equalTo(350)
+            make.height.equalTo(400)
         }
     }
 }
