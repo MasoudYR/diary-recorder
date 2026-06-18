@@ -262,6 +262,7 @@ final class CalendarView: UIView {
     }
     
     private func makeCollectionView() -> UICollectionView {
+        
         let layout = makeCollectionViewLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .systemMint
@@ -269,6 +270,9 @@ final class CalendarView: UIView {
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.delegate = self
         collectionView.allowsSelection = true
+        //collectionView.transform = CGAffineTransform(scaleX: -1, y: 1)
+        collectionView.semanticContentAttribute = .forceRightToLeft
+        //collectionView.collectionViewLayout.flipsHorizontallyInOppositeLayoutDirection = true
         
         collectionView.register(
             DayCell.self,
@@ -435,4 +439,16 @@ extension CalendarView: MonthYearPickerViewDelegate {
 enum DatePickerAndCalendarState {
     case datePicker
     case calendar
+}
+
+final class RightAlingendCollectionViewCompositionalLayout: UICollectionViewCompositionalLayout {
+    
+    override var flipsHorizontallyInOppositeLayoutDirection: Bool {
+        true
+    }
+
+    override var developmentLayoutDirection: UIUserInterfaceLayoutDirection {
+        .rightToLeft
+    }
+    
 }

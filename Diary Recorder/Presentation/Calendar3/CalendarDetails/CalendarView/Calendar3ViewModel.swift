@@ -36,14 +36,14 @@ class Calendar3ViewModel {
         
         var result: [CalendarMonth] = []
         
-        let month = mainMonth.firstDay
-        let oneMonthBefore = month.adding(months: -1)
-        let twoMonthBefore = month.adding(months: -2)
-        let threeMonthBefore = month.adding(months: -3)
+        let firstDayOfMainMonth = mainMonth.firstDay
+        let firstDayOfOneMonthBefore = firstDayOfMainMonth.adding(months: -1)
+        let firstDayOfTwoMonthBefore = firstDayOfMainMonth.adding(months: -2)
+        let firstDayOfThreeMonthBefore = firstDayOfMainMonth.adding(months: -3)
         
         let endDate = dateFor(year: 2026, month: 01, day: 01)
         
-        for month in [oneMonthBefore, twoMonthBefore, threeMonthBefore] {
+        for month in [firstDayOfOneMonthBefore, firstDayOfTwoMonthBefore, firstDayOfThreeMonthBefore] {
             if month >= endDate {
                 result.append(buildOneMonth(month))
             }
@@ -63,13 +63,13 @@ class Calendar3ViewModel {
     private func buildFirstThreeMonth() {
         var result: [CalendarMonth] = []
         
-        let month = Date().startOfMonth
-        let oneMonthBefore = month.adding(months: -1)
-        let twoMonthBefore = month.adding(months: -2)
+        let firstDayOfMonth = Date().startOfMonth
+        let firstDayOfOneMonthBefore = firstDayOfMonth.adding(months: -1)
+        let firstDayOfTwoMonthBefore = firstDayOfMonth.adding(months: -2)
         
         let endDate = dateFor(year: 2026, month: 01, day: 01)
         
-        for month in [month, oneMonthBefore , twoMonthBefore] {
+        for month in [firstDayOfMonth, firstDayOfOneMonthBefore, firstDayOfTwoMonthBefore] {
             if month != endDate {
                 result.append(buildOneMonth(month))
             }
