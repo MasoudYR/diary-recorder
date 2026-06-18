@@ -28,6 +28,8 @@ final class CalendarView: UIView {
         }
     }
     
+    //private var snapshot = NSDiffableDataSourceSnapshot<CalendarSection, CalendarItem>()
+    
     private let monthYearButton = MonthYearButton()
     private let todayButton = UIButton()
     private let calendarAndPickerViewParentView = UIView()
@@ -37,10 +39,6 @@ final class CalendarView: UIView {
     private let closeMonthYearPickerButton = UIButton()
     
     private var diffableDataSource: UICollectionViewDiffableDataSource<CalendarSection, CalendarItem>!
-    
-//    ina 2 taro pak nakon baraye badan bedard mikhore...
-//    private var lastContentOffsetX: CGFloat = 0.0
-//    private var hasTriggeredScroll: ScrollState = .noMove
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -56,7 +54,6 @@ final class CalendarView: UIView {
         buildDiffableDataSource()
         bindViewModel()
         updateView()
-        //scrollToToday(animated: false)
     }
     
     required init?(coder: NSCoder) {
@@ -244,10 +241,11 @@ final class CalendarView: UIView {
     }
     
     private func applySnapshot(months: [CalendarMonth]) {
-        var snapshot = NSDiffableDataSourceSnapshot<CalendarSection, CalendarItem>()
+        var currentSnapshot = NSDiffableDataSourceSnapshot<CalendarSection, CalendarItem>()
+        
         for month in months {
             let section = CalendarSection.month(month)
-            snapshot.appendSections([section])
+            currentSnapshot.appendSections([section])
             
             let items: [CalendarItem] = month.days.map { day in
                 
@@ -257,10 +255,10 @@ final class CalendarView: UIView {
                 
                 return .day(day)
             }
-            snapshot.appendItems(items , toSection: section)
+            currentSnapshot.appendItems(items , toSection: section)
         }
         
-        diffableDataSource.apply(snapshot, animatingDifferences: false)
+        diffableDataSource.apply(currentSnapshot, animatingDifferences: false)
     }
     
     private func makeCollectionView() -> UICollectionView {
@@ -327,7 +325,7 @@ final class CalendarView: UIView {
         collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: animated)
     }
     
-    //اسکرول به امروز
+    //اسکرول به امروز اینو بعدا اصلاحش کن
     func scrollToToday(animated: Bool = true) {
         let today = Date()
         if let month = viewModel.months.first(where: { $0.firstDay.year == today.year && $0.firstDay.month == today.month }) {
@@ -335,13 +333,17 @@ final class CalendarView: UIView {
         }
     }
     
+    // اینو بعدا اصلاحش کن
     private func getCurrentVisibleSection() -> Int {
+        
+        let snapshot = diffableDataSource.snapshot()
+        let numberOfSections = snapshot.numberOfSections
         let pageWidth = collectionView.bounds.width
         let currentPage = Int(round(collectionView.contentOffset.x / pageWidth))
         
-        guard currentPage >= 0 && currentPage < viewModel.months.count else {
+        guard currentPage >= 0 && currentPage < numberOfSections else {
                 return 0
-            }
+        }
         return currentPage
     }
 }
@@ -393,61 +395,24 @@ extension CalendarView {
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let pageWidth = scrollView.bounds.width
         let currentIndex = Int(round(scrollView.contentOffset.x / pageWidth))
-        
+        let numberOfSections = diffableDataSource.snapshot().numberOfSections
+        guard let section = diffableDataSource.sectionIdentifier(for: currentIndex) else { return }
         print("سکشن فعلی: \(currentIndex)")
         
-        guard currentIndex < viewModel.months.count else { return }
+        guard currentIndex < numberOfSections else { return }
         
-        let currentMonth = viewModel.months[currentIndex]
+        switch section {
+        case .month(let month):
+            let monthYearString = month.firstDay.transformDateToMonthAndYear()
+            monthYearButton.setMonthYearTitle(monthYear: monthYearString)
 
-        let monthYearString = Date().transformDateToMonthAndYear(date: currentMonth.firstDay)
-        monthYearButton.setMonthYearTitle(monthYear: monthYearString)
-        delegate?.calendarView(self, didChangeTo: currentMonth)
+            if currentIndex == numberOfSections - 1 {
+                viewModel.buildThreeMonthsBefore(mainMonth: month)
+            }
+            
+            delegate?.calendarView(self, didChangeTo: month)
+        }
     }
-    
-}
-
-
-extension CalendarView {
-//    inaro pak nakon baraye scroll badab be dard mikhore...
-//    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-//       lastContentOffsetX = scrollView.contentOffset.x
-//        hasTriggeredScroll = .noMove
-//    }
-//    
-//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        let currentOffsetX = scrollView.contentOffset.x
-//        
-//        guard currentOffsetX != lastContentOffsetX else { return }
-//        
-//        if currentOffsetX > lastContentOffsetX + 8, hasTriggeredScroll != .right {
-//                hasTriggeredScroll = .right
-//                didStartScrollToNextMonth()
-//        } else if currentOffsetX < lastContentOffsetX - 8, hasTriggeredScroll != .left {
-//                hasTriggeredScroll = .left
-//            didStartScrollToPreviousMonth()
-//        }
-//        
-//    }
-//    
-//    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-//        if !decelerate {
-//            resetScrollState()
-//        }
-//    }
-//    
-//    private func didStartScrollToNextMonth() {
-//        print("اسکرول به راست شروع شد - دریافت دیتای ماه بعد")
-//    }
-//    
-//    private func didStartScrollToPreviousMonth() {
-//        print("اسکرول به چپ شروع شد - دریافت دیتای ماه قبل")
-//    }
-//    
-//    private func resetScrollState() {
-//        hasTriggeredScroll = .noMove
-//        lastContentOffsetX = 0.0
-//    }
 }
 
 extension CalendarView: MonthYearPickerViewDelegate {
@@ -461,16 +426,10 @@ extension CalendarView: MonthYearPickerViewDelegate {
         if let month = viewModel.months.first(where: { $0.firstDay.year == date.year && $0.firstDay.month == date.month }) {
             scroll(to: month, animated: false)
         }
-        let monthYearString = Date().transformDateToMonthAndYear(date: date)
+        let monthYearString = date.transformDateToMonthAndYear()
         
         monthYearButton.setMonthYearTitle(monthYear: monthYearString)
     }
-}
-
-enum ScrollState {
-    case noMove
-    case right
-    case left
 }
 
 enum DatePickerAndCalendarState {

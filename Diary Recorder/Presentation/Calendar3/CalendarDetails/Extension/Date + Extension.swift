@@ -51,11 +51,12 @@ extension Date {
         Calendar.current.date(byAdding: .day, value: n, to: self)!
     }
     
-    func transformDateToMonthAndYear(date: Date) -> String {
+    func transformDateToMonthAndYear() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM, yyyy"
-        let monthYearString = formatter.string(from: date)
+        let monthYearString = formatter.string(from: self)
         
         return monthYearString
     }
+    
 }

@@ -12,14 +12,7 @@ class Calendar3ViewModel {
     
     @Published private(set) var months: [CalendarMonth] = []
     @Published var selectedDate: Date? = nil
-    
-    @Published var config: CalendarConfig {
-        didSet{ buildAllMonths() }
-    }
-    
-//    var selectionPublisher: AnyPublisher<Date?, Never> {
-//        $selectedDate.eraseToAnyPublisher()
-//    }
+    @Published var config: CalendarConfig
     
     private var calendar = Calendar.current
     
@@ -27,7 +20,7 @@ class Calendar3ViewModel {
     init(config: CalendarConfig = .default) {
         self.config = config
         setupCalendar()
-        buildAllMonths()
+        buildFirstThreeMonth()
     }
     
     func isSelected(_ day: CalendarDay) -> Bool {
@@ -35,31 +28,54 @@ class Calendar3ViewModel {
         return calendar.isDate(sel, inSameDayAs: day.date)
     }
     
-    func update(startDate: Date? = nil, endDate: Date? = nil) {
-        if let s = startDate {
-            config.startDate = s
-        }
-        
-        if let e = endDate {
-            config.endDate = e
-        }
-    }
-    
     private func setupCalendar() {
         calendar.firstWeekday = config.firstWeekday
     }
     
-    private func buildAllMonths() {
-        calendar.firstWeekday = config.firstWeekday
+    func buildThreeMonthsBefore(mainMonth: CalendarMonth) {
         
         var result: [CalendarMonth] = []
-        var cursor = config.startDate.startOfMonth
-        let last = config.endDate.endOfMonth
         
-        while cursor <= last {
-            result.append(buildOneMonth(cursor))
-            cursor = cursor.adding(months: 1)
+        let month = mainMonth.firstDay
+        let oneMonthBefore = month.adding(months: -1)
+        let twoMonthBefore = month.adding(months: -2)
+        let threeMonthBefore = month.adding(months: -3)
+        
+        let endDate = dateFor(year: 2026, month: 01, day: 01)
+        
+        for month in [oneMonthBefore, twoMonthBefore, threeMonthBefore] {
+            if month >= endDate {
+                result.append(buildOneMonth(month))
+            }
         }
+        
+        guard !result.isEmpty else { return }
+        
+        let set = Set(months)
+        var copy = months
+        for month in result where !set.contains(month) {
+            copy.append(month)
+        }
+        
+        months = copy
+    }
+    
+    private func buildFirstThreeMonth() {
+        var result: [CalendarMonth] = []
+        
+        let month = Date().startOfMonth
+        let oneMonthBefore = month.adding(months: -1)
+        let twoMonthBefore = month.adding(months: -2)
+        
+        let endDate = dateFor(year: 2026, month: 01, day: 01)
+        
+        for month in [month, oneMonthBefore , twoMonthBefore] {
+            if month != endDate {
+                result.append(buildOneMonth(month))
+            }
+        }
+        
+        guard  !result.isEmpty else { return }
         
         months = result
     }
@@ -123,15 +139,13 @@ class Calendar3ViewModel {
     }
     
     private func makeDay(date: Date, isCurrentMonth: Bool) -> CalendarDay {
-        let weekday = calendar.component(.weekday, from: date)
-        let isWeekend = weekday == 1 || weekday == 7
         return CalendarDay(
             id: date.dayId,
             date: date,
             dayNumber: date.day,
             isCurrentMonth: isCurrentMonth,
             isToday: calendar.isDateInToday(date),
-            isWeekend: isWeekend
+            isSelected: false
         )
     }
     

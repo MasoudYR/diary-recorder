@@ -13,13 +13,5 @@ struct CalendarDay: Hashable {
     let dayNumber: Int
     let isCurrentMonth: Bool
     let isToday: Bool
-    let isWeekend: Bool
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
-    }
+    let isSelected: Bool
 }

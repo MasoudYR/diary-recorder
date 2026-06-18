@@ -94,6 +94,11 @@ enum CalendarCompositionalLayout {
         
         let section = NSCollectionLayoutSection(group: monthGroup)
         section.contentInsets = inset
+//        section.visibleItemsInvalidationHandler = { (items, offset, env) -> Void in
+//            let page = round(offset.x / calendarWidth)
+//            
+//            print(">>>>", Self.self, #function, "page: \(page)")
+//        }
         
         return section
 //        let layoutConfig = UICollectionViewCompositionalLayoutConfiguration()
