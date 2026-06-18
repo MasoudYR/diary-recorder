@@ -41,6 +41,7 @@ final class CalendarView: UIView {
     private var diffableDataSource: UICollectionViewDiffableDataSource<CalendarSection, CalendarItem>!
     
     private var cancellables = Set<AnyCancellable>()
+    private var currentSection: Int?
     
     init(config: CalendarConfig = .default) {
         self.viewModel = Calendar3ViewModel(config: config)
@@ -241,11 +242,12 @@ final class CalendarView: UIView {
     }
     
     private func applySnapshot(months: [CalendarMonth]) {
-        var currentSnapshot = NSDiffableDataSourceSnapshot<CalendarSection, CalendarItem>()
+        print(">>>", Self.self, #function, "months: \(months.count)")
+        var newSnapshot = NSDiffableDataSourceSnapshot<CalendarSection, CalendarItem>()
         
         for month in months {
             let section = CalendarSection.month(month)
-            currentSnapshot.appendSections([section])
+            newSnapshot.appendSections([section])
             
             let items: [CalendarItem] = month.days.map { day in
                 
@@ -255,10 +257,16 @@ final class CalendarView: UIView {
                 
                 return .day(day)
             }
-            currentSnapshot.appendItems(items , toSection: section)
+            newSnapshot.appendItems(items , toSection: section)
         }
         
-        diffableDataSource.apply(currentSnapshot, animatingDifferences: false)
+        diffableDataSource.apply(newSnapshot, animatingDifferences: false)
+        diffableDataSource.apply(newSnapshot, animatingDifferences: false) { [self] in
+            print(">>>>", Self.self, #function)
+            guard let currentSection else { return }
+            let indexPath = IndexPath(row: 0, section: currentSection + viewModel.kireKhar)
+            collectionView.scrollToItem(at: indexPath, at: .left, animated: false)
+        }
     }
     
     private func makeCollectionView() -> UICollectionView {
@@ -271,7 +279,7 @@ final class CalendarView: UIView {
         collectionView.delegate = self
         collectionView.allowsSelection = true
         //collectionView.transform = CGAffineTransform(scaleX: -1, y: 1)
-        collectionView.semanticContentAttribute = .forceRightToLeft
+        //collectionView.semanticContentAttribute = .forceRightToLeft
         //collectionView.collectionViewLayout.flipsHorizontallyInOppositeLayoutDirection = true
         
         collectionView.register(
@@ -400,18 +408,23 @@ extension CalendarView {
         let pageWidth = scrollView.bounds.width
         let currentIndex = Int(round(scrollView.contentOffset.x / pageWidth))
         let numberOfSections = diffableDataSource.snapshot().numberOfSections
-        guard let section = diffableDataSource.sectionIdentifier(for: currentIndex) else { return }
+        guard let section = diffableDataSource.sectionIdentifier(for: 0) else { return }
         print("سکشن فعلی: \(currentIndex)")
         
+        print(">>>>", Self.self, #function, "section: \(currentIndex)")
+        
         guard currentIndex < numberOfSections else { return }
+        
+        currentSection = currentIndex
         
         switch section {
         case .month(let month):
             let monthYearString = month.firstDay.transformDateToMonthAndYear()
             monthYearButton.setMonthYearTitle(monthYear: monthYearString)
-
-            if currentIndex == numberOfSections - 1 {
+            
+            if currentIndex == 1 {
                 viewModel.buildThreeMonthsBefore(mainMonth: month)
+                print(">>>>", Self.self, #function, "after moving to section: \(currentIndex)")
             }
             
             delegate?.calendarView(self, didChangeTo: month)

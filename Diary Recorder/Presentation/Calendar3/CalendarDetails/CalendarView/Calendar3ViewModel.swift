@@ -16,6 +16,7 @@ class Calendar3ViewModel {
     
     private var calendar = Calendar.current
     
+    var kireKhar: Int = 0
     
     init(config: CalendarConfig = .default) {
         self.config = config
@@ -41,7 +42,7 @@ class Calendar3ViewModel {
         let firstDayOfTwoMonthBefore = firstDayOfMainMonth.adding(months: -2)
         let firstDayOfThreeMonthBefore = firstDayOfMainMonth.adding(months: -3)
         
-        let endDate = dateFor(year: 2026, month: 01, day: 01)
+        let endDate = dateFor(year: 1970, month: 01, day: 01)
         
         for month in [firstDayOfOneMonthBefore, firstDayOfTwoMonthBefore, firstDayOfThreeMonthBefore] {
             if month >= endDate {
@@ -51,11 +52,15 @@ class Calendar3ViewModel {
         
         guard !result.isEmpty else { return }
         
+        var inserted = 0
         let set = Set(months)
         var copy = months
         for month in result where !set.contains(month) {
-            copy.append(month)
+            copy.insert(month, at: 0)
+            inserted += 1
         }
+        
+        self.kireKhar = inserted
         
         months = copy
     }
@@ -77,7 +82,7 @@ class Calendar3ViewModel {
         
         guard  !result.isEmpty else { return }
         
-        months = result
+        months = result.reversed()
     }
     
     private func buildOneMonth(_ firstDay: Date) -> CalendarMonth {
