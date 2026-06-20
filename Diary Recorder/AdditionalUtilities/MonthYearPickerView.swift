@@ -16,20 +16,25 @@ protocol MonthYearPickerViewDelegate: AnyObject {
 final class MonthYearPickerView: UIView {
     
     weak var delegate: MonthYearPickerViewDelegate?
+
+    private(set) var selectedMonth: Int
+    private(set) var selectedYear: Int
     
-    private var selectedYearIndex: Int = 0
+    private var currentYearIndex: Int = 0
     
     private var yearMonthData: [YearMonthsData] = []
     
     private var startDate: Date
     private var endDate: Date
     
-    private(set) var selectedMonth: Int
-    private(set) var selectedYear: Int
-    
     private var pickerView = UIPickerView()
     
-    private var isPrepared = false
+    private static let monthNameFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.dateFormat = "MMMM"
+        return formatter
+    }()
     
     init(startDate: Date, endDate: Date) {
         self.startDate = startDate
@@ -64,14 +69,22 @@ final class MonthYearPickerView: UIView {
         self.endDate = endDate
         self.selectedYear = startDate.year
         self.selectedMonth = startDate.month
+        
         prepareData(startDate: startDate, endDate: endDate)
         pickerView.reloadAllComponents()
+        scrollToSelectedDate(animated: false)
+    }
+    
+    func select(month: Int, year: Int, animated: Bool = false) {
+        selectedMonth = month
+        selectedYear = year
         scrollToSelectedDate(animated: false)
     }
     
     private func prepareData(startDate: Date, endDate: Date) {
         let calendar = Calendar(identifier: .gregorian)
         var result: [YearMonthsData] = []
+        
         var current = startDate.startOfMonth
         let end = endDate.startOfMonth
         
@@ -89,41 +102,28 @@ final class MonthYearPickerView: UIView {
             current = next
         }
         
-        self.yearMonthData = result.sorted {$0.year < $1.year}
-    }
-    
-    func select(month: Int, year: Int, animated: Bool = false) {
-        selectedMonth = month
-        selectedYear = year
-        scrollToSelectedDate(animated: false)
+        self.yearMonthData = result
     }
     
     private func scrollToSelectedDate(animated: Bool) {
+        guard let yearIndex = yearMonthData.firstIndex(where: { $0.year == selectedYear}) else { return }
         
-        if let yearIndex = yearMonthData.firstIndex(where: { $0.year == selectedYear}) {
-            
-            selectedYearIndex = yearIndex
-            
-            pickerView.selectRow(yearIndex, inComponent: 1, animated: animated)
-            
-            pickerView.reloadComponent(0)
-            if let monthIndex = yearMonthData[yearIndex].months.firstIndex(of: selectedMonth) {
-                pickerView.selectRow(monthIndex, inComponent: 0, animated: animated)
-            }
+        currentYearIndex = yearIndex
+        pickerView.selectRow(yearIndex, inComponent: 1, animated: animated)
+        pickerView.reloadComponent(0)
+        
+        if let monthIndex = yearMonthData[yearIndex].months.firstIndex(of: selectedMonth) {
+            pickerView.selectRow(monthIndex, inComponent: 0, animated: animated)
         }
     }
     
     private func monthNameBuilder(month: Int) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US")
-        formatter.dateFormat = "MMMM"
-        
         var components = DateComponents()
         components.month = month
         
         guard let date = Calendar.current.date(from: components) else { return "ماه \(month)" }
         
-        return  formatter.string(from: date)
+        return  Self.monthNameFormatter.string(from: date)
     }
     
 }
@@ -137,8 +137,8 @@ extension MonthYearPickerView: UIPickerViewDataSource {
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         if component == 0 {
-            guard selectedYearIndex < yearMonthData.count else { return 0 }
-            return yearMonthData[selectedYearIndex].months.count
+            guard currentYearIndex < yearMonthData.count else { return 0 }
+            return yearMonthData[currentYearIndex].months.count
         } else {
             return yearMonthData.count
         }
@@ -155,8 +155,8 @@ extension MonthYearPickerView: UIPickerViewDelegate {
         label.textColor = .label
         
         if component == 0 {
-            guard selectedYearIndex < yearMonthData.count else { return label }
-            let month = yearMonthData[selectedYearIndex].months[row]
+            guard currentYearIndex < yearMonthData.count else { return label }
+            let month = yearMonthData[currentYearIndex].months[row]
             label.text = monthNameBuilder(month: month)
         } else {
             label.text = String(yearMonthData[row].year)
@@ -170,26 +170,22 @@ extension MonthYearPickerView: UIPickerViewDelegate {
     }
     
     func pickerView(_ pickerView: UIPickerView, widthForComponent component: Int) -> CGFloat {
-        component == 0 ? 100 : 100
+        100
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         
         if component == 1 {
-            selectedYearIndex = row
+            currentYearIndex = row
             pickerView.reloadComponent(0)
-            
-            let monthCount = yearMonthData[selectedYearIndex].months.count
-            let safeIndex = min(pickerView.selectedRow(inComponent: 0), monthCount - 1)
-            pickerView.selectRow(safeIndex, inComponent: 0, animated: false)
         }
         
         let monthIndex = pickerView.selectedRow(inComponent: 0)
-        guard selectedYearIndex < yearMonthData.count,
-              monthIndex < yearMonthData[selectedYearIndex].months.count else { return }
+        guard currentYearIndex < yearMonthData.count,
+              monthIndex < yearMonthData[currentYearIndex].months.count else { return }
         
-        selectedYear = yearMonthData[selectedYearIndex].year
-        selectedMonth = yearMonthData[selectedYearIndex].months[monthIndex]
+        selectedYear = yearMonthData[currentYearIndex].year
+        selectedMonth = yearMonthData[currentYearIndex].months[monthIndex]
         
         delegate?.monthYearPickerView(self, didSelect: selectedMonth, year: selectedYear)
     }
