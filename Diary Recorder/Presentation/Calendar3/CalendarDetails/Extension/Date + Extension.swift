@@ -59,4 +59,12 @@ extension Date {
         return monthYearString
     }
     
+    func transformMonthNumberToString() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM"
+        let monthString = formatter.string(from: self)
+        
+        return monthString
+    }
+    
 }

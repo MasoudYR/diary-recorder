@@ -14,6 +14,7 @@ struct CalendarConfig {
     
     var firstWeekday: Int
     
+    
     //var cellHeight: CGFloat
     var cellInRowSpacing: CGFloat
     var rowsSpacing: CGFloat
@@ -25,7 +26,7 @@ struct CalendarConfig {
     static var `default`: CalendarConfig {
         CalendarConfig(
             startDate: Date().startOfMonth,
-            endDate: Date().adding(months: 24).endOfMonth,
+            endDate: Date().adding(months: 1).startOfMonth,
             firstWeekday: 0,
             cellInRowSpacing: 2,
             rowsSpacing: 2,

@@ -75,6 +75,11 @@ final class CalendarView: UIView {
         let monthYearButtonAction = UIAction(identifier: monthYearButtonActionIdentifier) { [unowned self] _ in
             print("this button tapped")
             datePickerAndCalendarState = .datePicker
+//            
+//            let startDate = viewModel.months.first!.firstDay
+//            let endDate = viewModel.months.last!.firstDay
+//            monthYearPickerView.setDateRange(startDate: startDate, endDate: endDate)
+//            
             let collectionVisibleMonth =  viewModel.months[getCurrentVisibleSection()]
             let month = collectionVisibleMonth.firstDay.month
             let year = collectionVisibleMonth.firstDay.year
@@ -234,6 +239,7 @@ final class CalendarView: UIView {
     private func bindViewModel() {
         viewModel.$months
             .receive(on: DispatchQueue.main)
+            .removeDuplicates()
             .sink { [weak self] months in
                 guard let self else { return }
                 self.applySnapshot(months: months)
@@ -242,7 +248,7 @@ final class CalendarView: UIView {
     }
     
     private func applySnapshot(months: [CalendarMonth]) {
-        print(">>>", Self.self, #function, "months: \(months.count)")
+        print(">>>>", Self.self, #function, "months: \(months.count)")
         var newSnapshot = NSDiffableDataSourceSnapshot<CalendarSection, CalendarItem>()
         
         for month in months {
@@ -259,13 +265,19 @@ final class CalendarView: UIView {
             }
             newSnapshot.appendItems(items , toSection: section)
         }
-        
-        diffableDataSource.apply(newSnapshot, animatingDifferences: false)
+        monthYearPickerView.setDateRange(startDate: months.first!.firstDay, endDate: .now)
+        //diffableDataSource.apply(newSnapshot, animatingDifferences: false)
         diffableDataSource.apply(newSnapshot, animatingDifferences: false) { [self] in
             print(">>>>", Self.self, #function)
-            guard let currentSection else { return }
-            let indexPath = IndexPath(row: 0, section: currentSection + viewModel.kireKhar)
-            collectionView.scrollToItem(at: indexPath, at: .left, animated: false)
+            
+            let count = months.count
+            if 1 ... 3 ~= count {
+                collectionView.scrollToItem(at: IndexPath(row: 0, section: count - 1), at: .left, animated: false)
+            } else {
+                guard let currentSection else { return }
+                let indexPath = IndexPath(row: 0, section: currentSection + viewModel.monthOffset)
+                collectionView.scrollToItem(at: indexPath, at: .left, animated: false)
+            }
         }
     }
     
@@ -452,16 +464,4 @@ extension CalendarView: MonthYearPickerViewDelegate {
 enum DatePickerAndCalendarState {
     case datePicker
     case calendar
-}
-
-final class RightAlingendCollectionViewCompositionalLayout: UICollectionViewCompositionalLayout {
-    
-    override var flipsHorizontallyInOppositeLayoutDirection: Bool {
-        true
-    }
-
-    override var developmentLayoutDirection: UIUserInterfaceLayoutDirection {
-        .rightToLeft
-    }
-    
 }

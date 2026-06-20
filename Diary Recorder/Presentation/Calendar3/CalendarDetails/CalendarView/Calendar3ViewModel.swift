@@ -16,7 +16,7 @@ class Calendar3ViewModel {
     
     private var calendar = Calendar.current
     
-    var kireKhar: Int = 0
+    var monthOffset: Int = 0
     
     init(config: CalendarConfig = .default) {
         self.config = config
@@ -60,7 +60,7 @@ class Calendar3ViewModel {
             inserted += 1
         }
         
-        self.kireKhar = inserted
+        self.monthOffset = inserted
         
         months = copy
     }
