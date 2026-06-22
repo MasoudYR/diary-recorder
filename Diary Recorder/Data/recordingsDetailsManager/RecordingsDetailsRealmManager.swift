@@ -162,6 +162,23 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
         return subject.eraseToAnyPublisher()
     }
     
+    func getAllDiariesDataGroupedByDate(startDate: Date, endDate: Date) throws -> [Date: Int] {
+        let calendar = Calendar(identifier: .gregorian)
+        
+        let results = realm
+            .objects(RecordingsDetailsRealmModel.self)
+            .where { $0.date >= startDate && $0.date <= endDate }
+        
+        var grouped: [Date: Int] = [:]
+        
+        for record in results {
+            let dayKey = calendar.startOfDay(for: record.date)
+            grouped[dayKey, default: 0] += 1
+        }
+        
+        return grouped
+    }
+    
     func getNumberOfDaysRecordsInMonth(date: Date) throws -> [Date: Int] {
         
         let calendar = Calendar(identifier: .gregorian)

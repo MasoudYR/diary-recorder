@@ -1,5 +1,5 @@
 //
-//  Calendar3ViewModel.swift
+//  CalendarViewViewModel.swift
 //  Diary Recorder
 //
 //  Created by Masoud on 6/10/26.
@@ -8,20 +8,31 @@
 import Foundation
 import Combine
 
-class Calendar3ViewModel {
+class CalendarViewViewModel {
     
     @Published private(set) var months: [CalendarMonth] = []
     @Published var selectedDate: Date? = nil
     @Published var config: CalendarConfig
     
+    let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
     private var calendar = Calendar.current
-    
-    var monthOffset: Int = 0
+    var diariesData: [Date: Int] = [:]
     
     init(config: CalendarConfig = .default) {
         self.config = config
+        getAllRealmDataGroupedByDate()
         setupCalendar()
         buildAllMonths()
+    }
+    
+//    private func getMonthDataFromRealm(date: Date, yearMonth: YearMonth) {
+//        let currentMonthResult = try! recordingsDetailsRealmManager.getNumberOfDaysRecordsInMonth(date: date)
+//        diariesData[date] = currentMonthResult
+//    }
+    
+    private func getAllRealmDataGroupedByDate() {
+        let data = try! recordingsDetailsRealmManager.getAllDiariesDataGroupedByDate(startDate: config.startDate, endDate: config.endDate)
+        diariesData = data
     }
     
     func isSelected(_ day: CalendarDay) -> Bool {
@@ -77,7 +88,7 @@ class Calendar3ViewModel {
             days.append(makeDay(date: date, isCurrentMonth: false))
         }
         
-        //محاسبه رمزهای ماه جاری
+        //محاسبه روزهای ماه جاری
         for d in 1...daysInMonth {
             let date = dateFor(year: firstDay.year, month: firstDay.month, day: d)
             days.append(makeDay(date: date, isCurrentMonth: true))
@@ -108,13 +119,15 @@ class Calendar3ViewModel {
     }
     
     private func makeDay(date: Date, isCurrentMonth: Bool) -> CalendarDay {
+        print("@@@@@@@ this is number of diaries grouped by Date: \(date) - \(diariesData[date] ?? 0)")
         return CalendarDay(
             id: date.dayId,
             date: date,
             dayNumber: date.day,
             isCurrentMonth: isCurrentMonth,
             isToday: calendar.isDateInToday(date),
-            isSelected: false
+            isSelected: false,
+            numberOfDiaries: diariesData[date] ?? 0
         )
     }
     
@@ -125,3 +138,7 @@ class Calendar3ViewModel {
     }
 }
 
+struct YearMonth: Hashable {
+    let year: Int
+    let month: Int
+}

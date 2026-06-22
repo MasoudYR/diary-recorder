@@ -67,7 +67,7 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
             selectedBackgroundColor: .orange,
             selectedBadgeNum: 0,
             cornerRadius: 20,
-            badgeFontSize: 10
+            badgeFontSize: 12
         )
         
         WeekDayTitlesRowHeader.appearance = WeekDayTitlesAppearance(

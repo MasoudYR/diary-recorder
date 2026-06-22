@@ -95,7 +95,4 @@ struct ThreeMonthsOfOneDate {
     let nextMonth: YearMonth
 }
 
-struct YearMonth: Hashable {
-    let year: Int
-    let month: Int
-}
+

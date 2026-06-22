@@ -15,7 +15,7 @@ final class CalendarView: UIView {
     weak var delegate: CalendarViewDelegate?
     weak var dataSource: CalendarViewDataSource?
     
-    let viewModel: Calendar3ViewModel
+    let viewModel: CalendarViewViewModel
     
     var config: CalendarConfig {
         get {viewModel.config}
@@ -41,7 +41,7 @@ final class CalendarView: UIView {
     private var cancellables = Set<AnyCancellable>()
     
     init(config: CalendarConfig = .default) {
-        self.viewModel = Calendar3ViewModel(config: config)
+        self.viewModel = CalendarViewViewModel(config: config)
         super.init(frame: .zero)
         setupMonthYearButton()
         setupTodayButton()
@@ -216,7 +216,7 @@ final class CalendarView: UIView {
                     isToday: day.isToday,
                     isSelected: isSelected,
                     isOutOfMonth: !day.isCurrentMonth,
-                    badgeNum: nil
+                    badgeNum: day.numberOfDiaries
                 )
                 return cell
                 

@@ -14,4 +14,5 @@ struct CalendarDay: Hashable {
     let isCurrentMonth: Bool
     let isToday: Bool
     let isSelected: Bool
+    let numberOfDiaries: Int
 }

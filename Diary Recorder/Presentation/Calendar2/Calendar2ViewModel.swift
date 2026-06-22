@@ -19,17 +19,17 @@ class Calendar2ViewModel {
     let threeMonthsOfYear: [YearMonth] = []
     
     init() {
-        let date = Date()
-        
-        for num in -10 ... -2 {
-            let newDate = calendar.date(byAdding: .month, value: num, to: date)!
-                .addingTimeInterval(3 * 86400)
-            
-            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
-            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
-            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
-            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
-        }
+//        let date = Date()
+//        
+//        for num in -10 ... -2 {
+//            let newDate = calendar.date(byAdding: .month, value: num, to: date)!
+//                .addingTimeInterval(3 * 86400)
+//            
+//            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
+//            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
+//            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
+//            try? recordingsDetailsRealmManager.saveRecording(RecordingFileDetails(id: UUID(), fileName: "dodooleali.m4a", name: "doddol", date: newDate, duration: 5))
+//        }
     
     }
     
