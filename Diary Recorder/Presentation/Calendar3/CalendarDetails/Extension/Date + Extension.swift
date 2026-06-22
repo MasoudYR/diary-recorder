@@ -67,4 +67,11 @@ extension Date {
         return monthString
     }
     
+    func startOfDay() -> Date {
+        var dateComponents = DateComponents()
+        dateComponents.year = self.year
+        dateComponents.month = self.month
+        dateComponents.day = self.day
+        return Calendar.current.date(from: dateComponents)!
+    }
 }

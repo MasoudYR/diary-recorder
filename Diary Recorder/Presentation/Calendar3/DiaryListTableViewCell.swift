@@ -48,7 +48,6 @@ class DiaryListTableViewCell: UITableViewCell {
         iconView.addSubview(iconImageView)
         
         iconImageView.snp.makeConstraints { make in
-            //make.size.equalTo(20)
             make.center.equalToSuperview()
         }
        

@@ -25,11 +25,6 @@ class CalendarViewViewModel {
         buildAllMonths()
     }
     
-//    private func getMonthDataFromRealm(date: Date, yearMonth: YearMonth) {
-//        let currentMonthResult = try! recordingsDetailsRealmManager.getNumberOfDaysRecordsInMonth(date: date)
-//        diariesData[date] = currentMonthResult
-//    }
-    
     private func getAllRealmDataGroupedByDate() {
         let data = try! recordingsDetailsRealmManager.getAllDiariesDataGroupedByDate(startDate: config.startDate, endDate: config.endDate)
         diariesData = data

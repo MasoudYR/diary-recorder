@@ -12,11 +12,16 @@ import SnapKit
 
 class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarViewDataSource {
     
+    private let viewModel: Calendar3ViewModel
+    private let parentDiariesListTableView = UIView()
+    private let diariesListTableView = UITableView()
     private var calendarView: CalendarView!
+    
     private var cancellables = Set<AnyCancellable>()
     
     
-    init() {
+    init(viewModel: Calendar3ViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -25,15 +30,18 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
     }
     
     static func make() -> Calendar3ViewController {
-        let viewController = Calendar3ViewController()
+        let viewModel =  Calendar3ViewModel()
+        let viewController = Calendar3ViewController(viewModel: viewModel)
         return viewController
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .main
+        bindViewModel()
         setupCalendar()
-        setupLayout()
+        setupCalendarViewLayout()
+        setupDiariesListTableView()
     }
     
     private func setupCalendar() {
@@ -84,7 +92,7 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
         calendarView.clipsToBounds = true
     }
     
-    private func setupLayout() {
+    private func setupCalendarViewLayout() {
         view.addSubview(calendarView)
         calendarView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
@@ -92,12 +100,55 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
             make.height.equalTo(400)
         }
     }
+    
+    private func setupDiariesListTableView() {
+        parentDiariesListTableView.backgroundColor = .systemBackground
+        parentDiariesListTableView.layer.cornerRadius = 20
+        parentDiariesListTableView.layer.masksToBounds = true
+        
+        view.addSubview(parentDiariesListTableView)
+        
+        parentDiariesListTableView.snp.makeConstraints { make in
+            make.top.equalTo(calendarView.snp.bottom).offset(5)
+            make.horizontalEdges.equalTo(calendarView)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
+        }
+        
+        parentDiariesListTableView.isHidden = true
+        diariesListTableView.register(DiaryListTableViewCell.self, forCellReuseIdentifier: DiaryListTableViewCell.identifier)
+        diariesListTableView.delegate = self
+        diariesListTableView.dataSource = self
+        diariesListTableView.rowHeight = 60
+        diariesListTableView.showsVerticalScrollIndicator = false
+        diariesListTableView.separatorInset = .zero
+        diariesListTableView.bounces = false
+        diariesListTableView.backgroundColor = .systemBackground
+        
+        parentDiariesListTableView.addSubview(diariesListTableView)
+        
+        diariesListTableView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+    }
+    
+    private func bindViewModel() {
+        viewModel.$dayDiariesList
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                diariesListTableView.reloadData()
+                parentDiariesListTableView.isHidden = viewModel.dayDiariesList.isEmpty
+            }
+            .store(in: &cancellables)
+    }
 }
 
 extension Calendar3ViewController {
     
     func calendarView(_ cv: CalendarView, didSelect day: CalendarDay) {
         print("✅ انتخاب شد: \(day.date)")
+        viewModel.getOneDayDiareiesList(date: day.date)
     }
     
     func calendarView(_ calendarView: CalendarView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -107,4 +158,29 @@ extension Calendar3ViewController {
     func calendarView(_ cv: CalendarView, didChangeTo month: CalendarMonth) {
         //navigationItem..subtitle = month.title
     }
+}
+
+extension Calendar3ViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        viewModel.dayDiariesList.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = diariesListTableView.dequeueReusableCell(withIdentifier: DiaryListTableViewCell.identifier) as! DiaryListTableViewCell
+        
+        let diary = viewModel.dayDiariesList[indexPath.row]
+        let name = diary.name
+        let duration = viewModel.transformTimeToString(diary.duration)
+        let dateAndTime = viewModel.changeDateAndTime(diary.date)
+        
+        cell.configure(
+            name: name,
+            duration: duration,
+            dateAndTime: dateAndTime
+        )
+        
+        return cell
+    }
+    
+    
 }
