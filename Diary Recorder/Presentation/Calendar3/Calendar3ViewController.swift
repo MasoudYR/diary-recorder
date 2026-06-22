@@ -34,18 +34,18 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
         view.backgroundColor = .systemBackground
         setupCalendar()
         setupLayout()
-        //calendarView.scrollToToday(animated: false)
     }
     
-//    override func viewWillAppear(_ animated: Bool) {
-//        calendarView.scrollToToday(animated: false)
-//    }
-    
     private func setupCalendar() {
-
+        var dateComponents = DateComponents()
+        dateComponents.year = 1970
+        dateComponents.month = 1
+        dateComponents.day = 1
+        let date19700101 = Calendar.current.date(from: dateComponents)!
+        
         let config = CalendarConfig(
-            startDate: Date().adding(months: -12).startOfMonth,
-            endDate: Date().adding(months: 12).endOfMonth,
+            startDate: date19700101 ,
+            endDate: Date(),
             firstWeekday: 7,
             cellInRowSpacing: 2,
             rowsSpacing: 2,

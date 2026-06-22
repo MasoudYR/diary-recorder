@@ -21,7 +21,7 @@ class Calendar3ViewModel {
     init(config: CalendarConfig = .default) {
         self.config = config
         setupCalendar()
-        buildFirstThreeMonth()
+        buildAllMonths()
     }
     
     func isSelected(_ day: CalendarDay) -> Bool {
@@ -33,56 +33,21 @@ class Calendar3ViewModel {
         calendar.firstWeekday = config.firstWeekday
     }
     
-    func buildThreeMonthsBefore(mainMonth: CalendarMonth) {
+    func buildAllMonths() {
+        let firstMonth = config.startDate.startOfMonth
+        let endMonth = config.endDate.startOfMonth
         
+        months = []
+        
+        var currentMonth = firstMonth
         var result: [CalendarMonth] = []
         
-        let firstDayOfMainMonth = mainMonth.firstDay
-        let firstDayOfOneMonthBefore = firstDayOfMainMonth.adding(months: -1)
-        let firstDayOfTwoMonthBefore = firstDayOfMainMonth.adding(months: -2)
-        let firstDayOfThreeMonthBefore = firstDayOfMainMonth.adding(months: -3)
-        
-        let endDate = dateFor(year: 1970, month: 01, day: 01)
-        
-        for month in [firstDayOfOneMonthBefore, firstDayOfTwoMonthBefore, firstDayOfThreeMonthBefore] {
-            if month >= endDate {
-                result.append(buildOneMonth(month))
-            }
+        while currentMonth <= endMonth {
+            result.append(buildOneMonth(currentMonth))
+            currentMonth = currentMonth.adding(months: 1)
         }
         
-        guard !result.isEmpty else { return }
-        
-        var inserted = 0
-        let set = Set(months)
-        var copy = months
-        for month in result where !set.contains(month) {
-            copy.insert(month, at: 0)
-            inserted += 1
-        }
-        
-        self.monthOffset = inserted
-        
-        months = copy
-    }
-    
-    private func buildFirstThreeMonth() {
-        var result: [CalendarMonth] = []
-        
-        let firstDayOfMonth = Date().startOfMonth
-        let firstDayOfOneMonthBefore = firstDayOfMonth.adding(months: -1)
-        let firstDayOfTwoMonthBefore = firstDayOfMonth.adding(months: -2)
-        
-        let endDate = dateFor(year: 2026, month: 01, day: 01)
-        
-        for month in [firstDayOfMonth, firstDayOfOneMonthBefore, firstDayOfTwoMonthBefore] {
-            if month != endDate {
-                result.append(buildOneMonth(month))
-            }
-        }
-        
-        guard  !result.isEmpty else { return }
-        
-        months = result.reversed()
+        self.months = result
     }
     
     private func buildOneMonth(_ firstDay: Date) -> CalendarMonth {
@@ -140,7 +105,6 @@ class Calendar3ViewModel {
             numberOfWeeks: numberOfWeeks,
             days: days
         )
-        
     }
     
     private func makeDay(date: Date, isCurrentMonth: Bool) -> CalendarDay {

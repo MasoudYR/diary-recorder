@@ -25,8 +25,8 @@ struct CalendarConfig {
     
     static var `default`: CalendarConfig {
         CalendarConfig(
-            startDate: Date().startOfMonth,
-            endDate: Date().adding(months: 1).startOfMonth,
+            startDate: Date().adding(months: -24).startOfMonth,
+            endDate: Date().startOfMonth,
             firstWeekday: 0,
             cellInRowSpacing: 2,
             rowsSpacing: 2,
