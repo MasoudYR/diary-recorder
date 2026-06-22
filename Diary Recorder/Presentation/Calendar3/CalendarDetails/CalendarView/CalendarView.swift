@@ -90,7 +90,7 @@ final class CalendarView: UIView {
         todayButton.setTitleColor(.label, for: .normal)
         todayButton.tintColor = .label
         todayButton.layer.cornerRadius = 15
-        todayButton.layer.backgroundColor = UIColor.systemBackground.cgColor
+        todayButton.layer.backgroundColor = UIColor.main.cgColor
         todayButton.layer.borderColor = UIColor.label.cgColor
         todayButton.layer.borderWidth = 1
         
@@ -115,7 +115,7 @@ final class CalendarView: UIView {
     
     private func setupCalendarAndPickerView() {
        addSubview(calendarAndPickerViewParentView)
-        calendarAndPickerViewParentView.backgroundColor = .green
+        calendarAndPickerViewParentView.backgroundColor = .systemBackground
         calendarAndPickerViewParentView.snp.makeConstraints { make in
             make.top.equalTo(monthYearButton.snp.bottom)
             make.horizontalEdges.equalToSuperview()
@@ -143,7 +143,7 @@ final class CalendarView: UIView {
     }
     
     private func setupMonthYearPickerView() {
-        monthYearPickerView.backgroundColor = .white
+        monthYearPickerView.backgroundColor = .systemBackground
         monthYearPickerView.delegate = self
         
         calendarAndPickerViewParentView.addSubview(monthYearPickerView)
@@ -153,8 +153,6 @@ final class CalendarView: UIView {
             make.bottom.equalToSuperview()
             make.top.equalToSuperview()
         }
-        
-        monthYearPickerView.select(month: 06, year: 2026)
         
         closeMonthYearPickerButton.tintColor = .label
         let symbolConfigure = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
@@ -269,7 +267,6 @@ final class CalendarView: UIView {
         
         let layout = makeCollectionViewLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .systemMint
         collectionView.isPagingEnabled = true
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.delegate = self

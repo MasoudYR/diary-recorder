@@ -42,10 +42,9 @@ class MonthYearButton: UIButton {
             make.left.equalToSuperview()
             make.centerY.equalToSuperview()
         }
-        let symbolConfigue = UIImage.SymbolConfiguration(pointSize: 25, weight: .semibold)
+        let symbolConfigue = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
         buttonImageView.image = UIImage(systemName: "chevron.right", withConfiguration: symbolConfigue)
         buttonImageView.tintColor = .label
-        buttonImageView.backgroundColor = .magenta
         
         addSubview(buttonImageView)
         
@@ -61,7 +60,7 @@ class MonthYearButton: UIButton {
     }
     
     private func buttonStateUpdateView() {
-        let symbolConfigue = UIImage.SymbolConfiguration(pointSize: 25, weight: .semibold)
+        let symbolConfigue = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
         if  buttonState == .calendar {
             buttonImageView.image = UIImage(systemName: "chevron.right", withConfiguration: symbolConfigue)
         } else {

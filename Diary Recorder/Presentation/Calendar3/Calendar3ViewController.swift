@@ -31,7 +31,7 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .main
         setupCalendar()
         setupLayout()
     }
@@ -56,11 +56,11 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
         DayCell.appearance = DayAppearance(
             normalFont: .roundedFont(ofSize: 18, weight: .semibold),
             normalColor: .label,
-            normalBackgroundColor: .systemBackground,
+            normalBackgroundColor: .main,
             normalBadgeNum: 0,
             todayFont: .roundedFont(ofSize: 18, weight: .semibold),
             todayColor: .systemRed,
-            todayBackgroundColor: .systemBackground,
+            todayBackgroundColor: .main,
             todayBadgeNum: 0,
             selectedFont: .roundedFont(ofSize: 18, weight: .semibold),
             selectedColor: .label,
@@ -79,8 +79,9 @@ class Calendar3ViewController: UIViewController, CalendarViewDelegate, CalendarV
         calendarView = CalendarView(config: config)
         calendarView.delegate = self
         calendarView.dataSource = self
-        calendarView.backgroundColor = .green
+        calendarView.backgroundColor = .systemBackground
         calendarView.layer.cornerRadius = 20
+        calendarView.clipsToBounds = true
     }
     
     private func setupLayout() {

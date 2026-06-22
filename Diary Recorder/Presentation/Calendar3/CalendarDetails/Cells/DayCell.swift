@@ -50,7 +50,7 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
     }
     
     private func setupUI() {
-        contentView.backgroundColor = .systemBackground
+        contentView.backgroundColor = .main
         contentView.clipsToBounds = true
         dayDecorateView.clipsToBounds = true
         setupStackView()
