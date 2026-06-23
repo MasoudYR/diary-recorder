@@ -93,24 +93,24 @@ final class CalendarView: UIView {
         todayButton.titleLabel?.font = UIFont.roundedFont(ofSize: 15, weight: .regular)
         todayButton.setTitleColor(.label, for: .normal)
         todayButton.tintColor = .label
-        todayButton.layer.cornerRadius = 15
+        todayButton.layer.cornerRadius = 20
         todayButton.layer.backgroundColor = UIColor.main.cgColor
-        todayButton.layer.borderColor = UIColor.label.cgColor
-        todayButton.layer.borderWidth = 1
+        //todayButton.layer.borderColor = UIColor.systemGray.cgColor
+        //todayButton.layer.borderWidth = 1
         
         addSubview(todayButton)
         
         todayButton.snp.makeConstraints { make in
-            make.right.equalToSuperview().inset(15)
+            make.right.equalToSuperview().inset(10)
             make.centerY.equalTo(monthYearButton)
-            make.width.equalTo(60)
-            make.height.equalTo(30)
+            make.width.equalTo(70)
+            make.height.equalTo(40)
         }
         
         let todayButtonActionIdentifier = UIAction.Identifier("todayButtonActionIdentifier")
         let todayButtonAction = UIAction(identifier: todayButtonActionIdentifier) { [unowned self] _ in
             print("todayButton tapped")
-            scrollToToday()
+            todaySelection(animated: true)
         }
         
         todayButton.removeAction(identifiedBy: todayButtonActionIdentifier, for: .touchUpInside)
@@ -263,11 +263,14 @@ final class CalendarView: UIView {
             newSnapshot.appendItems(items , toSection: section)
         }
         monthYearPickerView.setDateRange(startDate: months.first!.firstDay, endDate: .now)
-        diffableDataSource.apply(newSnapshot, animatingDifferences: false) { [self] in
+        diffableDataSource.apply(newSnapshot, animatingDifferences: false) { [weak self] in
+            guard let self else { return }
             if atFirstShowOfCalendarView {
                 atFirstShowOfCalendarView = false
                 guard let lastMonth = months.last else { return }
                 scroll(to: lastMonth)
+                
+                print("@@@@ we are in the month, \(lastMonth)")
             }
         }
     }
@@ -342,6 +345,27 @@ final class CalendarView: UIView {
         let today = Date()
         if let month = viewModel.months.first(where: { $0.firstDay.year == today.year && $0.firstDay.month == today.month }) {
             scroll(to: month, animated: animated)
+        }
+    }
+    
+    func todaySelection(animated: Bool = false) {
+        guard let lastMonth = viewModel.months.last else { return }
+        scroll(to: lastMonth,animated: animated)
+        
+        print("@@@@ we are in the month, \(lastMonth)")
+
+        for day in lastMonth.days {
+            if day.isToday {
+                let indexPath = IndexPath(row: lastMonth.days.firstIndex(of: day)!, section: viewModel.months.count - 1)
+                print("^^^^ this is index path of today: \(indexPath))")
+                collectionView.selectItem(
+                    at: indexPath,
+                    animated: animated,
+                    scrollPosition: .left
+                )
+                
+                self.collectionView.delegate?.collectionView?(self.collectionView, didSelectItemAt: indexPath)
+            }
         }
     }
     

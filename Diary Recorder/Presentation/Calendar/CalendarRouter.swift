@@ -36,7 +36,7 @@ class CalendarRouter {
             
             sheet.prefersEdgeAttachedInCompactHeight = true
             sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
-            sheet.preferredCornerRadius = 16
+            sheet.preferredCornerRadius = 20
         }
         nameDiaryViewController.isModalInPresentation = true
         calendarViewController.present(nameDiaryViewController, animated: true)
@@ -65,7 +65,7 @@ class CalendarRouter {
             sheet.prefersGrabberVisible = true
             sheet.prefersEdgeAttachedInCompactHeight = true
             sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
-            sheet.preferredCornerRadius = 16
+            sheet.preferredCornerRadius = 20
         }
         calendarViewController.present(diaryPlayerViewController, animated: true)
     }

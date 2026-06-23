@@ -36,12 +36,7 @@ class DiaryPlayerViewController: UIViewController {
     private let previousButton = UIButton()
     
     private var progressTimer: Timer?
-//    private var state: PlayingState = .idle {
-//        didSet {
-//            print(">>>", Self.self, #function, "state: \(state)")
-//            updateView()
-//        }
-//    }
+
     private var cancellables = Set<AnyCancellable>()
     
     init(viewModel: DiaryPlayerViewModel, router: DiaryPlayerRouter) {
@@ -94,7 +89,6 @@ class DiaryPlayerViewController: UIViewController {
         setupViewsButtonsGroupView()
         setupViewsButtonsGroupStackViewArrangedSubviews()
         setupActions()
-        updateView()
     }
     
     private func setupViewsMainStackView() {
@@ -113,13 +107,13 @@ class DiaryPlayerViewController: UIViewController {
     
     private func setupViewsDetailsView() {
         nameLabel.text = "Name: No Name"
-        nameLabel.font = .systemFont(ofSize: 18)
+        nameLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
         nameLabel.textColor = .label
         nameLabel.textAlignment = .left
         nameLabel.numberOfLines = 0
         
         dateLabel.text = "Date: 2026-01-01 10:10:10"
-        dateLabel.font = .systemFont(ofSize: 18)
+        dateLabel.font = .roundedFont(ofSize: 17, weight: .regular)
         dateLabel.textColor = .label
         dateLabel.textAlignment = .left
         dateLabel.numberOfLines = 0
@@ -273,10 +267,6 @@ class DiaryPlayerViewController: UIViewController {
         buttonsVStackView.addArrangedSubview(stopButton)
         
         hStackView.addArrangedSubview(buttonsVStackView)
-    }
-    
-    private func updateView() {
-
     }
     
     private func setupActions() {

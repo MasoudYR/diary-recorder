@@ -231,4 +231,11 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
                 return sample
             }
     }
+    
+    func getOldestDate() throws -> Date {
+        return realm.objects(RecordingsDetailsRealmModel.self)
+            .sorted(by: \.date, ascending: true)
+            .first
+            .map { $0.date } ?? Date()
+    }
 }

@@ -36,7 +36,7 @@ class RecorderMainPageRouter {
             
             sheet.prefersEdgeAttachedInCompactHeight = true
             sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
-            sheet.preferredCornerRadius = 16
+            sheet.preferredCornerRadius = 20
         }
         nameDiaryViewController.isModalInPresentation = true
         recorderMainPageViewController.present(nameDiaryViewController, animated: true)

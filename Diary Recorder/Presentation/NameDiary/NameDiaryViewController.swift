@@ -77,7 +77,7 @@ class NameDiaryViewController: UIViewController {
     
     private func setupNameLabel() {
         TitleLabel.text = "Name Your Diary"
-        TitleLabel.font = .systemFont(ofSize: 24, weight: .bold)
+        TitleLabel.font = .roundedFont(ofSize: 24, weight: .bold)
         TitleLabel.textAlignment = .center
         
         vStackView.addArrangedSubview(TitleLabel)
@@ -86,18 +86,20 @@ class NameDiaryViewController: UIViewController {
     private func setupTextFieldView() {
         nameTextFieldView.layer.borderWidth = 1
         nameTextFieldView.layer.borderColor = UIColor.label.cgColor
-        nameTextFieldView.layer.cornerRadius = 8
+        nameTextFieldView.layer.cornerRadius = 20
+        nameTextFieldView.backgroundColor = .main
         
         nameTextField.delegate = self
         nameTextField.text = viewModel.text
         nameTextField.placeholder = "Maximum 50 characters"
-        nameTextField.font = UIFont.systemFont(ofSize: 18, weight: .regular)
+        nameTextField.font = .roundedFont(ofSize: 18, weight: .regular)
         nameTextField.textColor = .label
-        nameTextField.backgroundColor = .systemBackground
+        nameTextField.backgroundColor = .main
         
         nameTextFieldView.addSubview(nameTextField)
         nameTextField.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(10)
+            make.verticalEdges.equalToSuperview().inset(15)
+            make.horizontalEdges.equalToSuperview().inset(15)
         }
         
         vStackView.addArrangedSubview(nameTextFieldView)
@@ -116,9 +118,11 @@ class NameDiaryViewController: UIViewController {
         cancelButton.setTitle("Cancel", for: .normal)
         cancelButton.setTitleColor(.label, for: .normal)
         cancelButton.tintColor = .label
-        cancelButton.layer.cornerRadius = 8
-        cancelButton.layer.borderWidth = 1
-        cancelButton.layer.borderColor = UIColor.label.cgColor
+        cancelButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
+        cancelButton.backgroundColor = .main
+        cancelButton.layer.cornerRadius = 20
+//        cancelButton.layer.borderWidth = 1
+//        cancelButton.layer.borderColor = UIColor.label.cgColor
         
         renameButton.snp.makeConstraints { make in
             make.height.equalTo(50)
@@ -130,9 +134,11 @@ class NameDiaryViewController: UIViewController {
         renameButton.setTitle("Save", for: .normal)
         renameButton.setTitleColor(.label, for: .normal)
         renameButton.tintColor = .label
-        renameButton.layer.cornerRadius = 8
-        renameButton.layer.borderWidth = 1
-        renameButton.layer.borderColor = UIColor.label.cgColor
+        renameButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
+        renameButton.backgroundColor = .main
+        renameButton.layer.cornerRadius = 20
+//        renameButton.layer.borderWidth = 1
+//        renameButton.layer.borderColor = UIColor.label.cgColor
         
         renameButton.snp.makeConstraints { make in
             make.height.equalTo(50)

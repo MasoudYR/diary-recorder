@@ -11,11 +11,9 @@ import SnapKit
 
 class DeleteAlertViewController: UIViewController {
     
-    //private let viewModel: DeleteAlertViewModel
-    //private let router: DeleteAlertRouter
-    
     private let vStackView = UIStackView()
-    private let deleteIconeImageView = UIImageView()
+    private let parentDeleteIconImageView = UIView()
+    private let deleteIconImageView = UIImageView()
     private let titleLabel = UILabel()
     private let deleteMessageLabel = UILabel()
     private let buttonsHStackView = UIStackView()
@@ -35,8 +33,8 @@ class DeleteAlertViewController: UIViewController {
     static func make(deleteHandler: @escaping () -> Void) -> DeleteAlertViewController {
         let viewController = DeleteAlertViewController(deleteAction: deleteHandler)
         if let sheet = viewController.sheetPresentationController {
-            sheet.detents = [.custom { _ in 250 }]
-            sheet.preferredCornerRadius = 16
+            sheet.detents = [.custom { _ in 220 }]
+            sheet.preferredCornerRadius = 20
             sheet.prefersEdgeAttachedInCompactHeight = true
             sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
         }
@@ -62,9 +60,9 @@ class DeleteAlertViewController: UIViewController {
         vStackView.axis = .vertical
         vStackView.spacing = 10
         vStackView.distribution = .fill
-        vStackView.alignment = .center
+        vStackView.alignment = .fill
         vStackView.isLayoutMarginsRelativeArrangement = true
-        vStackView.layoutMargins = .init(top: 30, left: 10, bottom: 10, right: 10)
+        vStackView.layoutMargins = .init(top: 30, left: 30, bottom: 15, right: 30)
         view.addSubview(vStackView)
         
         vStackView.snp.makeConstraints { make in
@@ -73,27 +71,32 @@ class DeleteAlertViewController: UIViewController {
     }
     
     private func setupImageIconView() {
-        deleteIconeImageView.image = UIImage(systemName: "trash")
-        deleteIconeImageView.tintColor = .label
-        deleteIconeImageView.snp.makeConstraints { make in
+        deleteIconImageView.image = UIImage(systemName: "trash")
+        deleteIconImageView.tintColor = .label
+        
+        parentDeleteIconImageView.addSubview(deleteIconImageView)
+        
+        deleteIconImageView.snp.makeConstraints { make in
             make.size.equalTo(30)
+            make.center.equalToSuperview()
+            make.verticalEdges.equalToSuperview()
         }
         
-        vStackView.addArrangedSubview(deleteIconeImageView)
+        vStackView.addArrangedSubview(parentDeleteIconImageView)
     }
     
     private func setupDeleteMessageLabels() {
         titleLabel.text = "Delete Alert"
-        titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
+        titleLabel.font = .roundedFont(ofSize: 20, weight: .bold)
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
         
         vStackView.addArrangedSubview(titleLabel)
         
         deleteMessageLabel.text = "Are you sure you want to delete this file?"
-        deleteMessageLabel.font = .systemFont(ofSize: 18)
+        deleteMessageLabel.font = .roundedFont(ofSize: 18, weight: .regular)
         deleteMessageLabel.textColor = .label
-        deleteMessageLabel.textAlignment = .left
+        deleteMessageLabel.textAlignment = .center
         deleteMessageLabel.numberOfLines = 0
         
         vStackView.addArrangedSubview(deleteMessageLabel)
@@ -103,7 +106,7 @@ class DeleteAlertViewController: UIViewController {
     private func setupButtonsHStackView() {
         buttonsHStackView.axis = .horizontal
         buttonsHStackView.spacing = 40
-        buttonsHStackView.distribution = .fill
+        buttonsHStackView.distribution = .fillEqually
         buttonsHStackView.alignment = .fill
         
         vStackView.addArrangedSubview(buttonsHStackView)
@@ -112,30 +115,30 @@ class DeleteAlertViewController: UIViewController {
     private func setupYesAndNoButtons() {
         yesButton.setTitle("Yes", for: .normal)
         yesButton.setTitleColor(.label, for: .normal)
-        yesButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .medium)
-        yesButton.layer.cornerRadius = 8
-        yesButton.backgroundColor = .systemBackground
-        yesButton.layer.borderWidth = 1
-        yesButton.layer.borderColor = UIColor.label.cgColor
+        yesButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
+        yesButton.layer.cornerRadius = 20
+        yesButton.backgroundColor = .main
+//        yesButton.layer.borderWidth = 1
+//        yesButton.layer.borderColor = UIColor.label.cgColor
         
         yesButton.snp.makeConstraints { make in
             make.height.equalTo(50)
-            make.width.equalTo(120)
+            //make.width.equalTo(120)
         }
         
         buttonsHStackView.addArrangedSubview(yesButton)
         
         noButton.setTitle("No", for: .normal)
         noButton.setTitleColor(.label, for: .normal)
-        noButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .medium)
-        noButton.layer.cornerRadius = 8
-        noButton.backgroundColor = .systemBackground
-        noButton.layer.borderWidth = 1
-        noButton.layer.borderColor = UIColor.label.cgColor
+        noButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
+        noButton.layer.cornerRadius = 20
+        noButton.backgroundColor = .main
+//        noButton.layer.borderWidth = 1
+//        noButton.layer.borderColor = UIColor.label.cgColor
         
         noButton.snp.makeConstraints { make in
             make.height.equalTo(50)
-            make.width.equalTo(120)
+            //make.width.equalTo(120)
         }
         
         buttonsHStackView.addArrangedSubview(noButton)

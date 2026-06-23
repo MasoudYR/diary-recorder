@@ -56,7 +56,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         appearance.configureWithOpaqueBackground()
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.label,
-            .font: UIFont.roundedFont(ofSize: 25, weight: .semibold)
+            .font: UIFont.roundedFont(ofSize: 23, weight: .regular)
         ]
         appearance.shadowColor = .clear
         appearance.backgroundColor = UIColor.init(named: "MainColor")
@@ -67,14 +67,10 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
     }
     
     private func setupCalendar() {
-        var dateComponents = DateComponents()
-        dateComponents.year = 1970
-        dateComponents.month = 1
-        dateComponents.day = 1
-        let date19700101 = Calendar.current.date(from: dateComponents)!
+        let startDate = viewModel.getOldestDiaryDate()
         
         let config = CalendarConfig(
-            startDate: date19700101 ,
+            startDate: startDate ,
             endDate: Date(),
             firstWeekday: 7,
             cellInRowSpacing: 2,
@@ -118,7 +114,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         view.addSubview(calendarView)
         calendarView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
-            make.horizontalEdges.equalToSuperview()
+            make.horizontalEdges.equalToSuperview().inset(15)
             make.height.equalTo(400)
         }
     }
@@ -131,7 +127,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         view.addSubview(parentDiariesListTableView)
         
         parentDiariesListTableView.snp.makeConstraints { make in
-            make.top.equalTo(calendarView.snp.bottom).offset(5)
+            make.top.equalTo(calendarView.snp.bottom).offset(10)
             make.horizontalEdges.equalTo(calendarView)
             make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
