@@ -12,13 +12,6 @@ struct CalendarMonth: Hashable {
     let title: String
     let firstDay: Date
     let numberOfWeeks: Int
-    let days: [CalendarDay]
+    var days: [CalendarDay]
     
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.id == rhs.id
-    }
 }

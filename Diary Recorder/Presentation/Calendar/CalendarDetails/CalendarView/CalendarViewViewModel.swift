@@ -12,11 +12,13 @@ class CalendarViewViewModel {
     
     @Published private(set) var months: [CalendarMonth] = []
     @Published var selectedDate: Date? = nil
+    @Published var selectedDay: CalendarDay? = nil
     @Published var config: CalendarConfig
     
     let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
     private var calendar = Calendar.current
     var diariesData: [Date: Int] = [:]
+    private let fileURLProvider: RecordingDiaryFileURLProvider = .default()
     
     init(config: CalendarConfig = .default) {
         self.config = config
@@ -39,7 +41,7 @@ class CalendarViewViewModel {
         calendar.firstWeekday = config.firstWeekday
     }
     
-    func buildAllMonths() {
+    private func buildAllMonths() {
         let firstMonth = config.startDate.startOfMonth
         let endMonth = config.endDate.startOfMonth
         
@@ -124,6 +126,48 @@ class CalendarViewViewModel {
             isSelected: false,
             numberOfDiaries: diariesData[date] ?? 0
         )
+    }
+    
+    func delete(diary: RecordingFileDetails) {
+        print("delete action function inside diarylistviewmodel is called")
+        //print("diarylistdatacollection count: \(dayDiariesList.count)")
+        do {
+            try recordingsDetailsRealmManager.removeRecording(withID: diary.id)
+            guard let selectedDay else { return }
+            print(">>>>", Self.self, #function, "selectedDay: \(selectedDay)")
+            let calendarMonthId = selectedDay.date.monthId
+            guard let calendarMonthIndex = months.firstIndex(where: { $0.id == calendarMonthId }),
+                  let dayIndex = months[calendarMonthIndex].days.firstIndex(of: selectedDay) else { return }
+            
+            months[calendarMonthIndex].days[dayIndex] = CalendarDay(
+                id: selectedDay.id,
+                date: selectedDay.date,
+                dayNumber: selectedDay.dayNumber,
+                isCurrentMonth: selectedDay.isCurrentMonth,
+                isToday: selectedDay.isToday,
+                isSelected: selectedDay.isSelected,
+                numberOfDiaries: selectedDay.numberOfDiaries - 1
+            )
+            
+            print(">>>>", Self.self, #function, "updated haroooooom zallllin...")
+        } catch {
+            print("Delete failed: \(error)")
+        }
+    }
+    
+    func renameRecording(diary: RecordingFileDetails, name: String, handler: () -> Void) {
+        do {
+            try recordingsDetailsRealmManager.renameRecording(diary, to: name)
+            handler()
+        } catch {
+            print("rename diary Error: \(error)")
+        }
+    }
+    
+    func shareRecording(_ diary: RecordingFileDetails) -> URL? {
+        let url = fileURLProvider.makeDiaryFileURL(named: diary.fileName)
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        return url
     }
     
     private func dateFor(year: Int, month: Int, day: Int) -> Date {

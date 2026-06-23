@@ -28,6 +28,8 @@ final class CalendarView: UIView {
         }
     }
     
+    private var atFirstShowOfCalendarView: Bool = true
+    
     private let monthYearButton = MonthYearButton()
     private let todayButton = UIButton()
     private let calendarAndPickerViewParentView = UIView()
@@ -37,6 +39,8 @@ final class CalendarView: UIView {
     private let closeMonthYearPickerButton = UIButton()
     
     private var diffableDataSource: UICollectionViewDiffableDataSource<CalendarSection, CalendarItem>!
+    
+    let diffableDataSourceActionPassthroughSubject = PassthroughSubject<DiffableDataSourceActionAndData, Never>()
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -236,6 +240,8 @@ final class CalendarView: UIView {
                 self.applySnapshot(months: months)
             }
             .store(in: &cancellables)
+        
+        bindDiffableDataSourceActions()
     }
     
     private func applySnapshot(months: [CalendarMonth]) {
@@ -258,8 +264,11 @@ final class CalendarView: UIView {
         }
         monthYearPickerView.setDateRange(startDate: months.first!.firstDay, endDate: .now)
         diffableDataSource.apply(newSnapshot, animatingDifferences: false) { [self] in
-            guard let lastMonth = months.last else { return }
-            scroll(to: lastMonth)
+            if atFirstShowOfCalendarView {
+                atFirstShowOfCalendarView = false
+                guard let lastMonth = months.last else { return }
+                scroll(to: lastMonth)
+            }
         }
     }
     
@@ -359,6 +368,7 @@ extension CalendarView: UICollectionViewDelegate {
         switch item {
         case .day(let day):
             viewModel.selectedDate = day.date
+            viewModel.selectedDay = day
             var snapshot = diffableDataSource.snapshot()
             snapshot.reconfigureItems([item])
             diffableDataSource.apply(snapshot)
@@ -374,6 +384,7 @@ extension CalendarView: UICollectionViewDelegate {
         switch item {
         case .day:
             viewModel.selectedDate = nil
+            viewModel.selectedDay = nil
             
             var snapshot = diffableDataSource.snapshot()
             snapshot.reconfigureItems([item])
@@ -422,7 +433,46 @@ extension CalendarView: MonthYearPickerViewDelegate {
     }
 }
 
+extension CalendarView {
+    
+    func bindDiffableDataSourceActions() {
+        diffableDataSourceActionPassthroughSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] item in
+                guard let self else { return }
+                let dayDiary = item.dayDiary
+                let actionType = item.type
+                
+                switch actionType {
+                case .delete:
+                    viewModel.delete(diary: dayDiary)
+                case .update(let name, let handler):
+                    viewModel.renameRecording(diary: dayDiary, name: name, handler: handler)
+                case .add:
+                    ()
+                case .share(let handler):
+                    guard let url = viewModel.shareRecording(dayDiary) else { return }
+                    handler(url)
+                }
+            }
+            .store(in: &cancellables)
+    }
+}
+
 enum DatePickerAndCalendarState {
     case datePicker
     case calendar
+}
+
+
+enum DiffableDataSourceActionType {
+    case delete
+    case update(name: String, handler: () -> Void)
+    case add
+    case share(handler: (URL) -> Void)
+}
+
+struct DiffableDataSourceActionAndData {
+    let dayDiary: RecordingFileDetails
+    let type: DiffableDataSourceActionType
 }

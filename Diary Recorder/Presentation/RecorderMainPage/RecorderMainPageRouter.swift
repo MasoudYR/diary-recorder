@@ -18,7 +18,7 @@ class RecorderMainPageRouter {
     func navigateToDiaryList() {
         guard let recorderMainPageViewController,
               let navigationController = recorderMainPageViewController.navigationController else { return }
-        let diaryListViewController = DiaryListViewController.make()
+        let diaryListViewController = CalendarViewController.make()
         navigationController.pushViewController(diaryListViewController, animated: true)
     }
     
