@@ -212,13 +212,14 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
         return result.count
     }
     
-    func getDiariesOfOneDate(date: Date) throws -> [RecordingFileDetails] {
+    func getDiariesOfOneDate(date: Date) throws(ListRecordingError) -> [RecordingFileDetails] {
         let tomorrow = date.adding(days: 1).startOfDay()
         let today =  date.startOfDay()
         
         return realm
             .objects(RecordingsDetailsRealmModel.self)
             .where { $0.date >= today && $0.date < tomorrow }
+            .sorted(by: \.date, ascending: false)
             .map {
                 let sample = RecordingFileDetails(
                     id: $0.identifier,

@@ -22,6 +22,7 @@ enum RenameRecordingError: Error {
     case recordingNotFound
 }
 enum ListRecordingError: Error {
+    case realmNotAvailable
     case failedToList
 }
 

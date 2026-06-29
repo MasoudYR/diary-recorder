@@ -56,7 +56,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         appearance.configureWithOpaqueBackground()
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.label,
-            .font: UIFont.roundedFont(ofSize: 23, weight: .regular)
+            .font: UIFont.roundedFont(ofSize: 23, weight: .semibold)
         ]
         appearance.shadowColor = .clear
         appearance.backgroundColor = UIColor.init(named: "MainColor")
