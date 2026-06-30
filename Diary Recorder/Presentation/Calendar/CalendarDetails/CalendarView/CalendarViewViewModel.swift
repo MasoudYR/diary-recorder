@@ -14,6 +14,7 @@ class CalendarViewViewModel {
     @Published var selectedDate: Date? = nil
     @Published var selectedDay: CalendarDay? = nil
     @Published var config: CalendarConfig
+    @Published var errorMessage: ErrorModel?
     
     let recordingsDetailsRealmManager = RecordingsDetailsRealmManager.shared
     private var calendar = Calendar.current
@@ -152,15 +153,11 @@ class CalendarViewViewModel {
             print(">>>>", Self.self, #function, "updated haroooooom zallllin...")
         } catch {
             print("Delete failed: \(error)")
-            switch error {
-            case .diaryNotFound:
-                //handle passing error
-                ()
-            case .failedToRemove:
-                //handle passing error
-                ()
-            default:
-                break
+
+            if error == .failedToRemove {
+                let title = "Delete Alert"
+                let message = error.description
+                self.errorMessage = ErrorModel(title: title, message: message)
             }
         }
     }
@@ -171,15 +168,12 @@ class CalendarViewViewModel {
             handler()
         } catch {
             print("rename diary Error: \(error)")
-            switch error {
-            case .diaryNotFound:
-                //handle passing error
-                ()
-            case .failedToRename:
-                //handle passing error
-                ()
-            default:
-                break
+
+            if error == .failedToRename {
+                let title = "Rename Alert"
+                let message = error.description
+                self.errorMessage = ErrorModel(title: title, message: message)
+    
             }
         }
     }

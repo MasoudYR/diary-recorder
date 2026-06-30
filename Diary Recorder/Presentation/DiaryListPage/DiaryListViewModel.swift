@@ -61,15 +61,8 @@ class DiaryListViewModel {
             try recordingsDetailsRealmManager.removeDiary(withID: diary.id)
         } catch {
             print("Delete failed: \(error)")
-            switch error {
-            case .diaryNotFound:
+            if error ==  .failedToRemove {
                 //handle showing alert
-                ()
-            case .failedToRemove:
-                //handle showing alert
-                ()
-            default:
-                break
             }
         }
     }
@@ -99,15 +92,8 @@ class DiaryListViewModel {
             try recordingsDetailsRealmManager.renameDiary(diary: selectedDiary, to: name)
         } catch {
             print("rename diary Error: \(error)")
-            switch error {
-            case .diaryNotFound:
+            if error ==  .failedToRemove {
                 //handle showing alert
-                ()
-            case .failedToRename:
-                //handle showing alert
-                ()
-            default:
-                break
             }
         }
     }

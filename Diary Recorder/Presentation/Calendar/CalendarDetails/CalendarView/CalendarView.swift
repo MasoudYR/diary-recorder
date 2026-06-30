@@ -245,7 +245,7 @@ final class CalendarView: UIView {
     }
     
     private func applySnapshot(months: [CalendarMonth]) {
-        
+        let currentSelection = collectionView.indexPathsForSelectedItems?.first
         var newSnapshot = NSDiffableDataSourceSnapshot<CalendarSection, CalendarItem>()
         
         for month in months {
@@ -272,6 +272,11 @@ final class CalendarView: UIView {
                 
                 print("@@@@ we are in the month, \(lastMonth)")
             }
+            
+            if let currentSelection {
+                collectionView.selectItem(at: currentSelection, animated: false, scrollPosition: [])
+            }
+            
         }
     }
     

@@ -10,7 +10,7 @@ import Combine
 
 enum RealmError: Error {
     case failedToSave
-    case diaryNotFound
+//    case diaryNotFound
     case failedToRemove
     case failedToRename
     case failedToGetList
@@ -19,8 +19,8 @@ enum RealmError: Error {
         switch self {
         case .failedToSave:
             "Failed to save diary."
-        case .diaryNotFound:
-            "Your diary not Found."
+//        case .diaryNotFound:
+//            "Your diary not Found."
         case .failedToRemove:
             "Failed to remove diary."
         case .failedToRename:

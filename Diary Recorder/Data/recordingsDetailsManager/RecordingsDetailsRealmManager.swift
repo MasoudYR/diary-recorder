@@ -69,7 +69,7 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
         let realm = self.realm
         
         guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: diaryID) else {
-            throw .diaryNotFound
+            throw .failedToRemove
         }
         
         let fileName = realmInstance.fileName
@@ -107,7 +107,7 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
     func renameDiary(diary: RecordingFileDetails, to newName: String) throws(RealmError) {
         
         guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: diary.id) else {
-            throw .diaryNotFound
+            throw .failedToRename
         }
         
         do {

@@ -44,8 +44,8 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         super.viewDidLoad()
         view.backgroundColor = .main
         navigationBarSetupUI()
-        bindViewModel()
         setupCalendar()
+        bindViewModel()
         setupCalendarViewLayout()
         setupDiariesListTableView()
     }
@@ -175,6 +175,16 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
                 
                 calendarView.diffableDataSourceActionPassthroughSubject.send(diffableDataSourceActionAndData)
                 
+            }
+            .store(in: &cancellables)
+        
+        calendarView.viewModel.$errorMessage
+            .compactMap{ $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                guard let self else { return }
+                
+                self.router.navigateToAlert(title: error.title, message: error.message)
             }
             .store(in: &cancellables)
     }

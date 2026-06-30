@@ -22,6 +22,13 @@ class CalendarRouter {
         calendarViewController.present(deleteAlertViewController, animated: true)
     }
     
+    func navigateToAlert(title: String, message: String) {
+        guard let calendarViewController else { return }
+        let alertViewController = AlertViewController.make()
+        alertViewController.config(title: title, message: message)
+        calendarViewController.present(alertViewController, animated: true)
+    }
+    
     func navigateToRenameDiary(selectedDiary: RecordingFileDetails, nameCurrentValueSubject: PassthroughSubject<String, Never>) {
         guard let calendarViewController else { return }
         print("we have to show name diary")
