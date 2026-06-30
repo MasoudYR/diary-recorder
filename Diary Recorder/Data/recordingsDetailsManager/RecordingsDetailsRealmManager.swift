@@ -43,73 +43,87 @@ public final class RecordingsDetailsRealmManager {
 
 extension RecordingsDetailsRealmManager: RecordingModifierHandler {
     
-    func saveRecording(_ recording: RecordingFileDetails) throws(SaveRecordingError) {
+    func saveDiary(diary: RecordingFileDetails) throws(RealmError) {
         let realm = self.realm
-        print("this is string url of the fil &&&&: \(recording.fileName)")
+        
+        print("this is string url of the fil &&&&: \(diary.fileName)")
         let realmInstance = RecordingsDetailsRealmModel(
-            identifier: recording.id,
-            fileName: recording.fileName,
-            name: recording.name,
-            date: recording.date,
-            duration: recording.duration
+            identifier: diary.id,
+            fileName: diary.fileName,
+            name: diary.name,
+            date: diary.date,
+            duration: diary.duration
         )
-        realm.safeWrite {
-            realm.add(realmInstance)
-            print("ADD RecordingsDetailsRealm:", recording.id )
+        
+        do {
+            try realm.safeWrite {
+                realm.add(realmInstance)
+                print("ADD RecordingsDetailsRealm:", diary.id )
+            }
+        } catch {
+            throw .failedToSave
         }
     }
     
-    func removeRecording(withID recordingID: UUID) throws(RemoveRecordingError) {
+    func removeDiary(withID diaryID: UUID) throws(RealmError) {
         let realm = self.realm
         
-        guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: recordingID) else {
-            throw .recordingNotFound
+        guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: diaryID) else {
+            throw .diaryNotFound
         }
         
         let fileName = realmInstance.fileName
         print(">>>>>>>>>> my file url to delete is: \(fileName)")
-        realm.safeWrite {
-            realm.delete(realmInstance)
-        }
         
+        do {
+            try realm.safeWrite {
+                realm.delete(realmInstance)
+            }
+        } catch {
+            throw .failedToRemove
+        }
+
         do {
             let url = fileURLProvider.makeDiaryFileURL(named: fileName)
             try FileManager.default.removeItem(at: url)
         } catch (let error) {
-            print("delete file from the file manager doesnt work because: \(error)")
+            print("delete file from the file manager doesn't work because: \(error)")
         }
     }
     
-    func removeAllRecordings() throws(RemoveRecordingError) {
+    #warning("add remove all files")
+    func removeAllDiaries() throws(RealmError) {
         let realm = self.realm
-        realm.safeWrite {
-            realm.deleteAll()
-        }
         
-        // TODO: remove all files
+        do {
+            try realm.safeWrite {
+                realm.deleteAll()
+            }
+        } catch {
+            throw .failedToRemove
+        }
     }
     
-    func renameRecording(_ recording: RecordingFileDetails, to newName: String) throws(RenameRecordingError) {
-        let realm = self.realm
+    func renameDiary(diary: RecordingFileDetails, to newName: String) throws(RealmError) {
         
-        guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: recording.id) else {
-            throw .recordingNotFound
+        guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: diary.id) else {
+            throw .diaryNotFound
         }
         
-        realm.safeWrite {
-            realmInstance.name = newName
+        do {
+            try realm.safeWrite {
+                realmInstance.name = newName
+            }
+        } catch {
+            throw .failedToRename
         }
     }
 }
 
 extension RecordingsDetailsRealmManager: ListRecordingHandler {
-    func listRecordings() throws(ListRecordingError) -> [RecordingFileDetails] {
+    //ino mitooni ba result ham benevisi chon ham khorooji dare ham error
+    func getAllDiariesList() -> [RecordingFileDetails] {
         let realm = self.realm
-        
-        let realmData = realm
-            .objects(RecordingsDetailsRealmModel.self)
-            .sorted(by: \.date, ascending: false)
-        print("this is list of realm data: %%%%: \(realmData)")
         
         return realm
             .objects(RecordingsDetailsRealmModel.self)
@@ -128,14 +142,17 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
             }
     }
     
-    func listRecordingsPublisher() -> AnyPublisher<[RecordingFileDetails], ListRecordingError> {
+    func getAllDiariesWithPublisher() -> AnyPublisher<[RecordingFileDetails], RealmError> {
+        
+        let realm = self.realm
+        
         let results = realm
             .objects(RecordingsDetailsRealmModel.self)
             .sorted(by: \.date, ascending: false)
         
         print("this is list of realm data: %%%%: \(results)")
         
-        let subject = PassthroughSubject<[RecordingFileDetails], ListRecordingError>()
+        let subject = PassthroughSubject<[RecordingFileDetails], RealmError>()
         let token = results.observe { changes in
             switch changes {
             case .initial(let results), .update(let results, _, _, _):
@@ -155,15 +172,17 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
                     )
                 )
             case .error:
-                subject.send(completion: .failure(.failedToList))
+                subject.send(completion: .failure(.failedToGetList))
             }
         }
         tokens.append(token)
         return subject.eraseToAnyPublisher()
     }
     
-    func getAllDiariesDataGroupedByDate(startDate: Date, endDate: Date) throws -> [Date: Int] {
-        let calendar = Calendar(identifier: .gregorian)
+    func getAllDiariesDataGroupedByDate(startDate: Date, endDate: Date) -> [Date: Int] {
+        let calendar = Calendar.current
+        
+        let realm = self.realm
         
         let results = realm
             .objects(RecordingsDetailsRealmModel.self)
@@ -179,9 +198,11 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
         return grouped
     }
     
-    func getNumberOfDaysRecordsInMonth(date: Date) throws -> [Date: Int] {
+    func getNumberOfDiariesInDaysOfOneMonth(date: Date) throws(RealmError) -> [Date: Int] {
         
-        let calendar = Calendar(identifier: .gregorian)
+        let calendar = Calendar.current
+        
+        let realm = self.realm
         
         var currentMonthComponents = calendar.dateComponents([.year, .month], from: date)
         currentMonthComponents.day = 1
@@ -202,21 +223,25 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
             print("******************* this is keyDay: \(dayKey)")
             grouped[dayKey, default: 0] += 1
         }
+        
         return grouped
     }
     
-    func getNumberOfRecordsInOneDay(date: Date) throws -> Int {
+    func getNumberOfDiariesInOneDay(date: Date) -> Int {
+        let realm = self.realm
+        
         let result = realm
             .objects(RecordingsDetailsRealmModel.self)
             .where {$0.date == date}
+        
         return result.count
     }
     
-    func getDiariesOfOneDate(date: Date) throws(ListRecordingError) -> [RecordingFileDetails] {
+    func getDiariesOfOneDay(date: Date) -> [RecordingFileDetails] {
         let tomorrow = date.adding(days: 1).startOfDay()
-        let today =  date.startOfDay()
+        let today = date.startOfDay()
         
-        return realm
+        let results = realm
             .objects(RecordingsDetailsRealmModel.self)
             .where { $0.date >= today && $0.date < tomorrow }
             .sorted(by: \.date, ascending: false)
@@ -231,12 +256,18 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
                 print("*** this is samples: \(sample)")
                 return sample
             }
+        return Array(results)
     }
     
-    func getOldestDate() throws -> Date {
-        return realm.objects(RecordingsDetailsRealmModel.self)
+    func getOldestDate() -> Date {
+        
+        let realm = self.realm
+        
+        let result = realm.objects(RecordingsDetailsRealmModel.self)
             .sorted(by: \.date, ascending: true)
             .first
             .map { $0.date } ?? Date()
+        
+        return result
     }
 }

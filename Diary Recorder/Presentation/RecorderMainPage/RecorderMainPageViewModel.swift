@@ -79,18 +79,21 @@ class RecorderMainPageViewModel: ObservableObject {
             )
         
         do {
-            try recordingsDetailsRealmManager.saveRecording(currentRecordingFileDetails)
+            try recordingsDetailsRealmManager.saveDiary(diary: currentRecordingFileDetails)
             self.lastSavedDiary = currentRecordingFileDetails
             print("📁 File saved at: \(url.path)")
         } catch {
             print("Save recording error: \(error)")
+            if error == .failedToSave{
+                //handle showing alert
+            }
         }
     }
     
     func renameDiary(diary: RecordingFileDetails,to newName: String) {
         
         do{
-            try recordingsDetailsRealmManager.renameRecording(diary, to: newName)
+            try recordingsDetailsRealmManager.renameDiary(diary: diary, to: newName)
         } catch {
             print("Rename recording Error: \(error)")
         }

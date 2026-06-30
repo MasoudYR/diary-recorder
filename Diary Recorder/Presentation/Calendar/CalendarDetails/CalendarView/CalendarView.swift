@@ -471,11 +471,11 @@ extension CalendarView {
                 case .delete:
                     viewModel.delete(diary: dayDiary)
                 case .update(let name, let handler):
-                    viewModel.renameRecording(diary: dayDiary, name: name, handler: handler)
+                    viewModel.rename(diary: dayDiary, name: name, handler: handler)
                 case .add:
                     ()
                 case .share(let handler):
-                    guard let url = viewModel.shareRecording(dayDiary) else { return }
+                    guard let url = viewModel.share(diary: dayDiary) else { return }
                     handler(url)
                 }
             }

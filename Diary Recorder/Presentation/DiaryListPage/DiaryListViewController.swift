@@ -132,7 +132,7 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
                 deleteHandler: { [weak self] in
                     guard let self else { return }
                     self.viewModel.delete(
-                        viewModel.diaryListDataCollection[indexPath.row]
+                        diary: viewModel.diaryListDataCollection[indexPath.row]
                     )
                 }
             )
@@ -144,7 +144,7 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
         let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] _, _, completion in
             guard let self else { return }
             let diary = viewModel.diaryListDataCollection[indexPath.row]
-            guard let url = viewModel.shareRecording(diary) else {
+            guard let url = viewModel.share(diary: diary) else {
                 completion(true)
                 return
             }

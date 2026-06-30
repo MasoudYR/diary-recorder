@@ -31,12 +31,12 @@ class DiaryListViewModel {
     
     private func binding() {
         recordingsDetailsRealmManager
-            .listRecordingsPublisher()
+            .getAllDiariesWithPublisher()
             .sink { completion in
                 switch completion {
                 case .finished:
                     ()
-                case .failure(let error):
+                case .failure(_):
                     ()
                 }
             } receiveValue: { list in
@@ -49,26 +49,32 @@ class DiaryListViewModel {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] name in
                 guard let self else { return }
-                self.renameRecording(name: name)
+                self.rename(name: name)
             }
             .store(in: &cancellables)
     }
     
-    func readDiarylistData() {
-        
-    }
-    
-    func delete(_ diary: RecordingFileDetails) {
+    func delete(diary: RecordingFileDetails) {
         print("delete action function inside diarylistviewmodel is called")
         print("diarylistdatacollection count: \(diaryListDataCollection.count)")
         do {
-            try recordingsDetailsRealmManager.removeRecording(withID: diary.id)
+            try recordingsDetailsRealmManager.removeDiary(withID: diary.id)
         } catch {
             print("Delete failed: \(error)")
+            switch error {
+            case .diaryNotFound:
+                //handle showing alert
+                ()
+            case .failedToRemove:
+                //handle showing alert
+                ()
+            default:
+                break
+            }
         }
     }
     
-    func shareRecording(_ diary: RecordingFileDetails) -> URL? {
+    func share(diary: RecordingFileDetails) -> URL? {
         let url = fileURLProvider.makeDiaryFileURL(named: diary.fileName)
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         return url
@@ -87,12 +93,22 @@ class DiaryListViewModel {
         return dateFormatter.string(from: date)
     }
     
-    func renameRecording(name: String) {
+    func rename(name: String) {
         guard let selectedDiary else { return }
         do {
-            try recordingsDetailsRealmManager.renameRecording(selectedDiary, to: name)
+            try recordingsDetailsRealmManager.renameDiary(diary: selectedDiary, to: name)
         } catch {
             print("rename diary Error: \(error)")
+            switch error {
+            case .diaryNotFound:
+                //handle showing alert
+                ()
+            case .failedToRename:
+                //handle showing alert
+                ()
+            default:
+                break
+            }
         }
     }
 }

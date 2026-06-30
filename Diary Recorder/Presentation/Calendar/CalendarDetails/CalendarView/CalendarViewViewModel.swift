@@ -28,7 +28,7 @@ class CalendarViewViewModel {
     }
     
     private func getAllRealmDataGroupedByDate() {
-        let data = try! recordingsDetailsRealmManager.getAllDiariesDataGroupedByDate(startDate: config.startDate, endDate: config.endDate)
+        let data = recordingsDetailsRealmManager.getAllDiariesDataGroupedByDate(startDate: config.startDate, endDate: config.endDate)
         diariesData = data
     }
     
@@ -132,7 +132,7 @@ class CalendarViewViewModel {
         print("delete action function inside diarylistviewmodel is called")
         //print("diarylistdatacollection count: \(dayDiariesList.count)")
         do {
-            try recordingsDetailsRealmManager.removeRecording(withID: diary.id)
+            try recordingsDetailsRealmManager.removeDiary(withID: diary.id)
             guard let selectedDay else { return }
             print(">>>>", Self.self, #function, "selectedDay: \(selectedDay)")
             let calendarMonthId = selectedDay.date.monthId
@@ -152,19 +152,39 @@ class CalendarViewViewModel {
             print(">>>>", Self.self, #function, "updated haroooooom zallllin...")
         } catch {
             print("Delete failed: \(error)")
+            switch error {
+            case .diaryNotFound:
+                //handle passing error
+                ()
+            case .failedToRemove:
+                //handle passing error
+                ()
+            default:
+                break
+            }
         }
     }
     
-    func renameRecording(diary: RecordingFileDetails, name: String, handler: () -> Void) {
+    func rename(diary: RecordingFileDetails, name: String, handler: () -> Void) {
         do {
-            try recordingsDetailsRealmManager.renameRecording(diary, to: name)
+            try recordingsDetailsRealmManager.renameDiary(diary: diary, to: name)
             handler()
         } catch {
             print("rename diary Error: \(error)")
+            switch error {
+            case .diaryNotFound:
+                //handle passing error
+                ()
+            case .failedToRename:
+                //handle passing error
+                ()
+            default:
+                break
+            }
         }
     }
     
-    func shareRecording(_ diary: RecordingFileDetails) -> URL? {
+    func share(diary: RecordingFileDetails) -> URL? {
         let url = fileURLProvider.makeDiaryFileURL(named: diary.fileName)
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         return url

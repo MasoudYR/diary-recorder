@@ -25,7 +25,6 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         self.fileURLProvider = fileURLProvider
         super.init()
         setupAudioSession()
-        //try? recordingsDetailsRealmManager.removeAllRecordings()
     }
     
     func setupAudioSession() {

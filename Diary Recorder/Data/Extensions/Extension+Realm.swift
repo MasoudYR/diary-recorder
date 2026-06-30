@@ -10,11 +10,11 @@ import RealmSwift
 
 extension Realm {
     
-    func safeWrite(_ block: (() throws -> Void)) {
-            autoreleasepool {
-                try! self.write {
-                    try! block()
-                }
+    func safeWrite(_ block: (() throws -> Void)) throws {
+        try autoreleasepool {
+            try self.write {
+                try block()
             }
         }
+    }
 }

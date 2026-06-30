@@ -30,11 +30,11 @@ class CalendarViewModel {
     }
     
     func getOldestDiaryDate() -> Date {
-        return try! recordingsDetailsRealmManager.getOldestDate()
+        return recordingsDetailsRealmManager.getOldestDate()
     }
     
     func getOneDayDiareiesList(date: Date)  {
-        let data = try! recordingsDetailsRealmManager.getDiariesOfOneDate(date: date)
+        let data = recordingsDetailsRealmManager.getDiariesOfOneDay(date: date)
         dayDiariesList = data
         print("!!!!!!!!!!!!!!! this is dateDiaries that is selected: \(data)")
     }

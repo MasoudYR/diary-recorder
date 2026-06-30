@@ -8,40 +8,50 @@
 import Foundation
 import Combine
 
-enum SaveRecordingError: Error {
+enum RealmError: Error {
     case failedToSave
-    case recordingAlreadyExists
-}
-
-enum RemoveRecordingError: Error {
+    case diaryNotFound
     case failedToRemove
-    case recordingNotFound
-}
-enum RenameRecordingError: Error {
     case failedToRename
-    case recordingNotFound
-}
-enum ListRecordingError: Error {
-    case realmNotAvailable
-    case failedToList
+    case failedToGetList
+    
+    var description: String {
+        switch self {
+        case .failedToSave:
+            "Failed to save diary."
+        case .diaryNotFound:
+            "Your diary not Found."
+        case .failedToRemove:
+            "Failed to remove diary."
+        case .failedToRename:
+            "Failed to rename diary."
+        case .failedToGetList:
+            "Failed to get diaries."
+        }
+    }
 }
 
 protocol RecordingModifierHandler {
-    func saveRecording(_ recording: RecordingFileDetails) throws(SaveRecordingError)
-    func removeRecording(withID recordingID: UUID) throws(RemoveRecordingError)
-    func removeAllRecordings() throws(RemoveRecordingError)
-    func renameRecording(_ recording: RecordingFileDetails, to newName: String) throws(RenameRecordingError)
+    func saveDiary(diary: RecordingFileDetails) throws(RealmError)
+    func removeDiary(withID recordingID: UUID) throws(RealmError)
+    func removeAllDiaries() throws(RealmError)
+    func renameDiary(diary: RecordingFileDetails, to newName: String) throws(RealmError)
 }
 
 extension RecordingModifierHandler {
-    func removeRecording(_ recording: RecordingFileDetails) throws(RemoveRecordingError) {
-        try removeRecording(withID: recording.id)
+    func removeDiary(diary: RecordingFileDetails) throws(RealmError) {
+        try removeDiary(withID: diary.id)
     }
 }
 
 protocol ListRecordingHandler {
-    func listRecordings() throws(ListRecordingError) -> [RecordingFileDetails]
-    func listRecordingsPublisher() -> AnyPublisher<[RecordingFileDetails], ListRecordingError>
+    func getAllDiariesList() -> [RecordingFileDetails]
+    func getAllDiariesWithPublisher() -> AnyPublisher<[RecordingFileDetails], RealmError>
+    func getAllDiariesDataGroupedByDate(startDate: Date, endDate: Date) -> [Date: Int]
+    func getNumberOfDiariesInDaysOfOneMonth(date: Date) throws(RealmError) -> [Date: Int]
+    func getNumberOfDiariesInOneDay(date: Date) -> Int
+    func getDiariesOfOneDay(date: Date) -> [RecordingFileDetails]
+    func getOldestDate() -> Date
 }
 
 protocol RecordingsManager: RecordingModifierHandler, ListRecordingHandler {
