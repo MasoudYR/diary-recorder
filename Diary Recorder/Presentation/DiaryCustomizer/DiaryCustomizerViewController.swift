@@ -33,7 +33,7 @@ class DiaryCustomizerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .red
+        view.backgroundColor = .main
         setupUI()
     }
     
@@ -69,9 +69,12 @@ class DiaryCustomizerViewController: UIViewController {
         layout.scrollDirection = .horizontal
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
+        layout.sectionInset = .init(top: 0, left: 5, bottom: 0, right: 5)
         emojiHCollectionView.collectionViewLayout = layout
-        emojiHCollectionView.backgroundColor = .clear
+        emojiHCollectionView.backgroundColor = .systemBackground
         emojiHCollectionView.showsHorizontalScrollIndicator = false
+        emojiHCollectionView.layer.cornerRadius = 20
+        emojiHCollectionView.layer.masksToBounds = true
         emojiHCollectionView.delegate = self
         emojiHCollectionView.dataSource = self
         emojiHCollectionView.register(EmojiHCollectionCell.self, forCellWithReuseIdentifier: EmojiHCollectionCell.identifier)
@@ -79,7 +82,7 @@ class DiaryCustomizerViewController: UIViewController {
         vStackView.addArrangedSubview(emojiHCollectionView)
         
         emojiHCollectionView.snp.makeConstraints { make in
-            make.height.equalTo(50)
+            make.height.equalTo(60)
         }
     }
     

@@ -28,7 +28,6 @@ class EmojiHCollectionCell: UICollectionViewCell {
     private func setupUI() {
         contentView.addSubview(emojiImageView)
         emojiImageView.snp.makeConstraints { make in
-            make.size.equalTo(50)
             make.edges.equalToSuperview()
         }
     }
