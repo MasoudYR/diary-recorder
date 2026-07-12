@@ -11,6 +11,9 @@ import SnapKit
 
 class DeleteAlertViewController: UIViewController {
     
+    private let deleteTitle: String
+    private let deleteMessage: String
+    
     private let vStackView = UIStackView()
     private let parentDeleteIconImageView = UIView()
     private let deleteIconImageView = UIImageView()
@@ -21,8 +24,10 @@ class DeleteAlertViewController: UIViewController {
     private let noButton = UIButton()
     private let deleteAction: () -> Void
     
-    init(deleteAction: @escaping () -> Void) {
+    init(title: String, message: String, deleteAction: @escaping () -> Void) {
         self.deleteAction = deleteAction
+        self.deleteTitle = title
+        self.deleteMessage = message
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -30,8 +35,8 @@ class DeleteAlertViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    static func make(deleteHandler: @escaping () -> Void) -> DeleteAlertViewController {
-        let viewController = DeleteAlertViewController(deleteAction: deleteHandler)
+    static func make(title: String, message: String, deleteHandler: @escaping () -> Void) -> DeleteAlertViewController {
+        let viewController = DeleteAlertViewController(title: title, message: message, deleteAction: deleteHandler)
         if let sheet = viewController.sheetPresentationController {
             sheet.detents = [.custom { _ in 220 }]
             sheet.preferredCornerRadius = 20
@@ -86,14 +91,14 @@ class DeleteAlertViewController: UIViewController {
     }
     
     private func setupDeleteMessageLabels() {
-        titleLabel.text = "Delete Alert"
+        titleLabel.text = deleteTitle
         titleLabel.font = .roundedFont(ofSize: 20, weight: .bold)
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
         
         vStackView.addArrangedSubview(titleLabel)
         
-        deleteMessageLabel.text = "Are you sure you want to delete this file?"
+        deleteMessageLabel.text = deleteMessage
         deleteMessageLabel.font = .roundedFont(ofSize: 18, weight: .regular)
         deleteMessageLabel.textColor = .label
         deleteMessageLabel.textAlignment = .center

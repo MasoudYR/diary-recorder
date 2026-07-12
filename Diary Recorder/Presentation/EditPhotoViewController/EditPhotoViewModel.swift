@@ -1,0 +1,15 @@
+//
+//  EditPhotoViewModel.swift
+//  Diary Recorder
+//
+//  Created by Masoud on 7/12/26.
+//
+
+import Foundation
+
+class EditPhotoViewModel {
+    
+    init() {
+        
+    }
+}

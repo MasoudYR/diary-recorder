@@ -35,7 +35,11 @@ class DiaryListRouter {
     
     func navigateToDeleteAlert(deleteHandler: @escaping () -> Void){
         guard let diaryListViewController else { return }
-        let deleteAlertViewController = DeleteAlertViewController.make(deleteHandler: deleteHandler)
+        let deleteAlertViewController = DeleteAlertViewController.make(
+            title: "Delete Alert",
+            message: "Are you sure you want to delete this file?",
+            deleteHandler: deleteHandler
+        )
         diaryListViewController.present(deleteAlertViewController, animated: true)
     }
     

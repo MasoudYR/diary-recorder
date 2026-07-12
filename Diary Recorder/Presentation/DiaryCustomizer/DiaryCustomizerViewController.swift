@@ -15,6 +15,8 @@ class DiaryCustomizerViewController: UIViewController {
     private let router: DiaryCustomizerRouter
     
     private let vStackView = UIStackView()
+    private let parentImagePickerView = UIView()
+    private let imagePickerButton = ImagePickerButton()
     private let emojiHCollectionView: UICollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     
     
@@ -24,7 +26,7 @@ class DiaryCustomizerViewController: UIViewController {
         self.viewModel = viewModel
         self.router = router
         super.init(nibName: nil, bundle: nil)
-        self.router.viewController = self
+        self.router.diaryCustomizerViewController = self
     }
     
     required init?(coder: NSCoder) {
@@ -46,8 +48,10 @@ class DiaryCustomizerViewController: UIViewController {
     
     private func setupUI() {
         setupVStackView()
+        setupImagePickerButton()
         setupEmojiHCollectionView()
         bindingViewModel()
+        actions()
     }
     
     private func setupVStackView() {
@@ -62,6 +66,21 @@ class DiaryCustomizerViewController: UIViewController {
         vStackView.snp.makeConstraints { make in
             make.top.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
         }
+    }
+    
+    private func setupImagePickerButton() {
+    
+        imagePickerButton.configue(image: nil, photoState: .placeholder)
+        
+        parentImagePickerView.addSubview(imagePickerButton)
+        
+        imagePickerButton.snp.makeConstraints { make in
+            make.size.equalTo(300)
+            make.verticalEdges.equalToSuperview()
+            make.centerX.equalToSuperview()
+        }
+        
+        vStackView.addArrangedSubview(parentImagePickerView)
     }
     
     private func setupEmojiHCollectionView() {
@@ -84,6 +103,18 @@ class DiaryCustomizerViewController: UIViewController {
         emojiHCollectionView.snp.makeConstraints { make in
             make.height.equalTo(60)
         }
+    }
+    
+    private func actions() {
+        let imagePickerButtonActionId = UIAction.Identifier("imagePickerButtonActionId")
+        let imagePickerButtonAction = UIAction(identifier: imagePickerButtonActionId) {  _ in
+            print("picker action tapped...")
+            //guard let self else { return }
+            self.router.navigateToEditPhoto()
+        }
+        
+        imagePickerButton.removeAction(identifiedBy: imagePickerButtonActionId, for: .touchUpInside)
+        imagePickerButton.addAction(imagePickerButtonAction, for: .touchUpInside)
     }
     
     private func bindingViewModel(){

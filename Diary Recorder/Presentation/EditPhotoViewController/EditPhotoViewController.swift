@@ -1,0 +1,178 @@
+//
+//  EditPhotoViewController.swift
+//  Diary Recorder
+//
+//  Created by Masoud on 7/12/26.
+//
+
+import Foundation
+import UIKit
+
+class EditPhotoViewController: UIViewController {
+    
+    private let viewModel: EditPhotoViewModel
+    private let router: EditPhotoRouter
+    
+    private let diaryPhotoLabel = UILabel()
+    private let closeButton = UIButton()
+    private let editPhotoTableView = UITableView(frame: .zero, style: .insetGrouped)
+    
+    init(viewModel: EditPhotoViewModel, router: EditPhotoRouter) {
+        self.viewModel = viewModel
+        self.router = router
+        super.init(nibName: nil, bundle: nil)
+        self.router.editPhotoViewController = self
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    static func make() -> EditPhotoViewController {
+        let viewModel = EditPhotoViewModel()
+        let router = EditPhotoRouter()
+        let viewController = EditPhotoViewController(viewModel: viewModel, router: router)
+        return viewController
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = .main
+        setupDiaryPhotoLabel()
+        setupCloseButton()
+        setupEditPhotoTableView()
+    }
+    
+    private func setupDiaryPhotoLabel() {
+        diaryPhotoLabel.text = "Edit Diary Photo"
+        diaryPhotoLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
+        diaryPhotoLabel.textColor = .label
+        diaryPhotoLabel.textAlignment = .center
+        
+        view.addSubview(diaryPhotoLabel)
+        
+        diaryPhotoLabel.snp.makeConstraints { make in
+            //make.top.equalToSuperview().offset(15)
+            make.centerX.equalToSuperview()
+        }
+    }
+    
+    private func setupCloseButton() {
+        let largeConfigue = UIImage.SymbolConfiguration(weight: .bold)
+        closeButton.setImage(UIImage(systemName: "xmark", withConfiguration: largeConfigue), for: .normal)
+        closeButton.tintColor = .systemGray
+        closeButton.backgroundColor = .systemBackground
+        closeButton.layer.cornerRadius = 15
+        
+        view.addSubview(closeButton)
+        
+        closeButton.snp.makeConstraints { make in
+            make.size.equalTo(30)
+            make.top.equalToSuperview().offset(15)
+            make.right.equalToSuperview().inset(15)
+            make.centerY.equalTo(diaryPhotoLabel)
+        }
+        
+        let closeButtonActionId = UIAction.Identifier("closeButtonActionId")
+        let closeButtonAction = UIAction(identifier: closeButtonActionId) { [weak self] _ in
+            guard let self else { return }
+            print("close button tapped")
+            self.dismiss(animated: true)
+        }
+        
+        closeButton.removeAction(identifiedBy: closeButtonActionId, for: .touchUpInside)
+        closeButton.addAction(closeButtonAction, for: .touchUpInside)
+    }
+    
+    private func setupEditPhotoTableView() {
+        editPhotoTableView.delegate = self
+        editPhotoTableView.dataSource = self
+        editPhotoTableView.rowHeight = 50
+        editPhotoTableView.register(EditPhotoTableViewCell.self, forCellReuseIdentifier: EditPhotoTableViewCell.identifier)
+        
+        editPhotoTableView.backgroundColor = .clear
+        editPhotoTableView.showsVerticalScrollIndicator = false
+        editPhotoTableView.isScrollEnabled = false
+        
+        //...
+        //editPhotoTableView.sectionHeaderHeight = 20
+        //editPhotoTableView.sectionFooterHeight = 5
+        
+        view.addSubview(editPhotoTableView)
+        
+        editPhotoTableView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(closeButton.snp.bottom).offset(5)
+        }
+    }
+}
+
+extension EditPhotoViewController: UITableViewDelegate, UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return section == 0 ? 2 : 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: EditPhotoTableViewCell.identifier, for: indexPath) as! EditPhotoTableViewCell
+        
+        switch indexPath.section {
+        case 0:
+            if indexPath.row == 0 {
+                cell.configue(title: "Take photo", iconImage: UIImage(systemName: "camera")!, tintColor: .label)
+            } else {
+                cell.configue(title: "Choose photo", iconImage: UIImage(systemName: "photo")!, tintColor: .label)
+            }
+        case 1:
+            cell.configue(title: "Delete photo", iconImage: UIImage(systemName: "trash")!, tintColor: .systemRed)
+        default:
+            break
+        }
+
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        switch indexPath.section {
+        case 0:
+            if indexPath.row == 0 {
+                print("take photo is selected")
+            } else {
+                print("choose photo is selected")
+            }
+        case 1:
+            print("delete photo is selected")
+        default:
+            break
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 15
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let header = UIView()
+        header.backgroundColor = .clear
+        return header
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 0
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let footer = UIView()
+        footer.backgroundColor = .clear
+        return footer
+    }
+}
