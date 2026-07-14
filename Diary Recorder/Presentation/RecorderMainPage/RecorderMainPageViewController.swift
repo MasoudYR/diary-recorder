@@ -12,6 +12,7 @@ import DSWaveformImageViews
 import DSWaveformImage
 
 class RecorderMainPageViewController: UIViewController {
+    
     private let viewModel: RecorderMainPageViewModel
     private let router: RecorderMainPageRouter
     
@@ -410,8 +411,4 @@ class RecorderMainPageViewController: UIViewController {
             //view.backgroundColor = .label
         }
     }
-    
 }
-
-
-

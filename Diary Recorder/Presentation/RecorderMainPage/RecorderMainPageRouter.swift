@@ -7,6 +7,8 @@
 
 import Foundation
 import Combine
+import UIKit
+import PhotosUI
 
 class RecorderMainPageRouter {
     weak var recorderMainPageViewController: RecorderMainPageViewController?

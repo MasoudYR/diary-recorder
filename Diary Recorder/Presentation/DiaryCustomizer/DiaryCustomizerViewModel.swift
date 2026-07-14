@@ -10,9 +10,10 @@ import UIKit
 
 class DiaryCustomizerViewModel {
     
-    var emojiArray: [EmojiModel] = []
-    
     @Published var selectedEmoji: IndexPath?
+    @Published var selectedImage: UIImage?
+    
+    var emojiArray: [EmojiModel] = []
     
     init() {
         setupArrayEmoji()

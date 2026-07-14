@@ -7,6 +7,9 @@
 
 import Foundation
 import UIKit
+//import AVFoundation
+//import Photos
+//import PhotosUI
 
 class EditPhotoViewController: UIViewController {
     
@@ -16,6 +19,7 @@ class EditPhotoViewController: UIViewController {
     private let diaryPhotoLabel = UILabel()
     private let closeButton = UIButton()
     private let editPhotoTableView = UITableView(frame: .zero, style: .insetGrouped)
+//    private let imagePicker = UIImagePickerController()
     
     init(viewModel: EditPhotoViewModel, router: EditPhotoRouter) {
         self.viewModel = viewModel
@@ -28,9 +32,9 @@ class EditPhotoViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    static func make() -> EditPhotoViewController {
+    static func make(editPhotoHandler: @escaping (_ editType: editPhotoType) -> Void) -> EditPhotoViewController {
         let viewModel = EditPhotoViewModel()
-        let router = EditPhotoRouter()
+        let router = EditPhotoRouter(editPhotoHandler: editPhotoHandler)
         let viewController = EditPhotoViewController(viewModel: viewModel, router: router)
         return viewController
     }
@@ -146,11 +150,16 @@ extension EditPhotoViewController: UITableViewDelegate, UITableViewDataSource {
         case 0:
             if indexPath.row == 0 {
                 print("take photo is selected")
+                //handleCameraSelection()
+                self.router.navigateToTakeOrGetOrDeletePhoto(editType: .takePhotoByCamera)
             } else {
                 print("choose photo is selected")
+                //handleGallerySelection()
+                self.router.navigateToTakeOrGetOrDeletePhoto(editType: .selectFromGallery)
             }
         case 1:
             print("delete photo is selected")
+            self.router.navigateToTakeOrGetOrDeletePhoto(editType: .deletePhoto)
         default:
             break
         }
@@ -175,4 +184,136 @@ extension EditPhotoViewController: UITableViewDelegate, UITableViewDataSource {
         footer.backgroundColor = .clear
         return footer
     }
+}
+
+//extension EditPhotoViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+//    private func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
+//        imagePicker.sourceType = sourceType
+//        imagePicker.delegate = self
+//        imagePicker.allowsEditing = true
+//        
+//        router.navigateToPickImage(picker: imagePicker)
+//    }
+//    
+//    func handleCameraSelection() {
+//        
+//        guard UIImagePickerController.isSourceTypeAvailable(.camera) else  {
+//            router.navigateToShowAlert(title: "Camera Unavailable", message: "The camera is not available on this device.")
+//            return
+//        }
+//        
+//        let status = AVCaptureDevice.authorizationStatus(for: .video)
+//        
+//        switch status {
+//        case .notDetermined:
+//            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+//                guard let self else { return }
+//                DispatchQueue.main.async {
+//                    if granted {
+//                        self.presentImagePicker(sourceType: .camera)
+//                    } else {
+//                        self.router.navigateToShowAlert(title: "Camera Permission Error", message: "Diary Recorder needs camera access to take photos. Please go to Settings to enable it.")
+//                    }
+//                }
+//            }
+//        case .authorized:
+//            presentImagePicker(sourceType: .camera)
+//        
+//        case .denied, .restricted:
+//            router.navigateToShowAlert(title: "Camera Permission Error", message: "Diary Recorder needs camera access to take photos. Please go to Settings to enable it.")
+//        @unknown default:
+//            break
+//        }
+//    }
+//    
+//    func handleGallerySelection() {
+//        
+//        guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
+//            router.navigateToShowAlert(title: "Gallery Unavailable", message: "The gallery is not available on this device.")
+//            return
+//        }
+//        
+//        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+//        
+//        switch status {
+//        case .notDetermined:
+//            PHPhotoLibrary.requestAuthorization(for: .readWrite) { [weak self] newStatus in
+//                guard let self else { return }
+//                DispatchQueue.main.async {
+//                    if newStatus == .authorized || newStatus == .limited {
+//                        self.presentImagePicker(sourceType: .photoLibrary)
+//                    } else {
+//                        self.router.navigateToShowAlert(title: "Gallery Permission Error", message: "Diary Recorder needs gallery access to select photos. Please go to Settings to enable it.")
+//                    }
+//                }
+//            }
+//        case .authorized, .limited:
+//            presentImagePicker(sourceType: .photoLibrary)
+//            
+//        case .denied, .restricted:
+//            router.navigateToShowAlert(title: "Gallery Permission Error", message: "Diary Recorder needs gallery access to select photos. Please go to Settings to enable it.")
+//            
+//        @unknown default:
+//            break
+//        }
+//    }
+//    
+//    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+//        imagePicker.dismiss(animated: true)
+//        
+//        if let edittedImage = info[.editedImage] as? UIImage {
+//            viewModel.selectedImage = edittedImage
+//        } else if let originalImage = info[.originalImage] as? UIImage {
+//            viewModel.selectedImage = originalImage
+//        }
+//        
+//        print("We took pic successfully. \(viewModel.selectedImage)")
+//    }
+//    
+//    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+//        imagePicker.dismiss(animated: true)
+//    }
+//}
+
+//extension EditPhotoViewController: PHPickerViewControllerDelegate {
+//    
+//    func handleGalleryWithPHPicker() {
+//        var config = PHPickerConfiguration()
+//        config.selectionLimit = 1
+//        config.filter = .images
+//        
+//        let phPicker = PHPickerViewController(configuration: config)
+//        phPicker.delegate = self
+//        
+//        router.navigateToSelectImage(picker: phPicker)
+//    }
+//    
+//    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+//        picker.dismiss(animated: true)
+//        
+//        guard let provider = results.first?.itemProvider,
+//              provider.canLoadObject(ofClass: UIImage.self)
+//        else { return }
+//        
+//        provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+//            guard let self else { return }
+//            DispatchQueue.main.async {
+//                if let image = image as? UIImage {
+//                    self.viewModel.selectedImage = image
+//                    
+//                    print("We select pic successfully. \(self.viewModel.selectedImage)")
+//                }
+//            }
+//        }
+//    }
+//    
+//    func pickerDidCancel(_ picker: PHPickerViewController) {
+//        picker.dismiss(animated: true)
+//    }
+//}
+
+enum editPhotoType {
+    case selectFromGallery
+    case takePhotoByCamera
+    case deletePhoto
 }

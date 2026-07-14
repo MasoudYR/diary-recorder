@@ -17,6 +17,8 @@
 		0428A8482FB4A1D000783C6D /* DSWaveformImage in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A8472FB4A1D000783C6D /* DSWaveformImage */; };
 		0428A84A2FB4A1D000783C6D /* DSWaveformImageViews in Frameworks */ = {isa = PBXBuildFile; productRef = 0428A8492FB4A1D000783C6D /* DSWaveformImageViews */; };
 		042BCCDD2FD188B3009382E0 /* JTAppleCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = 042BCCDC2FD188B3009382E0 /* JTAppleCalendar */; };
+		048BFBD63003FE840078E490 /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = 048BFBD53003FE840078E490 /* CropViewController */; };
+		048BFBD83003FE840078E490 /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = 048BFBD73003FE840078E490 /* TOCropViewController */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -66,11 +68,13 @@
 				0428A8482FB4A1D000783C6D /* DSWaveformImage in Frameworks */,
 				0428A5902FAF5E5600783C6D /* RxMoya in Frameworks */,
 				0428A5A22FB205F500783C6D /* RealmSwift in Frameworks */,
+				048BFBD63003FE840078E490 /* CropViewController in Frameworks */,
 				0428A84A2FB4A1D000783C6D /* DSWaveformImageViews in Frameworks */,
 				042BCCDD2FD188B3009382E0 /* JTAppleCalendar in Frameworks */,
 				0428A4372FAF5DAE00783C6D /* SnapKit in Frameworks */,
 				0428A58C2FAF5E5600783C6D /* Moya in Frameworks */,
 				0428A58E2FAF5E5600783C6D /* ReactiveMoya in Frameworks */,
+				048BFBD83003FE840078E490 /* TOCropViewController in Frameworks */,
 				0428A58A2FAF5E5600783C6D /* CombineMoya in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -132,6 +136,8 @@
 				0428A8472FB4A1D000783C6D /* DSWaveformImage */,
 				0428A8492FB4A1D000783C6D /* DSWaveformImageViews */,
 				042BCCDC2FD188B3009382E0 /* JTAppleCalendar */,
+				048BFBD53003FE840078E490 /* CropViewController */,
+				048BFBD73003FE840078E490 /* TOCropViewController */,
 			);
 			productName = "Diary Recorder";
 			productReference = 0428A41D2FAF5C8600783C6D /* Diary Recorder.app */;
@@ -167,6 +173,7 @@
 				0428A59E2FB205F500783C6D /* XCRemoteSwiftPackageReference "realm-swift" */,
 				0428A8462FB4A1D000783C6D /* XCRemoteSwiftPackageReference "DSWaveformImage" */,
 				042BCCDB2FD188B3009382E0 /* XCRemoteSwiftPackageReference "JTAppleCalendar" */,
+				048BFBD43003FE840078E490 /* XCRemoteSwiftPackageReference "TOCropViewController" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0428A41E2FAF5C8600783C6D /* Products */;
@@ -210,7 +217,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Diary Recorder/Info.plist";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Diary Recorder Application needs access to your camera to take photos for your diaries.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "to record your diary we need your permission for mic, please accept.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Diary Recorder Application needs access to your gallery to select photos for your diaries.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -239,7 +248,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Diary Recorder/Info.plist";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Diary Recorder Application needs access to your camera to take photos for your diaries.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "to record your diary we need your permission for mic, please accept.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Diary Recorder Application needs access to your gallery to select photos for your diaries.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -442,6 +453,14 @@
 				minimumVersion = 8.0.5;
 			};
 		};
+		048BFBD43003FE840078E490 /* XCRemoteSwiftPackageReference "TOCropViewController" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/TimOliver/TOCropViewController.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -489,6 +508,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 042BCCDB2FD188B3009382E0 /* XCRemoteSwiftPackageReference "JTAppleCalendar" */;
 			productName = JTAppleCalendar;
+		};
+		048BFBD53003FE840078E490 /* CropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 048BFBD43003FE840078E490 /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = CropViewController;
+		};
+		048BFBD73003FE840078E490 /* TOCropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 048BFBD43003FE840078E490 /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = TOCropViewController;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

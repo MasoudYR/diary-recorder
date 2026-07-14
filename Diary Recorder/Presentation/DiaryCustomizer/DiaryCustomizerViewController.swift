@@ -8,8 +8,10 @@
 import Foundation
 import UIKit
 import Combine
+import AVFoundation
+import PhotosUI
 
-class DiaryCustomizerViewController: UIViewController {
+class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDelegate {
     
     private let viewModel: DiaryCustomizerViewModel
     private let router: DiaryCustomizerRouter
@@ -18,7 +20,7 @@ class DiaryCustomizerViewController: UIViewController {
     private let parentImagePickerView = UIView()
     private let imagePickerButton = ImagePickerButton()
     private let emojiHCollectionView: UICollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
-    
+    let imagePicker = UIImagePickerController()
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -107,10 +109,10 @@ class DiaryCustomizerViewController: UIViewController {
     
     private func actions() {
         let imagePickerButtonActionId = UIAction.Identifier("imagePickerButtonActionId")
-        let imagePickerButtonAction = UIAction(identifier: imagePickerButtonActionId) {  _ in
+        let imagePickerButtonAction = UIAction(identifier: imagePickerButtonActionId) { [weak self] _ in
             print("picker action tapped...")
-            //guard let self else { return }
-            self.router.navigateToEditPhoto()
+            guard let self else { return }
+            self.router.navigateToEditPhotoViewController()
         }
         
         imagePickerButton.removeAction(identifiedBy: imagePickerButtonActionId, for: .touchUpInside)
@@ -126,6 +128,16 @@ class DiaryCustomizerViewController: UIViewController {
                 emojiHCollectionView.reloadData()
             }
             .store(in: &cancellables)
+        
+        viewModel.$selectedImage
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] image in
+                guard let self else { return }
+                imagePickerButton.configue(image: image, photoState: .setImage)
+            }
+            .store(in: &cancellables)
+            
     }
 }
 
@@ -147,5 +159,137 @@ extension DiaryCustomizerViewController: UICollectionViewDelegate, UICollectionV
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("selected item: \(viewModel.emojiArray[indexPath.row])")
         viewModel.selectedEmoji = indexPath
+    }
+}
+
+
+extension DiaryCustomizerViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    private func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
+        imagePicker.sourceType = sourceType
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+        
+        router.navigateToPickImageByCamera(picker: imagePicker)
+    }
+    
+    func handleCameraSelection() {
+        
+        guard UIImagePickerController.isSourceTypeAvailable(.camera) else  {
+            router.navigateToShowAlert(title: "Camera Unavailable", message: "The camera is not available on this device.")
+            return
+        }
+        
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        
+        switch status {
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                guard let self else { return }
+                DispatchQueue.main.async {
+                    if granted {
+                        self.presentImagePicker(sourceType: .camera)
+                    } else {
+                        self.router.navigateToShowAlert(title: "Camera Permission Error", message: "Diary Recorder needs camera access to take photos. Please go to Settings to enable it.")
+                    }
+                }
+            }
+        case .authorized:
+            presentImagePicker(sourceType: .camera)
+        
+        case .denied, .restricted:
+            router.navigateToShowAlert(title: "Camera Permission Error", message: "Diary Recorder needs camera access to take photos. Please go to Settings to enable it.")
+        @unknown default:
+            break
+        }
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        imagePicker.dismiss(animated: true)
+        
+        if let edittedImage = info[.editedImage] as? UIImage {
+            viewModel.selectedImage = edittedImage
+        } else if let originalImage = info[.originalImage] as? UIImage {
+            viewModel.selectedImage = originalImage
+        }
+        
+        print("We took pic successfully. \(viewModel.selectedImage)")
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        imagePicker.dismiss(animated: true)
+    }
+}
+
+extension DiaryCustomizerViewController {
+    func handleGalleryWithPHPicker() {
+        var config = PHPickerConfiguration()
+        config.selectionLimit = 1
+        config.filter = .images
+        
+        let phPicker = PHPickerViewController(configuration: config)
+        phPicker.delegate = self
+        router.navigateToSelectImageGallery(picker: phPicker)
+    }
+    
+    func handleGallerySelection() {
+        
+        guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
+            router.navigateToShowAlert(title: "Gallery Unavailable", message: "The gallery is not available on this device.")
+            return
+        }
+        
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        
+        switch status {
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { [weak self] newStatus in
+                guard let self else { return }
+                DispatchQueue.main.async {
+                    if newStatus == .authorized || newStatus == .limited {
+                        self.handleGalleryWithPHPicker()
+                    } else {
+                        self.router.navigateToShowAlert(title: "Gallery Permission Error", message: "Diary Recorder needs gallery access to select photos. Please go to Settings to enable it.")
+                    }
+                }
+            }
+        case .authorized, .limited:
+            self.handleGalleryWithPHPicker()
+            
+        case .denied, .restricted:
+            router.navigateToShowAlert(title: "Gallery Permission Error", message: "Diary Recorder needs gallery access to select photos. Please go to Settings to enable it.")
+            
+        @unknown default:
+            break
+        }
+    }
+    
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        
+        guard let provider = results.first?.itemProvider,
+              provider.canLoadObject(ofClass: UIImage.self)
+        else { return }
+        
+        provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                if let image = image as? UIImage {
+                    self.viewModel.selectedImage = image
+                    
+                    print("We select pic successfully. \(self.viewModel.selectedImage)")
+                }
+            }
+        }
+    }
+    
+    func pickerDidCancel(_ picker: PHPickerViewController) {
+        picker.dismiss(animated: true)
+    }
+}
+
+extension DiaryCustomizerViewController {
+    func deleteUserImage() {
+        viewModel.selectedImage = UIImage(resource: .placeholderimage)
     }
 }

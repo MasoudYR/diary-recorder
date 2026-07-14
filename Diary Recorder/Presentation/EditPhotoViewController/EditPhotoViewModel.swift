@@ -6,8 +6,11 @@
 //
 
 import Foundation
+import UIKit
 
 class EditPhotoViewModel {
+    
+    @Published var selectedImage: UIImage?
     
     init() {
         
