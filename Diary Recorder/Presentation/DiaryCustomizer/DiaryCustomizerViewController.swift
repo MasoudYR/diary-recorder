@@ -10,6 +10,7 @@ import UIKit
 import Combine
 import AVFoundation
 import PhotosUI
+import TOCropViewController
 
 class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDelegate {
     
@@ -168,7 +169,6 @@ extension DiaryCustomizerViewController: UIImagePickerControllerDelegate, UINavi
     private func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
         imagePicker.sourceType = sourceType
         imagePicker.delegate = self
-        imagePicker.allowsEditing = true
         
         router.navigateToPickImageByCamera(picker: imagePicker)
     }
@@ -207,10 +207,16 @@ extension DiaryCustomizerViewController: UIImagePickerControllerDelegate, UINavi
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         imagePicker.dismiss(animated: true)
         
-        if let edittedImage = info[.editedImage] as? UIImage {
-            viewModel.selectedImage = edittedImage
-        } else if let originalImage = info[.originalImage] as? UIImage {
-            viewModel.selectedImage = originalImage
+//        if let edittedImage = info[.editedImage] as? UIImage {
+//            viewModel.selectedImage = edittedImage
+//        } else
+//        
+        guard  let originalImage = info[.originalImage] as? UIImage  else { return }
+//            viewModel.selectedImage = originalImage
+//        }
+        
+        dismiss(animated: true) { [unowned self] in
+            router.navigateToImageCropViewController(image: originalImage)
         }
         
         print("We took pic successfully. \(viewModel.selectedImage)")
@@ -265,7 +271,6 @@ extension DiaryCustomizerViewController {
     }
     
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        picker.dismiss(animated: true)
         
         guard let provider = results.first?.itemProvider,
               provider.canLoadObject(ofClass: UIImage.self)
@@ -275,9 +280,12 @@ extension DiaryCustomizerViewController {
             guard let self else { return }
             DispatchQueue.main.async {
                 if let image = image as? UIImage {
-                    self.viewModel.selectedImage = image
-                    
+                    self.dismiss(animated: true) {
+                        self.router.navigateToImageCropViewController(image: image)
+                    }
                     print("We select pic successfully. \(self.viewModel.selectedImage)")
+                } else {
+                    self.dismiss(animated: true)
                 }
             }
         }
@@ -291,5 +299,22 @@ extension DiaryCustomizerViewController {
 extension DiaryCustomizerViewController {
     func deleteUserImage() {
         viewModel.selectedImage = UIImage(resource: .placeholderimage)
+    }
+}
+
+extension DiaryCustomizerViewController: TOCropViewControllerDelegate {
+    
+    private func userDidPickImage(_ image: UIImage) {
+        print("this is image from did pck image: \(image)")
+        viewModel.selectedImage = image
+    }
+    
+    func cropViewController(_ cropViewController: TOCropViewController, didCropTo image: UIImage, with cropRect: CGRect, angle: Int) {
+        userDidPickImage(image)
+        dismiss(animated: true)
+    }
+    
+    func cropViewController(_ cropViewController: TOCropViewController, didFinishCancelled cancelled: Bool) {
+        dismiss(animated: true)
     }
 }
