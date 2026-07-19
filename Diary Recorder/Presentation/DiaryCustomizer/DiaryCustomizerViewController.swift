@@ -17,15 +17,24 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     private let viewModel: DiaryCustomizerViewModel
     private let router: DiaryCustomizerRouter
     
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     private let vStackView = UIStackView()
     private let parentImagePickerView = UIView()
     private let imagePickerButton = ImagePickerButton()
+    private let renameParentView = UIView()
+    private let renameTitleLabel = UILabel()
+    private let renameTextFieldView = UIView()
+    private let renameTextField = UITextField()
+    private let emojiParentView = UIView()
+    private let emojiTitleLabel = UILabel()
     private let emojiHCollectionView: UICollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     let imagePicker = UIImagePickerController()
     
     private var isDefaultImage: Bool = true
     
     private var cancellables = Set<AnyCancellable>()
+    private var keyboardCancellables = Set<AnyCancellable>()
     
     init(viewModel: DiaryCustomizerViewModel, router: DiaryCustomizerRouter) {
         self.viewModel = viewModel
@@ -52,11 +61,37 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     }
     
     private func setupUI() {
+        setupScrollView()
+        setupContentView()
         setupVStackView()
         setupImagePickerButton()
-        setupEmojiHCollectionView()
+        setupRenameView()
+        setupEmojiView()
         bindingViewModel()
         actions()
+    }
+    
+    private func setupScrollView() {
+        scrollView.delegate = self
+        scrollView.isScrollEnabled = true
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.keyboardDismissMode = .interactive
+        scrollView.bounces = false
+        
+        view.addSubview(scrollView)
+        
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    private func setupContentView() {
+        scrollView.addSubview(contentView)
+        
+        contentView.snp.makeConstraints { make in
+            make.edges.equalTo(scrollView)
+            make.width.equalTo(view)
+        }
     }
     
     private func setupVStackView() {
@@ -67,9 +102,10 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         vStackView.isLayoutMarginsRelativeArrangement = true
         vStackView.layoutMargins = .init(top: 0, left: 20, bottom: 0, right: 20)
         
-        view.addSubview(vStackView)
+        contentView.addSubview(vStackView)
+        
         vStackView.snp.makeConstraints { make in
-            make.top.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
+            make.edges.equalToSuperview()
         }
     }
     
@@ -88,6 +124,66 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         vStackView.addArrangedSubview(parentImagePickerView)
     }
     
+    private func setupRenameView() {
+        
+        renameTitleLabel.text = "Name diary:"
+        renameTitleLabel.textColor = .label
+        renameTitleLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
+        renameTitleLabel.textAlignment = .left
+        
+        renameParentView.addSubview(renameTitleLabel)
+        
+        renameTitleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(10)
+            make.left.equalToSuperview().offset(5)
+        }
+        
+        renameTextFieldView.backgroundColor = .systemBackground
+        renameTextFieldView.layer.cornerRadius = 20
+        
+        renameParentView.addSubview(renameTextFieldView)
+        
+        renameTextFieldView.snp.makeConstraints { make in
+            make.top.equalTo(renameTitleLabel.snp.bottom).offset(10)
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview().inset(10)
+        }
+        
+        renameTextField.delegate = self
+        renameTextField.text = viewModel.nameDiary
+        renameTextField.placeholder = "Maximum 50 characters"
+        renameTextField.font = .roundedFont(ofSize: 18, weight: .regular)
+        renameTextField.textColor = .label
+        renameTextField.backgroundColor = .systemBackground
+        
+        renameTextFieldView.addSubview(renameTextField)
+        
+        renameTextField.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview().inset(15)
+            make.verticalEdges.equalToSuperview().inset(15)
+        }
+        
+        vStackView.addArrangedSubview(renameParentView)
+    }
+    
+    private func setupEmojiView() {
+        emojiTitleLabel.text = "Select mood:"
+        emojiTitleLabel.textColor = .label
+        emojiTitleLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
+        emojiTitleLabel.textAlignment = .left
+        
+        emojiParentView.addSubview(emojiTitleLabel)
+        
+        emojiTitleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.left.equalToSuperview().offset(5)
+        }
+        
+        setupEmojiHCollectionView()
+        
+        vStackView.addArrangedSubview(emojiParentView)
+    }
+    
     private func setupEmojiHCollectionView() {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -102,11 +198,14 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         emojiHCollectionView.delegate = self
         emojiHCollectionView.dataSource = self
         emojiHCollectionView.register(EmojiHCollectionCell.self, forCellWithReuseIdentifier: EmojiHCollectionCell.identifier)
-        
-        vStackView.addArrangedSubview(emojiHCollectionView)
+    
+        emojiParentView.addSubview(emojiHCollectionView)
         
         emojiHCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(emojiTitleLabel.snp.bottom).offset(10)
             make.height.equalTo(60)
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview().inset(10)
         }
     }
     
@@ -120,6 +219,15 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         
         imagePickerButton.removeAction(identifiedBy: imagePickerButtonActionId, for: .touchUpInside)
         imagePickerButton.addAction(imagePickerButtonAction, for: .touchUpInside)
+        
+        let renameTextFieldActionId = UIAction.Identifier("renameTextFieldActionId")
+        let renameTextFieldAction = UIAction { [weak self] _ in
+            guard let self else { return }
+            viewModel.nameDiary = renameTextField.text ?? ""
+        }
+        
+        renameTextField.removeAction(identifiedBy: renameTextFieldActionId, for: .editingChanged)
+        renameTextField.addAction(renameTextFieldAction, for: .editingChanged)
     }
     
     private func bindingViewModel(){
@@ -346,5 +454,88 @@ extension DiaryCustomizerViewController: TOCropViewControllerDelegate {
         }
         
         return UIImage(cgImage: cgImage)
+    }
+}
+
+extension DiaryCustomizerViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let currentText = renameTextField.text ?? ""
+        let nextText = (currentText as NSString).replacingCharacters(in: range, with: string)
+        if nextText.count > 50 {
+            return false
+        }
+        return true
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == renameTextField {
+            textField.resignFirstResponder()
+        }
+        return true
+    }
+    
+    func dismissKeyboardTappingOutsideTextfield() {
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGestureRecognizer.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGestureRecognizer)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+        print("gesture recognizer is working incorrectly")
+    }
+    //inke moghe type hatman kadr text filed balaye keyboard bashe ro ezafe kon.
+}
+
+extension DiaryCustomizerViewController {
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        registerKeyboardNotifications()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        keyboardCancellables.forEach {
+            $0.cancel()
+        }
+    }
+    
+    private func registerKeyboardNotifications() {
+        NotificationCenter
+            .default
+            .publisher(for: UIApplication.keyboardWillShowNotification)
+            .sink { [weak self] notification in
+                guard let self else { return }
+                self.keyboardWillShow(notification)
+            }
+            .store(in: &keyboardCancellables)
+        NotificationCenter
+            .default
+            .publisher(for: UIApplication.keyboardWillHideNotification)
+            .sink { [weak self] notification in
+                guard let self else { return }
+                self.keyboardWillHide(notification)
+            }
+            .store(in: &keyboardCancellables)
+    }
+    
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        let keyboardHeight = keyboardFrame.height
+        let contentInsets = UIEdgeInsets(
+            top: 0,
+            left: 0,
+            bottom: keyboardHeight,
+            right: 0
+        )
+        scrollView.contentInset = contentInsets
+        let textfiledFrame = renameTextFieldView.superview!.convert(renameTextFieldView.frame, to: scrollView)
+        scrollView.scrollRectToVisible(textfiledFrame, animated: true)
+    }
+    
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        scrollView.contentInset = .zero
+        scrollView.scrollIndicatorInsets = .zero
     }
 }

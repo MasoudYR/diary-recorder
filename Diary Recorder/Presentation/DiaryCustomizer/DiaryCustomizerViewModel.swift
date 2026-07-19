@@ -13,6 +13,8 @@ class DiaryCustomizerViewModel {
     @Published var selectedEmoji: IndexPath?
     @Published var selectedImage: UIImage?
     
+    var nameDiary: String = ""
+    
     var emojiArray: [EmojiModel] = []
     
     init() {
