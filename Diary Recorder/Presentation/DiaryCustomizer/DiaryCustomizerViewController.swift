@@ -23,6 +23,8 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     private let emojiHCollectionView: UICollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     let imagePicker = UIImagePickerController()
     
+    private var isDefaultImage: Bool = true
+    
     private var cancellables = Set<AnyCancellable>()
     
     init(viewModel: DiaryCustomizerViewModel, router: DiaryCustomizerRouter) {
@@ -113,7 +115,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         let imagePickerButtonAction = UIAction(identifier: imagePickerButtonActionId) { [weak self] _ in
             print("picker action tapped...")
             guard let self else { return }
-            self.router.navigateToEditPhotoViewController()
+            self.router.navigateToEditPhotoViewController(isDefaultImage: isDefaultImage)
         }
         
         imagePickerButton.removeAction(identifiedBy: imagePickerButtonActionId, for: .touchUpInside)
@@ -299,6 +301,7 @@ extension DiaryCustomizerViewController {
 extension DiaryCustomizerViewController {
     func deleteUserImage() {
         viewModel.selectedImage = UIImage(resource: .placeholderimage)
+        isDefaultImage = true
     }
 }
 
@@ -310,11 +313,38 @@ extension DiaryCustomizerViewController: TOCropViewControllerDelegate {
     }
     
     func cropViewController(_ cropViewController: TOCropViewController, didCropTo image: UIImage, with cropRect: CGRect, angle: Int) {
-        userDidPickImage(image)
+        let resizedImage = image.resized(to: CGSize(width: 500, height: 500))
+        userDidPickImage(resizedImage)
+        isDefaultImage = false
         dismiss(animated: true)
     }
     
     func cropViewController(_ cropViewController: TOCropViewController, didFinishCancelled cancelled: Bool) {
         dismiss(animated: true)
+    }
+    
+    private func resizeWithLanczos(image: UIImage, targetSize: CGFloat) -> UIImage? {
+        guard let ciImage = CIImage(image: image) else { return nil }
+        
+        let scale = targetSize / max(image.size.width, image.size.height)
+        
+        let filter = CIFilter(name: "CILanczosScaleTransform")
+        filter?.setValue(ciImage, forKey: kCIInputImageKey)
+        filter?.setValue(scale, forKey: kCIInputScaleKey)
+        filter?.setValue(1.0, forKey: kCIInputAspectRatioKey) // حفظ نسبت
+        
+        guard let outputCIImage = filter?.outputImage else { return nil }
+        
+        // Render با کیفیت بالا
+        let context = CIContext(options: [
+            .useSoftwareRenderer: false,           // از GPU استفاده کن
+            .highQualityDownsample: true
+        ])
+        
+        guard let cgImage = context.createCGImage(outputCIImage, from: outputCIImage.extent) else {
+            return nil
+        }
+        
+        return UIImage(cgImage: cgImage)
     }
 }

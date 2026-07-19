@@ -25,29 +25,30 @@ class DiaryCustomizerRouter {
     }
     
     
-    func navigateToEditPhotoViewController() {
+    func navigateToEditPhotoViewController(isDefaultImage: Bool) {
         guard let diaryCustomizerViewController else { return }
         
-        let viewController = EditPhotoViewController.make(editPhotoHandler: { [weak self] editType in
-            guard let self else { return }
-            
-            print("this is edit Type inside DiaryCustomizerRouter: \(editType)")
-            
-            switch editType {
-            case .selectFromGallery:
-                diaryCustomizerViewController.handleGallerySelection()
-            case .takePhotoByCamera:
-                diaryCustomizerViewController.handleCameraSelection()
-            case .deletePhoto:
-                navigateToDeleteImage()
+        let viewController = EditPhotoViewController.make(
+            isDefaultImage: isDefaultImage,
+            editPhotoHandler: { [weak self] editType in
+                guard let self else { return }
+                
+                print("this is edit Type inside DiaryCustomizerRouter: \(editType)")
+                
+                switch editType {
+                case .selectFromGallery:
+                    diaryCustomizerViewController.handleGallerySelection()
+                case .takePhotoByCamera:
+                    diaryCustomizerViewController.handleCameraSelection()
+                case .deletePhoto:
+                    navigateToDeleteImage()
+                }
             }
-        }
         )
         
         if let sheet  = viewController.sheetPresentationController {
             sheet.detents = [.custom { _ in return 250 }]
         }
-        
         
         diaryCustomizerViewController.present(viewController, animated: true)
     }

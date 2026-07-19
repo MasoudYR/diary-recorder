@@ -21,9 +21,12 @@ class EditPhotoViewController: UIViewController {
     private let editPhotoTableView = UITableView(frame: .zero, style: .insetGrouped)
 //    private let imagePicker = UIImagePickerController()
     
-    init(viewModel: EditPhotoViewModel, router: EditPhotoRouter) {
+    private let isDefaultImage: Bool
+    
+    init(viewModel: EditPhotoViewModel, router: EditPhotoRouter, isDefaultImage: Bool) {
         self.viewModel = viewModel
         self.router = router
+        self.isDefaultImage = isDefaultImage
         super.init(nibName: nil, bundle: nil)
         self.router.editPhotoViewController = self
     }
@@ -32,10 +35,10 @@ class EditPhotoViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    static func make(editPhotoHandler: @escaping (_ editType: editPhotoType) -> Void) -> EditPhotoViewController {
+    static func make(isDefaultImage: Bool, editPhotoHandler: @escaping (_ editType: editPhotoType) -> Void) -> EditPhotoViewController {
         let viewModel = EditPhotoViewModel()
         let router = EditPhotoRouter(editPhotoHandler: editPhotoHandler)
-        let viewController = EditPhotoViewController(viewModel: viewModel, router: router)
+        let viewController = EditPhotoViewController(viewModel: viewModel, router: router, isDefaultImage: isDefaultImage)
         return viewController
     }
     
@@ -119,11 +122,15 @@ class EditPhotoViewController: UIViewController {
 extension EditPhotoViewController: UITableViewDelegate, UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return isDefaultImage ? 1 : 2
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return section == 0 ? 2 : 1
+        if isDefaultImage {
+            return 2
+        } else {
+            return section == 0 ? 2 : 1
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
