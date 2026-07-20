@@ -20,15 +20,26 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     private let scrollView = UIScrollView()
     private let contentView = UIView()
     private let vStackView = UIStackView()
+    
     private let parentImagePickerView = UIView()
     private let imagePickerButton = ImagePickerButton()
+    
     private let renameParentView = UIView()
     private let renameTitleLabel = UILabel()
     private let renameTextFieldView = UIView()
     private let renameTextField = UITextField()
+    
     private let emojiParentView = UIView()
     private let emojiTitleLabel = UILabel()
     private let emojiHCollectionView: UICollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    
+    private let diaryTextParentView = UIView()
+    private let diaryTextTitleLabel = UILabel()
+    private let diaryTextViewView = UIView()
+    private let diaryTextView = UITextView()
+    private let diaryTextCountLabel = UILabel()
+    private let diaryTextPlaceHolder = UILabel()
+    
     let imagePicker = UIImagePickerController()
     
     private var isDefaultImage: Bool = true
@@ -67,6 +78,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         setupImagePickerButton()
         setupRenameView()
         setupEmojiView()
+        setupDiaryTextView()
         bindingViewModel()
         actions()
     }
@@ -209,6 +221,78 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         }
     }
     
+    private func setupDiaryTextView() {
+        diaryTextTitleLabel.text = "Write story:"
+        diaryTextTitleLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
+        diaryTextTitleLabel.textColor = .label
+        diaryTextTitleLabel.textAlignment = .left
+        
+        diaryTextParentView.addSubview(diaryTextTitleLabel)
+        
+        diaryTextTitleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(10)
+            make.left.equalToSuperview().offset(5)
+        }
+        
+        diaryTextViewView.backgroundColor = .systemBackground
+        diaryTextViewView.layer.cornerRadius = 20
+        
+        diaryTextParentView.addSubview(diaryTextViewView)
+        
+        diaryTextViewView.snp.makeConstraints { make in
+            make.top.equalTo(diaryTextTitleLabel.snp.bottom).offset(10)
+            make.directionalHorizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview().inset(10)
+            make.height.equalTo(120)
+        }
+        
+        diaryTextView.delegate = self
+        diaryTextView.font = .roundedFont(ofSize: 18, weight: .regular)
+        diaryTextView.textColor = .label
+        diaryTextView.textAlignment = .left
+        diaryTextView.backgroundColor = .systemBackground
+        diaryTextView.inputAccessoryView = InputAccessoryView(responder: diaryTextView)
+        
+        diaryTextViewView.addSubview(diaryTextView)
+        
+        diaryTextView.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview().inset(15)
+            make.verticalEdges.equalToSuperview().inset(15)
+        }
+        
+        diaryTextCountLabel.text = "\(0)/\(150)"
+        diaryTextCountLabel.textColor = .label
+        diaryTextCountLabel.font = UIFont.boldSystemFont(ofSize: 10)
+        diaryTextCountLabel.textAlignment = .right
+        
+        diaryTextViewView.addSubview(diaryTextCountLabel)
+        
+        diaryTextCountLabel.snp.makeConstraints { make in
+            make.right.equalTo(diaryTextViewView).inset(15)
+            make.bottom.equalTo(diaryTextViewView).inset(5)
+        }
+        
+        diaryTextPlaceHolder.text = """
+        Tell the story of your day,
+        A moment worth remembering...
+        """
+        diaryTextPlaceHolder.textColor = .lightGray
+        diaryTextPlaceHolder.font = .roundedFont(ofSize: 15, weight: .regular)
+        diaryTextPlaceHolder.textAlignment = .center
+        diaryTextPlaceHolder.numberOfLines = 0
+        diaryTextPlaceHolder.isHidden = !diaryTextView.text.isEmpty
+        
+        diaryTextViewView.addSubview(diaryTextPlaceHolder)
+        
+        diaryTextPlaceHolder.snp.makeConstraints { make in
+            make.centerX.equalTo(diaryTextView)
+            make.top.equalToSuperview().inset(15)
+            make.horizontalEdges.equalToSuperview()
+        }
+        
+        vStackView.addArrangedSubview(diaryTextParentView)
+    }
+    
     private func actions() {
         let imagePickerButtonActionId = UIAction.Identifier("imagePickerButtonActionId")
         let imagePickerButtonAction = UIAction(identifier: imagePickerButtonActionId) { [weak self] _ in
@@ -248,7 +332,15 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
                 imagePickerButton.configue(image: image, photoState: .setImage)
             }
             .store(in: &cancellables)
-            
+        
+        viewModel.$textDiaryCount
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] text in
+                guard let self else { return }
+                self.diaryTextCountLabel.text = text
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -317,13 +409,7 @@ extension DiaryCustomizerViewController: UIImagePickerControllerDelegate, UINavi
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         imagePicker.dismiss(animated: true)
         
-//        if let edittedImage = info[.editedImage] as? UIImage {
-//            viewModel.selectedImage = edittedImage
-//        } else
-//        
         guard  let originalImage = info[.originalImage] as? UIImage  else { return }
-//            viewModel.selectedImage = originalImage
-//        }
         
         dismiss(animated: true) { [unowned self] in
             router.navigateToImageCropViewController(image: originalImage)
@@ -484,7 +570,6 @@ extension DiaryCustomizerViewController: UITextFieldDelegate {
         view.endEditing(true)
         print("gesture recognizer is working incorrectly")
     }
-    //inke moghe type hatman kadr text filed balaye keyboard bashe ro ezafe kon.
 }
 
 extension DiaryCustomizerViewController {
@@ -530,12 +615,43 @@ extension DiaryCustomizerViewController {
             right: 0
         )
         scrollView.contentInset = contentInsets
-        let textfiledFrame = renameTextFieldView.superview!.convert(renameTextFieldView.frame, to: scrollView)
-        scrollView.scrollRectToVisible(textfiledFrame, animated: true)
+        
+        if renameTextField.isEditing {
+            let textfieldFrame = renameTextFieldView.superview!.convert(renameTextFieldView.frame, to: scrollView)
+            scrollView.scrollRectToVisible(textfieldFrame, animated: true)
+        } else {
+            let textviewFrame = diaryTextView.superview!.convert(diaryTextView.frame, to: scrollView)
+            scrollView.scrollRectToVisible(textviewFrame, animated: true)
+        }
     }
     
     @objc private func keyboardWillHide(_ notification: Notification) {
         scrollView.contentInset = .zero
         scrollView.scrollIndicatorInsets = .zero
+    }
+}
+
+extension DiaryCustomizerViewController: UITextViewDelegate {
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        let current = textView.text ?? ""
+        let nextText = (current as NSString).replacingCharacters(in: range, with: text)
+        if nextText.count > 150 {
+            return false
+        }
+        diaryTextPlaceHolder.isHidden = !nextText.isEmpty
+        return true
+    }
+    
+    func textViewDidChange(_ textView: UITextView) {
+        viewModel.textDiary = textView.text ?? ""
+    }
+    
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        diaryTextPlaceHolder.isHidden = true
+    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        diaryTextPlaceHolder.isHidden = !diaryTextView.text.isEmpty
     }
 }

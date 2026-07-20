@@ -7,18 +7,34 @@
 
 import Foundation
 import UIKit
+import Combine
 
 class DiaryCustomizerViewModel {
     
     @Published var selectedEmoji: IndexPath?
     @Published var selectedImage: UIImage?
+    @Published var textDiary: String?
+    @Published private(set) var textDiaryCount: String = ""
     
     var nameDiary: String = ""
+    //var textDiary: String = ""
     
     var emojiArray: [EmojiModel] = []
     
+    private var cancellables = Set<AnyCancellable>()
+    
     init() {
         setupArrayEmoji()
+        binding()
+    }
+    
+    private func binding() {
+        $textDiary
+            .compactMap { $0 }
+            .sink { [unowned self] text in
+                self.textDiaryCount = "\(text.count)/\(150)"
+            }
+            .store(in: &cancellables)
     }
     
     private func setupArrayEmoji() {
