@@ -11,20 +11,29 @@ import Combine
 
 class DiaryCustomizerViewModel {
     
-    @Published var selectedEmoji: IndexPath?
+    @Published var selectedEmoji: EmojiType?
     @Published var selectedImage: UIImage?
     @Published var textDiary: String?
     @Published private(set) var textDiaryCount: String = ""
     
-    var nameDiary: String = ""
+    private let fileURLProvider: RecordingDiaryFileURLProvider = .default()
+    var isDefaultImage: Bool = true
+    var diary: RecordingFileDetails
+    private var updateDetailsCurrentValueSubject: PassthroughSubject<UpdateDetails, Never>
+    var nameDiary: String?
+    var selectedImageURLString: String = ""
+    var selectedEmojiString: String = ""
     //var textDiary: String = ""
     
     var emojiArray: [EmojiModel] = []
     
     private var cancellables = Set<AnyCancellable>()
     
-    init() {
+    init(diary: RecordingFileDetails ,updateDetailsCurrentValueSubject: PassthroughSubject<UpdateDetails, Never>) {
+        self.diary = diary
+        self.updateDetailsCurrentValueSubject = updateDetailsCurrentValueSubject
         setupArrayEmoji()
+        toSetInitialValues()
         binding()
     }
     
@@ -125,5 +134,82 @@ class DiaryCustomizerViewModel {
                 type: .ragemode
             ),
         ]
+    }
+    
+    func toSetInitialValues() {
+        self.nameDiary = diary.name
+        self.textDiary = diary.text
+        
+        
+        if !diary.mood.isEmpty {
+            self.selectedEmoji = EmojiType(rawValue: diary.mood)
+        } else {
+            self.selectedEmoji = EmojiType(rawValue: "pokerface")
+            print("your selected emoji is empty")
+        }
+        
+        guard !diary.imageFileName.isEmpty else {
+            self.selectedImage = UIImage(resource: .placeholderimage)
+            self.isDefaultImage = true
+            return
+        }
+        
+        let imageURL = fileURLProvider.makeFileURL(named: diary.imageFileName)
+        
+        if FileManager.default.fileExists(atPath: imageURL.path) {
+            do {
+                let data = try Data(contentsOf: imageURL)
+                if let image = UIImage(data: data) {
+                    self.selectedImage = image
+                    self.isDefaultImage = false
+                }
+            } catch {
+                print("The image data could not be read: \(error)")
+            }
+        } else {
+            print("image file not exist.")
+            self.selectedImage = UIImage(resource: .placeholderimage)
+            self.isDefaultImage = true
+        }
+    }
+    
+    func updateDiaryDetails() {
+        
+        if let nameDiary, nameDiary.isEmpty {
+            self.nameDiary = diary.name
+        }
+        
+        if let selectedImage,
+           !isDefaultImage,
+           let data = selectedImage.jpegData(compressionQuality: 1) {
+            let imageFileName = "\(UUID().uuidString).jpeg"
+            let imageURL = fileURLProvider.makeFileURL(named: imageFileName)
+            
+            do {
+                try data.write(to: imageURL)
+                print("image saved successfully: \(imageURL)")
+                self.selectedImageURLString = imageFileName
+            } catch {
+                print("Error saving image: \(error)")
+            }
+        } else {
+            self.selectedImageURLString = ""
+        }
+        
+        if let selectedEmoji {
+            selectedEmojiString = selectedEmoji.rawValue
+        } else {
+            selectedEmojiString = "pokerface"
+        }
+        
+        let newDetails = UpdateDetails(
+            name: nameDiary ?? diary.name,
+            imageFileName: selectedImageURLString,
+            mood: selectedEmojiString,
+            text: textDiary ?? ""
+        )
+        
+        updateDetailsCurrentValueSubject.send(newDetails)
+        
     }
 }

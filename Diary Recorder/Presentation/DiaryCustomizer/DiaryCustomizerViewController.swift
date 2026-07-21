@@ -40,9 +40,11 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     private let diaryTextCountLabel = UILabel()
     private let diaryTextPlaceHolder = UILabel()
     
-    let imagePicker = UIImagePickerController()
+    private let buttonsHStackView = UIStackView()
+    private let saveButton = UIButton()
+    private let cancelButton = UIButton()
     
-    private var isDefaultImage: Bool = true
+    let imagePicker = UIImagePickerController()
     
     private var cancellables = Set<AnyCancellable>()
     private var keyboardCancellables = Set<AnyCancellable>()
@@ -64,8 +66,8 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         setupUI()
     }
     
-    static func make() -> DiaryCustomizerViewController {
-        let viewModel = DiaryCustomizerViewModel()
+    static func make(diary: RecordingFileDetails, updateDetailsCurrentValueSubject: PassthroughSubject<UpdateDetails, Never> ) -> DiaryCustomizerViewController {
+        let viewModel = DiaryCustomizerViewModel(diary: diary, updateDetailsCurrentValueSubject: updateDetailsCurrentValueSubject )
         let router = DiaryCustomizerRouter()
         let viewController = DiaryCustomizerViewController(viewModel: viewModel, router: router)
         return viewController
@@ -79,6 +81,8 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         setupRenameView()
         setupEmojiView()
         setupDiaryTextView()
+        setupButtonsHStackView()
+        setupButtons()
         bindingViewModel()
         actions()
     }
@@ -128,7 +132,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         parentImagePickerView.addSubview(imagePickerButton)
         
         imagePickerButton.snp.makeConstraints { make in
-            make.size.equalTo(300)
+            make.size.equalTo(250)
             make.verticalEdges.equalToSuperview()
             make.centerX.equalToSuperview()
         }
@@ -215,7 +219,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         
         emojiHCollectionView.snp.makeConstraints { make in
             make.top.equalTo(emojiTitleLabel.snp.bottom).offset(10)
-            make.height.equalTo(60)
+            make.height.equalTo(50)
             make.horizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview().inset(10)
         }
@@ -243,10 +247,11 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
             make.top.equalTo(diaryTextTitleLabel.snp.bottom).offset(10)
             make.directionalHorizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview().inset(10)
-            make.height.equalTo(120)
+            make.height.equalTo(110)
         }
         
         diaryTextView.delegate = self
+        diaryTextView.text = viewModel.textDiary
         diaryTextView.font = .roundedFont(ofSize: 18, weight: .regular)
         diaryTextView.textColor = .label
         diaryTextView.textAlignment = .left
@@ -293,12 +298,49 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         vStackView.addArrangedSubview(diaryTextParentView)
     }
     
+    private func setupButtonsHStackView() {
+        buttonsHStackView.axis = .horizontal
+        buttonsHStackView.distribution = .fillEqually
+        buttonsHStackView.alignment = .fill
+        buttonsHStackView.spacing = 40
+    }
+    
+    private func setupButtons() {
+        cancelButton.setTitle("Cancel", for: .normal)
+        cancelButton.setTitleColor(.label, for: .normal)
+        cancelButton.tintColor = .label
+        cancelButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
+        cancelButton.backgroundColor = .main
+        cancelButton.layer.cornerRadius = 20
+        
+        cancelButton.snp.makeConstraints { make in
+            make.height.equalTo(50)
+        }
+        
+        buttonsHStackView.addArrangedSubview(cancelButton)
+        
+        saveButton.setTitle("Save", for: .normal)
+        saveButton.setTitleColor(.label, for: .normal)
+        saveButton.tintColor = .label
+        saveButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
+        saveButton.backgroundColor = .main
+        saveButton.layer.cornerRadius = 20
+        
+        saveButton.snp.makeConstraints { make in
+            make.height.equalTo(50)
+        }
+        
+        buttonsHStackView.addArrangedSubview(saveButton)
+        
+        vStackView.addArrangedSubview(buttonsHStackView)
+    }
+    
     private func actions() {
         let imagePickerButtonActionId = UIAction.Identifier("imagePickerButtonActionId")
         let imagePickerButtonAction = UIAction(identifier: imagePickerButtonActionId) { [weak self] _ in
             print("picker action tapped...")
             guard let self else { return }
-            self.router.navigateToEditPhotoViewController(isDefaultImage: isDefaultImage)
+            self.router.navigateToEditPhotoViewController(isDefaultImage: viewModel.isDefaultImage)
         }
         
         imagePickerButton.removeAction(identifiedBy: imagePickerButtonActionId, for: .touchUpInside)
@@ -312,6 +354,25 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         
         renameTextField.removeAction(identifiedBy: renameTextFieldActionId, for: .editingChanged)
         renameTextField.addAction(renameTextFieldAction, for: .editingChanged)
+        
+        let saveButtonActionId = UIAction.Identifier("saveButtonActionId")
+        let saveButtonAction = UIAction { [weak self] _ in
+            guard let self else { return }
+            self.viewModel.updateDiaryDetails()
+            self.dismiss(animated: true)
+        }
+        
+        saveButton.removeAction(identifiedBy: saveButtonActionId, for: .touchUpInside)
+        saveButton.addAction(saveButtonAction, for: .touchUpInside)
+        
+        let cancelButtonActionId = UIAction.Identifier("cancelButtonActionId")
+        let cancelButtonAction = UIAction { [weak self] _ in
+            guard let self else { return }
+            self.dismiss(animated: true)
+        }
+        
+        cancelButton.removeAction(identifiedBy: cancelButtonActionId, for: .touchUpInside)
+        cancelButton.addAction(cancelButtonAction, for: .touchUpInside)
     }
     
     private func bindingViewModel(){
@@ -351,7 +412,7 @@ extension DiaryCustomizerViewController: UICollectionViewDelegate, UICollectionV
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmojiHCollectionCell.identifier, for: indexPath) as! EmojiHCollectionCell
-        if indexPath == viewModel.selectedEmoji {
+        if  viewModel.emojiArray[indexPath.row].type == viewModel.selectedEmoji {
             cell.configue(image: viewModel.emojiArray[indexPath.row].colorImage)
         } else {
             cell.configue(image: viewModel.emojiArray[indexPath.row].grayscaleImage)
@@ -361,7 +422,8 @@ extension DiaryCustomizerViewController: UICollectionViewDelegate, UICollectionV
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("selected item: \(viewModel.emojiArray[indexPath.row])")
-        viewModel.selectedEmoji = indexPath
+        viewModel.selectedEmoji = viewModel.emojiArray[indexPath.row].type
+
     }
 }
 
@@ -495,7 +557,7 @@ extension DiaryCustomizerViewController {
 extension DiaryCustomizerViewController {
     func deleteUserImage() {
         viewModel.selectedImage = UIImage(resource: .placeholderimage)
-        isDefaultImage = true
+            viewModel.isDefaultImage = true
     }
 }
 
@@ -509,7 +571,7 @@ extension DiaryCustomizerViewController: TOCropViewControllerDelegate {
     func cropViewController(_ cropViewController: TOCropViewController, didCropTo image: UIImage, with cropRect: CGRect, angle: Int) {
         let resizedImage = image.resized(to: CGSize(width: 500, height: 500))
         userDidPickImage(resizedImage)
-        isDefaultImage = false
+            viewModel.isDefaultImage = false
         dismiss(animated: true)
     }
     

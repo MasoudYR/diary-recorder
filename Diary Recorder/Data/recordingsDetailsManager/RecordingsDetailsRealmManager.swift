@@ -8,6 +8,7 @@
 import Foundation
 import RealmSwift
 import Combine
+import UIKit
 
 public final class RecordingsDetailsRealmManager {
     
@@ -51,8 +52,11 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
             identifier: diary.id,
             fileName: diary.fileName,
             name: diary.name,
+            imageFileName: diary.imageFileName,
             date: diary.date,
-            duration: diary.duration
+            duration: diary.duration,
+            mood: diary.mood,
+            text: diary.text
         )
         
         do {
@@ -73,7 +77,9 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
         }
         
         let fileName = realmInstance.fileName
+        let imageFileName = realmInstance.imageFileName
         print(">>>>>>>>>> my file url to delete is: \(fileName)")
+        print(">>>>>>>>>> my file url to delete is: \(imageFileName)")
         
         do {
             try realm.safeWrite {
@@ -84,8 +90,10 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
         }
 
         do {
-            let url = fileURLProvider.makeDiaryFileURL(named: fileName)
+            let url = fileURLProvider.makeFileURL(named: fileName)
             try FileManager.default.removeItem(at: url)
+            let imageurl = fileURLProvider.makeFileURL(named: imageFileName)
+            try FileManager.default.removeItem(at: imageurl)
         } catch (let error) {
             print("delete file from the file manager doesn't work because: \(error)")
         }
@@ -118,6 +126,32 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
             throw .failedToRename
         }
     }
+    
+    func updateDiary(diary: RecordingFileDetails, newName: String?, newImage: String?, newMood: String?, newText: String?) throws(RealmError) {
+        
+        guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: diary.id) else {
+            throw .failedToUpdate
+        }
+        
+        do {
+            try realm.safeWrite {
+                if let newName {
+                    realmInstance.name = newName
+                }
+                if let newImage {
+                    realmInstance.imageFileName = newImage
+                }
+                if let newMood {
+                    realmInstance.mood = newMood
+                }
+                if let newText {
+                    realmInstance.text = newText
+                }
+            }
+        } catch {
+            throw .failedToUpdate
+        }
+    }
 }
 
 extension RecordingsDetailsRealmManager: ListRecordingHandler {
@@ -133,8 +167,11 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
                     id: $0.identifier,
                     fileName: $0.fileName,
                     name: $0.name,
+                    imageFileName: $0.imageFileName,
                     date: $0.date,
-                    duration: $0.duration
+                    duration: $0.duration,
+                    mood: $0.mood,
+                    text: $0.text
                 )
                 
                 print("this is list of mapppppeeedddd realm data: @@@@@: \(sample)")
@@ -163,8 +200,11 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
                                 id: $0.identifier,
                                 fileName: $0.fileName,
                                 name: $0.name,
+                                imageFileName: $0.imageFileName,
                                 date: $0.date,
-                                duration: $0.duration
+                                duration: $0.duration,
+                                mood: $0.mood,
+                                text: $0.text
                             )
                             print("this is list of mapppppeeedddd realm data: @@@@@: \(sample)")
                             return sample
@@ -250,8 +290,11 @@ extension RecordingsDetailsRealmManager: ListRecordingHandler {
                     id: $0.identifier,
                     fileName: $0.fileName,
                     name: $0.name,
+                    imageFileName: $0.imageFileName,
                     date: $0.date,
-                    duration: $0.duration
+                    duration: $0.duration,
+                    mood: $0.mood,
+                    text: $0.text
                 )
                 print("*** this is samples: \(sample)")
                 return sample

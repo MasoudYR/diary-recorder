@@ -13,6 +13,7 @@ enum RealmError: Error {
 //    case diaryNotFound
     case failedToRemove
     case failedToRename
+    case failedToUpdate
     case failedToGetList
     
     var description: String {
@@ -25,6 +26,8 @@ enum RealmError: Error {
             "Failed to remove diary."
         case .failedToRename:
             "Failed to rename diary."
+        case .failedToUpdate:
+            "Failed to update diary."
         case .failedToGetList:
             "Failed to get diaries."
         }
@@ -36,6 +39,7 @@ protocol RecordingModifierHandler {
     func removeDiary(withID recordingID: UUID) throws(RealmError)
     func removeAllDiaries() throws(RealmError)
     func renameDiary(diary: RecordingFileDetails, to newName: String) throws(RealmError)
+    func updateDiary(diary: RecordingFileDetails, newName: String?, newImage: String?, newMood: String?, newText: String?) throws(RealmError)
 }
 
 extension RecordingModifierHandler {

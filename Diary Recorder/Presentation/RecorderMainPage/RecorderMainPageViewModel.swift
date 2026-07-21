@@ -23,6 +23,8 @@ class RecorderMainPageViewModel: ObservableObject {
     
     var nameCurrentValueSubject: PassthroughSubject<String, Never> = .init()
 
+    var updateDetailsCurrentValueSubject: PassthroughSubject<UpdateDetails, Never> = .init()
+    
     private var cancellables = Set<AnyCancellable>()
     
     
@@ -31,7 +33,7 @@ class RecorderMainPageViewModel: ObservableObject {
         self.audioRecorderService = audioRecorderService
         binding()
     }
-    
+
     private func binding() {
         
         nameCurrentValueSubject
@@ -39,6 +41,19 @@ class RecorderMainPageViewModel: ObservableObject {
             .sink { [weak self] name in
                 guard let self else { return }
                 self.renameLastDiary(name: name)
+            }
+            .store(in: &cancellables)
+        
+        updateDetailsCurrentValueSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] details in
+                guard let self else { return }
+                updateLastDiaryDetails(
+                    newName: details.name,
+                    newImage: details.imageFileName,
+                    newMood: details.mood,
+                    newText: details.text
+                )
             }
             .store(in: &cancellables)
     }
@@ -67,6 +82,7 @@ class RecorderMainPageViewModel: ObservableObject {
         guard let recordingsStateDescriptor = audioRecorderService.recordingStateDescriptor else { return }
         let url = recordingsStateDescriptor.itemURL
         let fileName = recordingsStateDescriptor.itemName
+        let imageFileName = ""
         let date = Date()
         let duration = getAudioDuration(url: url)
         
@@ -74,9 +90,12 @@ class RecorderMainPageViewModel: ObservableObject {
             id: UUID(),
             fileName: fileName,
             name: dateToString(date: date),
+            imageFileName: "",
             date: date,
-            duration: duration
-            )
+            duration: duration,
+            mood: "pokerface",
+            text: "",
+        )
         
         do {
             try recordingsDetailsRealmManager.saveDiary(diary: currentRecordingFileDetails)
@@ -84,7 +103,7 @@ class RecorderMainPageViewModel: ObservableObject {
             print("📁 File saved at: \(url.path)")
         } catch {
             print("Save recording error: \(error)")
-            if error == .failedToSave{
+            if error == .failedToSave {
                 //handle showing alert
             }
         }
@@ -106,6 +125,17 @@ class RecorderMainPageViewModel: ObservableObject {
         guard let lastSavedDiary else { return }
         
         renameDiary(diary: lastSavedDiary, to: name)
+    }
+    
+    func updateLastDiaryDetails(newName: String, newImage: String, newMood: String, newText: String) {
+        guard let lastSavedDiary else { return }
+        
+        do {
+            try recordingsDetailsRealmManager.updateDiary(diary: lastSavedDiary, newName: newName, newImage: newImage, newMood: newMood, newText: newText)
+        } catch {
+            print("you can no tupdate your diary: \(error)")
+            //handle error alert
+        }
     }
     
     func transformTime(_ time: TimeInterval) -> String {
@@ -140,4 +170,12 @@ class RecorderMainPageViewModel: ObservableObject {
         return text
     }
     
+}
+
+
+struct UpdateDetails {
+    let name: String
+    let imageFileName: String
+    let mood: String
+    let text: String
 }

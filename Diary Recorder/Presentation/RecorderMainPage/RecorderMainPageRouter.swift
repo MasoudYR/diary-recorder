@@ -43,4 +43,19 @@ class RecorderMainPageRouter {
         nameDiaryViewController.isModalInPresentation = true
         recorderMainPageViewController.present(nameDiaryViewController, animated: true)
     }
+    
+    func navigateToDiaryCustomizer(
+        lastSavedDiary: RecordingFileDetails,
+        updateDetailsCurrentValueSubject: PassthroughSubject<UpdateDetails, Never>
+    ) {
+        guard let recorderMainPageViewController else { return }
+        
+        let diaryCustomizerViewController = DiaryCustomizerViewController.make(
+            diary: lastSavedDiary,
+            updateDetailsCurrentValueSubject: updateDetailsCurrentValueSubject
+        )
+        
+        diaryCustomizerViewController.isModalInPresentation = true
+        recorderMainPageViewController.present(diaryCustomizerViewController, animated: true)
+    }
 }

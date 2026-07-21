@@ -285,9 +285,19 @@ class RecorderMainPageViewController: UIViewController {
             print("lastSavedDiaryInViewController: \(String(describing: viewModel.lastSavedDiary))")
             guard let lastSavedDiary = viewModel.lastSavedDiary else { return }
             
+            let updateDetailsCurrentValueSubject = viewModel.updateDetailsCurrentValueSubject
+            
             let nameCurrentValueSubject = viewModel.nameCurrentValueSubject
             print("##### Stop Button tapped")
-            router.navigateToNameDiary(lastSavedDiary: lastSavedDiary, nameCurrentValueSubject: nameCurrentValueSubject)
+            router.navigateToNameDiary(
+                lastSavedDiary: lastSavedDiary,
+                nameCurrentValueSubject: nameCurrentValueSubject
+            )
+            
+            router.navigateToDiaryCustomizer(
+                lastSavedDiary: lastSavedDiary,
+                updateDetailsCurrentValueSubject: updateDetailsCurrentValueSubject
+            )
         }
         
         stopButton.removeAction(identifiedBy: stopButtonActionId, for: .touchUpInside)

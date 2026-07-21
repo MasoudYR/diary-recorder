@@ -14,22 +14,22 @@ struct EmojiModel {
     let type: EmojiType
 }
 
-enum EmojiType {
-    case sunnysmile
-    case sideeye
-    case ragemode
-    case lol
-    case kissy
-    case hearteye
-    case cuty
-    case grin
-    case biggrin
-    case sillydead
-    case wowface
-    case eyeroll
-    case bleh
-    case pokerface
-    case cry
-    case bluemode
-    case frustrated
+enum EmojiType: String, CaseIterable {
+    case sunnysmile = "sunnysmile"
+    case sideeye = "sideeye"
+    case ragemode = "ragemode"
+    case lol = "lol"
+    case kissy = "kissy"
+    case hearteye = "hearteye"
+    case cuty = "cuty"
+    case grin = "grin"
+    case biggrin = "biggrin"
+    case sillydead = "sillydead"
+    case wowface = "wowface"
+    case eyeroll = "eyeroll"
+    case bleh = "bleh"
+    case pokerface = "pokerface"
+    case cry = "cry"
+    case bluemode = "bluemode"
+    case frustrated = "frustrated"
 }

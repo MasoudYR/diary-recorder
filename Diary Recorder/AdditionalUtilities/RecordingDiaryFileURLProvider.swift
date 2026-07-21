@@ -8,7 +8,7 @@
 import Foundation
 
 protocol RecordingDiaryFileURLProvider {
-    func makeDiaryFileURL(named: String) -> URL
+    func makeFileURL(named: String) -> URL
 }
 
 struct DefaultRecordingDiaryFileURLProvider: RecordingDiaryFileURLProvider {
@@ -18,7 +18,7 @@ struct DefaultRecordingDiaryFileURLProvider: RecordingDiaryFileURLProvider {
         self.baseURL = baseURL
     }
     
-    func makeDiaryFileURL(named fileName: String) -> URL {
+    func makeFileURL(named fileName: String) -> URL {
         baseURL.appendingPathComponent(fileName)
     }
 }

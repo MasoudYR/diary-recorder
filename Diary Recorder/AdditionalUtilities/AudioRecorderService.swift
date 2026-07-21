@@ -76,7 +76,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     func prepareToRecord() {
         activeAudioSession()
         let fileName = "\(UUID().uuidString).m4a"
-        let fileURL = fileURLProvider.makeDiaryFileURL(named: fileName)
+        let fileURL = fileURLProvider.makeFileURL(named: fileName)
         self.recordingStateDescriptor = RecordingStateDescriptor(
             itemURL: fileURL,
             itemName: fileName,
@@ -180,7 +180,7 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
     
     private func listRecordings() {
         do {
-            let folder = fileURLProvider.makeDiaryFileURL(named: "temp.temp").deletingLastPathComponent()
+            let folder = fileURLProvider.makeFileURL(named: "temp.temp").deletingLastPathComponent()
             let files = try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
             print("Saved recordings:", files.map { $0.lastPathComponent })
         } catch {

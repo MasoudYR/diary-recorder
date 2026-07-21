@@ -48,7 +48,7 @@ class AudioPlayerService: NSObject {
     }
     
     func prepareToPlay(diaryRecorded: RecordingFileDetails) {
-        let fileURL = fileURLProvider.makeDiaryFileURL(named: diaryRecorded.fileName)
+        let fileURL = fileURLProvider.makeFileURL(named: diaryRecorded.fileName)
         
         let asset = AVAsset(url: fileURL)
         
@@ -74,7 +74,7 @@ class AudioPlayerService: NSObject {
         
         print(">>>", Self.self, #function, "fileURL: \(diaryRecorded.fileName)")
         
-        let fileURL = fileURLProvider.makeDiaryFileURL(named: diaryRecorded.fileName)
+        let fileURL = fileURLProvider.makeFileURL(named: diaryRecorded.fileName)
         
         let asset = AVAsset(url: fileURL)
         let playerItem = AVPlayerItem(

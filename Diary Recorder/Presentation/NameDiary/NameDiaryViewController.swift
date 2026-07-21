@@ -124,7 +124,7 @@ class NameDiaryViewController: UIViewController {
 //        cancelButton.layer.borderWidth = 1
 //        cancelButton.layer.borderColor = UIColor.label.cgColor
         
-        renameButton.snp.makeConstraints { make in
+        cancelButton.snp.makeConstraints { make in
             make.height.equalTo(50)
             //make.width.equalTo(110)
         }

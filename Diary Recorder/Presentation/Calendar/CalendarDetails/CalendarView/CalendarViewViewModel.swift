@@ -179,7 +179,7 @@ class CalendarViewViewModel {
     }
     
     func share(diary: RecordingFileDetails) -> URL? {
-        let url = fileURLProvider.makeDiaryFileURL(named: diary.fileName)
+        let url = fileURLProvider.makeFileURL(named: diary.fileName)
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         return url
     }
