@@ -80,4 +80,19 @@ class CalendarRouter {
         }
         calendarViewController.present(diaryPlayerViewController, animated: true)
     }
+    
+    func navigateToDiaryCustomizer(
+        diary: RecordingFileDetails,
+        updateDetailsCurrentValueSubject: PassthroughSubject<UpdateDetails, Never>
+    ) {
+        guard let calendarViewController else { return }
+        
+        let diaryCustomizerViewController = DiaryCustomizerViewController.make(
+            diary: diary,
+            updateDetailsCurrentValueSubject: updateDetailsCurrentValueSubject
+        )
+        
+        diaryCustomizerViewController.isModalInPresentation = true
+        calendarViewController.present(diaryCustomizerViewController, animated: true)
+    }
 }

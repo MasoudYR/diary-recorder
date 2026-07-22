@@ -217,14 +217,17 @@ extension CalendarViewController: UITableViewDelegate, UITableViewDataSource {
         let diary = viewModel.dayDiariesList[indexPath.row]
         let name = diary.name
         let duration = viewModel.transformTimeToString(diary.duration)
-        let dateAndTime = viewModel.changeDateAndTime(diary.date)
+        let recordTime = viewModel.changeDateAndTime(diary.date)
+        let image = viewModel.getImageOfDiary(diary: diary)
+        let emojiImage = viewModel.getEmojiOfDiary(diary: diary)
         
         cell.configure(
+            diaryImage: image,
             name: name,
+            recordTime: recordTime,
             duration: duration,
-            dateAndTime: dateAndTime
+            emoji: emojiImage
         )
-        
         return cell
     }
     
@@ -261,19 +264,25 @@ extension CalendarViewController {
         
         deleteAction.image = UIImage(systemName: "trash.fill")
         
-        let renameAction = UIContextualAction(style: .normal, title: "Rename") { [weak self] _, _, completion in
+        let editAction = UIContextualAction(style: .normal, title: "edit") {
+            [weak self] _,
+            _,
+            completion in
             guard let self else { return }
             let dayDiary = viewModel.dayDiariesList[indexPath.row]
             
             viewModel.selectedDiary = dayDiary
             
-            self.router.navigateToRenameDiary(selectedDiary: dayDiary, nameCurrentValueSubject: viewModel.renameCurrentValueSubject)
+            self.router.navigateToDiaryCustomizer(
+                diary: dayDiary,
+                updateDetailsCurrentValueSubject: viewModel.updateDetailsCurrentValueSubject
+            )
             
             completion(true)
         }
         
-        renameAction.image = UIImage(systemName: "pencil")
-        renameAction.backgroundColor = .systemGreen
+        editAction.image = UIImage(systemName: "pencil")
+        editAction.backgroundColor = .systemGreen
         
         
         let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] _, _, completion in
@@ -293,7 +302,7 @@ extension CalendarViewController {
         let configuration = UISwipeActionsConfiguration(
             actions: [
                 deleteAction,
-                renameAction,
+                editAction,
                 shareAction
             ]
         )
