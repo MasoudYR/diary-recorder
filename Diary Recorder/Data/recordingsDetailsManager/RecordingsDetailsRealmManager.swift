@@ -92,8 +92,12 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
         do {
             let url = fileURLProvider.makeFileURL(named: fileName)
             try FileManager.default.removeItem(at: url)
-            let imageurl = fileURLProvider.makeFileURL(named: imageFileName)
-            try FileManager.default.removeItem(at: imageurl)
+            
+            if !imageFileName.isEmpty {
+                let imageurl = fileURLProvider.makeFileURL(named: imageFileName)
+                print("+++++++++++This is a fucking image url: \(imageurl)")
+                try FileManager.default.removeItem(at: imageurl)
+            }
         } catch (let error) {
             print("delete file from the file manager doesn't work because: \(error)")
         }
@@ -132,7 +136,7 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
         guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: diary.id) else {
             throw .failedToUpdate
         }
-        
+        print("!!!!", newText)
         do {
             try realm.safeWrite {
                 if let newName {

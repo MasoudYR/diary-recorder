@@ -287,13 +287,13 @@ class RecorderMainPageViewController: UIViewController {
             
             let updateDetailsCurrentValueSubject = viewModel.updateDetailsCurrentValueSubject
             
-            let nameCurrentValueSubject = viewModel.nameCurrentValueSubject
+//            let nameCurrentValueSubject = viewModel.nameCurrentValueSubject
             print("##### Stop Button tapped")
-            router.navigateToNameDiary(
-                lastSavedDiary: lastSavedDiary,
-                nameCurrentValueSubject: nameCurrentValueSubject
-            )
-            
+//            router.navigateToNameDiary(
+//                lastSavedDiary: lastSavedDiary,
+//                nameCurrentValueSubject: nameCurrentValueSubject
+//            )
+//            
             router.navigateToDiaryCustomizer(
                 lastSavedDiary: lastSavedDiary,
                 updateDetailsCurrentValueSubject: updateDetailsCurrentValueSubject

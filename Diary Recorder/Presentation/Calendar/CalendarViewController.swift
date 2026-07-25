@@ -136,7 +136,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         diariesListTableView.register(DiaryListTableViewCell.self, forCellReuseIdentifier: DiaryListTableViewCell.identifier)
         diariesListTableView.delegate = self
         diariesListTableView.dataSource = self
-        diariesListTableView.rowHeight = 60
+        //diariesListTableView.estimatedRowHeight = 100
         diariesListTableView.showsVerticalScrollIndicator = false
         diariesListTableView.separatorInset = .zero
         diariesListTableView.bounces = false

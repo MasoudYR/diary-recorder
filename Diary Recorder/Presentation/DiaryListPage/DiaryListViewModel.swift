@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import RealmSwift
+import UIKit
 
 class DiaryListViewModel {
     
@@ -95,6 +96,41 @@ class DiaryListViewModel {
             if error ==  .failedToRemove {
                 //handle showing alert
             }
+        }
+    }
+    
+    func getImageOfDiary(diary: RecordingFileDetails) -> UIImage {
+        let defaultImage = UIImage(resource: .placeholderimage)
+        if !diary.imageFileName.isEmpty {
+            let imageURL = fileURLProvider.makeFileURL(named: diary.imageFileName)
+            guard FileManager.default.fileExists(atPath: imageURL.path) else {
+                print("Image file doesn't exist")
+                return defaultImage
+            }
+            
+            do {
+                let data = try Data(contentsOf: imageURL)
+                if let image = UIImage(data: data) {
+                    return image
+                } else {
+                    return defaultImage
+                }
+            } catch {
+                print("We cannot make image of diary by data")
+                return defaultImage
+            }
+        } else {
+            print("Diary has no image.")
+            return defaultImage
+        }
+    }
+    
+    func getEmojiOfDiary(diary: RecordingFileDetails) -> UIImage {
+        //let emoji = EmojiType(rawValue: diary.mood)
+        if let emojiImage = UIImage(named: diary.mood) {
+            return emojiImage
+        } else {
+            return UIImage(resource: .pokerface)
         }
     }
 }

@@ -10,7 +10,7 @@ import UIKit
 import Combine
 import AVFoundation
 import PhotosUI
-import TOCropViewController
+import CropViewController
 
 class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDelegate {
     
@@ -44,7 +44,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     private let saveButton = UIButton()
     private let cancelButton = UIButton()
     
-    let imagePicker = UIImagePickerController()
+//    let imagePicker = UIImagePickerController()
     
     private var cancellables = Set<AnyCancellable>()
     private var keyboardCancellables = Set<AnyCancellable>()
@@ -90,9 +90,10 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     private func setupScrollView() {
         scrollView.delegate = self
         scrollView.isScrollEnabled = true
-        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
         scrollView.keyboardDismissMode = .interactive
         scrollView.bounces = false
+        scrollView.contentInset = .init(top: 20, left: 0, bottom: 20, right: 0)
         
         view.addSubview(scrollView)
         
@@ -141,7 +142,6 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     }
     
     private func setupRenameView() {
-        
         renameTitleLabel.text = "Name diary:"
         renameTitleLabel.textColor = .label
         renameTitleLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
@@ -234,7 +234,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         diaryTextParentView.addSubview(diaryTextTitleLabel)
         
         diaryTextTitleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
+            make.top.equalToSuperview()
             make.left.equalToSuperview().offset(5)
         }
         
@@ -247,7 +247,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
             make.top.equalTo(diaryTextTitleLabel.snp.bottom).offset(10)
             make.directionalHorizontalEdges.equalToSuperview()
             make.bottom.equalToSuperview().inset(10)
-            make.height.equalTo(110)
+            make.height.equalTo(120)
         }
         
         diaryTextView.delegate = self
@@ -310,7 +310,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         cancelButton.setTitleColor(.label, for: .normal)
         cancelButton.tintColor = .label
         cancelButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
-        cancelButton.backgroundColor = .main
+        cancelButton.backgroundColor = .systemBackground
         cancelButton.layer.cornerRadius = 20
         
         cancelButton.snp.makeConstraints { make in
@@ -323,7 +323,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         saveButton.setTitleColor(.label, for: .normal)
         saveButton.tintColor = .label
         saveButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
-        saveButton.backgroundColor = .main
+        saveButton.backgroundColor = .systemBackground
         saveButton.layer.cornerRadius = 20
         
         saveButton.snp.makeConstraints { make in
@@ -431,6 +431,7 @@ extension DiaryCustomizerViewController: UICollectionViewDelegate, UICollectionV
 extension DiaryCustomizerViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     private func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
+        let imagePicker = UIImagePickerController()
         imagePicker.sourceType = sourceType
         imagePicker.delegate = self
         
@@ -469,11 +470,11 @@ extension DiaryCustomizerViewController: UIImagePickerControllerDelegate, UINavi
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        imagePicker.dismiss(animated: true)
+        //imagePicker.dismiss(animated: true)
         
         guard  let originalImage = info[.originalImage] as? UIImage  else { return }
         
-        dismiss(animated: true) { [unowned self] in
+        picker.dismiss(animated: true) { [unowned self] in
             router.navigateToImageCropViewController(image: originalImage)
         }
         
@@ -481,7 +482,7 @@ extension DiaryCustomizerViewController: UIImagePickerControllerDelegate, UINavi
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        imagePicker.dismiss(animated: true)
+        picker.dismiss(animated: true)
     }
 }
 
@@ -538,12 +539,12 @@ extension DiaryCustomizerViewController {
             guard let self else { return }
             DispatchQueue.main.async {
                 if let image = image as? UIImage {
-                    self.dismiss(animated: true) {
+                    picker.dismiss(animated: true) {
                         self.router.navigateToImageCropViewController(image: image)
                     }
                     print("We select pic successfully. \(self.viewModel.selectedImage)")
                 } else {
-                    self.dismiss(animated: true)
+                    picker.dismiss(animated: true)
                 }
             }
         }
@@ -561,22 +562,24 @@ extension DiaryCustomizerViewController {
     }
 }
 
-extension DiaryCustomizerViewController: TOCropViewControllerDelegate {
+extension DiaryCustomizerViewController: CropViewControllerDelegate {
     
     private func userDidPickImage(_ image: UIImage) {
         print("this is image from did pck image: \(image)")
         viewModel.selectedImage = image
     }
-    
-    func cropViewController(_ cropViewController: TOCropViewController, didCropTo image: UIImage, with cropRect: CGRect, angle: Int) {
+
+    func cropViewController(_ cropViewController: CropViewController, didCropToImage image: UIImage, withRect cropRect: CGRect, angle: Int) {
         let resizedImage = image.resized(to: CGSize(width: 500, height: 500))
         userDidPickImage(resizedImage)
-            viewModel.isDefaultImage = false
-        dismiss(animated: true)
+        viewModel.isDefaultImage = false
+        cropViewController.dismiss(animated: true)
+        print(")))))))))",#function)
     }
     
-    func cropViewController(_ cropViewController: TOCropViewController, didFinishCancelled cancelled: Bool) {
-        dismiss(animated: true)
+    func cropViewController(_ cropViewController: CropViewController, didFinishCancelled cancelled: Bool) {
+        cropViewController.dismiss(animated: true)
+        print(")))))))))",#function)
     }
     
     private func resizeWithLanczos(image: UIImage, targetSize: CGFloat) -> UIImage? {
@@ -688,7 +691,7 @@ extension DiaryCustomizerViewController {
     }
     
     @objc private func keyboardWillHide(_ notification: Notification) {
-        scrollView.contentInset = .zero
+        scrollView.contentInset = .init(top: 20, left: 0, bottom: 20, right: 0)
         scrollView.scrollIndicatorInsets = .zero
     }
 }

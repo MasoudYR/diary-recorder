@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 import PhotosUI
-import TOCropViewController
+import CropViewController
 
 class DiaryCustomizerRouter {
     weak var diaryCustomizerViewController: DiaryCustomizerViewController?
@@ -76,15 +76,16 @@ class DiaryCustomizerRouter {
     }
     
     func navigateToImageCropViewController(image: UIImage) {
-        guard let diaryCustomizerViewController,
-        let navigationController = diaryCustomizerViewController.navigationController
+        guard let diaryCustomizerViewController
+        //let navigationController = diaryCustomizerViewController.navigationController
         else { return }
-        let cropController = TOCropViewController(image: image)
+        let cropController = CropViewController(image: image)
         cropController.aspectRatioPreset = .init(width: image.size.width, height: image.size.width)
         cropController.aspectRatioLockEnabled = true
         cropController.aspectRatioPickerButtonHidden = true
         cropController.resetButtonHidden = true
         cropController.delegate = diaryCustomizerViewController
-        navigationController.present(cropController, animated: true)
+        cropController.transitioningDelegate = nil
+        diaryCustomizerViewController.present(cropController, animated: true)
     }
 }

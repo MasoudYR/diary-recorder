@@ -68,16 +68,13 @@ class CalendarRouter {
         guard let calendarViewController else { return }
         let diaryPlayerViewController = DiaryPlayerViewController.make(diaryIndex: diaryIndex, diaryListDataCollection: diaryListDataCollection)
         if let sheet = diaryPlayerViewController.sheetPresentationController {
-            sheet.detents = [
-                .custom { context in
-                    return 300
-                }
-            ]
+            sheet.detents = [ .large(), .medium()]
             sheet.prefersGrabberVisible = true
             sheet.prefersEdgeAttachedInCompactHeight = true
             sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true
             sheet.preferredCornerRadius = 20
         }
+        
         calendarViewController.present(diaryPlayerViewController, animated: true)
     }
     

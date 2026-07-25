@@ -100,13 +100,19 @@ extension DiaryListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = diaryListTableView.dequeueReusableCell(withIdentifier: DiaryListTableViewCell.identifier) as! DiaryListTableViewCell
-        let name = viewModel.diaryListDataCollection[indexPath.row].name
-        let duration = viewModel.transformTimeToString(viewModel.diaryListDataCollection[indexPath.row].duration)
-        let dateAndTime = viewModel.changeDateAndTime(viewModel.diaryListDataCollection[indexPath.row].date)
+        let diary = viewModel.diaryListDataCollection[indexPath.row]
+        let name = diary.name
+        let duration = viewModel.transformTimeToString(diary.duration)
+        let recordTime = viewModel.changeDateAndTime(diary.date)
+        let image = viewModel.getImageOfDiary(diary: diary)
+        let emojiImage = viewModel.getEmojiOfDiary(diary: diary)
+        
         cell.configure(
+            diaryImage: image,
             name: name,
+            recordTime: recordTime,
             duration: duration,
-            dateAndTime: dateAndTime
+            emoji: emojiImage
         )
         return cell
     }

@@ -12,13 +12,18 @@ class DiaryListTableViewCell: UITableViewCell {
     static let identifier = "diarytableviewcell"
     
     private let diaryImageView = UIImageView()
+    private let vStackView = UIStackView()
     private let nameLabel = UILabel()
-    private let parentSubDetails = UIView()
+    //private let parentSubDetails = UIView()
+    private let recordTimeParentView = UIView()
     private let recordTimeIcon = UIImageView()
     private let recordTimeLabel = UILabel()
-    private let separatorView = UIView()
+    
+    //private let separatorView = UIView()
+    private let durationParentView = UIView()
     private let durationIcon = UIImageView()
     private let durationLabel = UILabel()
+    
     private let emojiImageView = UIImageView()
     private let arrowImageView = UIImageView()
     
@@ -33,13 +38,17 @@ class DiaryListTableViewCell: UITableViewCell {
     
     private func setupUI() {
         setupDiaryImageView()
+        setupVStackView()
         setupNameLabel()
-        setupParentSubDetails()
+        //setupParentSubDetails()
+        setupRecordTime()
+        setupDuration()
         setupEmojiImageView()
         setupArrowImageView()
     }
     
     private func setupDiaryImageView() {
+        diaryImageView.backgroundColor = .red
         diaryImageView.layer.cornerRadius = 20
         diaryImageView.contentMode = .scaleAspectFit
         diaryImageView.clipsToBounds = true
@@ -53,44 +62,62 @@ class DiaryListTableViewCell: UITableViewCell {
         }
     }
     
+    private func setupVStackView() {
+        //vStackView.backgroundColor = .red
+        vStackView.axis = .vertical
+        vStackView.spacing = 5
+        vStackView.distribution = .fillProportionally
+        vStackView.alignment = .leading
+        
+        contentView.addSubview(vStackView)
+        
+        vStackView.snp.makeConstraints { make in
+            make.verticalEdges.equalToSuperview().inset(10)
+            make.left.equalTo(diaryImageView.snp.right).offset(10)
+        }
+    }
+    
     private func setupNameLabel() {
         nameLabel.font = UIFont.roundedFont(ofSize: 18, weight: .semibold)
         nameLabel.text = "unknown name"
+        nameLabel.numberOfLines = 2
         nameLabel.textColor = .label
         nameLabel.textAlignment = .left
         
-        contentView.addSubview(nameLabel)
+        vStackView.addArrangedSubview(nameLabel)
         
-        nameLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
-            make.left.equalTo(diaryImageView.snp.right).offset(10)
-            //make.right.equalTo(contentView.snp.right).inset(10)
-        }
+//        nameLabel.snp.makeConstraints { make in
+//            make.top.equalToSuperview().offset(10)
+//            make.left.equalTo(diaryImageView.snp.right).offset(10)
+//            //make.right.equalTo(contentView.snp.right).inset(10)
+//        }
     }
     
     private func setupParentSubDetails() {
-        
-        contentView.addSubview(parentSubDetails)
-        
-        parentSubDetails.snp.makeConstraints { make in
-            make.left.equalTo(diaryImageView).offset(10)
-            make.bottom.equalToSuperview().inset(10)
-        }
-        
-        setupRecordTime()
-        setupSeparartorView()
-        setupDuration()
+//        
+//        contentView.addSubview(parentSubDetails)
+//        
+//        parentSubDetails.snp.makeConstraints { make in
+//            make.left.equalTo(diaryImageView).offset(10)
+//            make.bottom.equalToSuperview().inset(10)
+//        }
+//        
+//        setupRecordTime()
+//        setupSeparartorView()
+//        setupDuration()
     }
     
     private func setupRecordTime() {
+        recordTimeParentView.backgroundColor = .systemGreen
+        
         recordTimeIcon.image = UIImage(systemName: "clock")
         recordTimeIcon.tintColor = .secondaryLabel
         recordTimeIcon.contentMode = .scaleAspectFit
         
-        parentSubDetails.addSubview(recordTimeIcon)
+        recordTimeParentView.addSubview(recordTimeIcon)
         
         recordTimeIcon.snp.makeConstraints { make in
-            make.size.equalTo(30)
+            make.size.equalTo(20)
             make.left.equalToSuperview()
             make.verticalEdges.equalToSuperview()
         }
@@ -100,36 +127,41 @@ class DiaryListTableViewCell: UITableViewCell {
         recordTimeLabel.textColor = .secondaryLabel
         recordTimeLabel.textAlignment = .left
         
-        parentSubDetails.addSubview(recordTimeLabel)
+        recordTimeParentView.addSubview(recordTimeLabel)
         
         recordTimeLabel.snp.makeConstraints { make in
             make.left.equalTo(recordTimeIcon.snp.right).offset(5)
             make.centerY.equalToSuperview()
         }
+        
+        vStackView.addArrangedSubview(recordTimeParentView)
     }
     
     private func setupSeparartorView() {
-        separatorView.backgroundColor = .secondaryLabel
-        
-        parentSubDetails.addSubview(separatorView)
-        
-        separatorView.snp.makeConstraints { make in
-            make.width.equalTo(1)
-            make.verticalEdges.equalToSuperview()
-            make.left.equalTo(recordTimeLabel.snp.right).offset(10)
-        }
+//        separatorView.backgroundColor = .secondaryLabel
+//        
+//        parentSubDetails.addSubview(separatorView)
+//        
+//        separatorView.snp.makeConstraints { make in
+//            make.width.equalTo(1)
+//            make.verticalEdges.equalToSuperview()
+//            make.left.equalTo(recordTimeLabel.snp.right).offset(10)
+//        }
     }
     
     private func setupDuration() {
+        
+        durationParentView.backgroundColor = .blue
+        
         durationIcon.image = UIImage(systemName: "waveform")
         durationIcon.tintColor = .secondaryLabel
         durationIcon.contentMode = .scaleAspectFit
         
-        parentSubDetails.addSubview(durationIcon)
+        durationParentView.addSubview(durationIcon)
         
         durationIcon.snp.makeConstraints { make in
-            make.size.equalTo(30)
-            make.left.equalTo(separatorView.snp.right).offset(10)
+            make.size.equalTo(20)
+            make.left.equalToSuperview()
             make.verticalEdges.equalToSuperview()
         }
         
@@ -138,29 +170,33 @@ class DiaryListTableViewCell: UITableViewCell {
         durationLabel.textColor = .secondaryLabel
         durationLabel.textAlignment = .left
         
-        parentSubDetails.addSubview(durationLabel)
+        durationParentView.addSubview(durationLabel)
         
         durationLabel.snp.makeConstraints { make in
             make.left.equalTo(durationIcon.snp.right).offset(5)
             make.centerY.equalToSuperview()
         }
+        
+        vStackView.addArrangedSubview(durationParentView)
     }
     
     private func setupEmojiImageView() {
-        
         emojiImageView.contentMode = .scaleAspectFit
         
-        contentView.addSubview(diaryImageView)
+        contentView.addSubview(emojiImageView)
         
-        diaryImageView.snp.makeConstraints { make in
-            make.size.equalTo(60)
-            make.centerY.equalToSuperview()
-            make.left.equalTo(nameLabel.snp.right).offset(10)
-            make.left.equalTo(parentSubDetails.snp.right).offset(10)
+        emojiImageView.snp.makeConstraints { make in
+            make.size.equalTo(40)
+            //make.centerY.equalToSuperview()
+            //make.left.equalTo(nameLabel.snp.right).offset(10)
+            //make.left.equalTo(vStackView.snp.right).offset(10)
+            make.bottom.equalTo(vStackView)
+            make.right.equalTo(vStackView)
         }
     }
     
     private func setupArrowImageView() {
+        //arrowImageView.backgroundColor = .green
         arrowImageView.image = UIImage(systemName: "chevron.right")
         arrowImageView.tintColor = .label
         arrowImageView.contentMode = .scaleAspectFit
@@ -168,9 +204,10 @@ class DiaryListTableViewCell: UITableViewCell {
         contentView.addSubview(arrowImageView)
         
         arrowImageView.snp.makeConstraints { make in
-            make.size.equalTo(50)
+            make.size.equalTo(25)
             make.right.equalToSuperview().inset(10)
-            make.left.equalTo(diaryImageView.snp.right).offset(10)
+            //make.left.equalTo(emojiImageView.snp.right)
+            make.left.equalTo(vStackView.snp.right)
             make.centerY.equalToSuperview()
         }
         

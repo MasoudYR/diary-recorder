@@ -11,16 +11,23 @@ import SnapKit
 import Combine
 import AVFAudio
 
-class DiaryPlayerViewController: UIViewController {
+class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
     
     private let viewModel: DiaryPlayerViewModel
     private let router: DiaryPlayerRouter
     
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     private let vStackView = UIStackView()
     private let hStackView = UIStackView()
+    
+    private let diaryImageView = UIImageView()
+    
     private let detailsView = UIView()
     private let nameLabel = UILabel()
     private let dateLabel = UILabel()
+    private let emojiImageView = UIImageView()
+    
     private let progressSliderView = UIView()
     private let progressSlider = UISlider()
     private let minimumTrackTimeLabel = UILabel()
@@ -34,6 +41,9 @@ class DiaryPlayerViewController: UIViewController {
     private let seekBackwardSecondsButton = UIButton()
     private let nextButton = UIButton()
     private let previousButton = UIButton()
+    
+    private let diaryTextLabelView = UIView()
+    private let diaryTextLabel = UILabel()
     
     private var progressTimer: Timer?
 
@@ -81,14 +91,39 @@ class DiaryPlayerViewController: UIViewController {
     }
     
     func setupUI() {
-        view.backgroundColor = .systemBackground
-        
+        view.backgroundColor = .main
+        setupScrollView()
+        setupContentView()
         setupViewsMainStackView()
+        setupDiaryImageView()
         setupViewsDetailsView()
         setupViewsSliderView()
         setupViewsButtonsGroupView()
         setupViewsButtonsGroupStackViewArrangedSubviews()
+        diaryTextView()
         setupActions()
+    }
+    
+    private func setupScrollView() {
+        scrollView.delegate = self
+        scrollView.isScrollEnabled = true
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.keyboardDismissMode = .interactive
+        scrollView.bounces = false
+        
+        view.addSubview(scrollView)
+        
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    private func setupContentView() {
+        scrollView.addSubview(contentView)
+        contentView.snp.makeConstraints { make in
+            make.edges.equalTo(scrollView)
+            make.width.equalTo(view)
+        }
     }
     
     private func setupViewsMainStackView() {
@@ -99,10 +134,24 @@ class DiaryPlayerViewController: UIViewController {
         vStackView.isLayoutMarginsRelativeArrangement = true
         vStackView.layoutMargins = .init(top: 25, left: 15, bottom: 15, right: 15)
         
-        view.addSubview(vStackView)
+        contentView.addSubview(vStackView)
         vStackView.snp.makeConstraints { make in
-            make.top.horizontalEdges.equalToSuperview()
+            make.edges.equalToSuperview()
         }
+    }
+    
+    private func setupDiaryImageView() {
+        diaryImageView.layer.cornerRadius = 20
+        diaryImageView.contentMode = .scaleAspectFit
+        diaryImageView.clipsToBounds = true
+        
+        contentView.addSubview(diaryImageView)
+        
+        diaryImageView.snp.makeConstraints { make in
+            make.size.equalTo(80)
+        }
+        
+        vStackView.addArrangedSubview(diaryImageView)
     }
     
     private func setupViewsDetailsView() {
@@ -114,7 +163,7 @@ class DiaryPlayerViewController: UIViewController {
         
         dateLabel.text = "Date: 2026-01-01 10:10:10"
         dateLabel.font = .roundedFont(ofSize: 17, weight: .regular)
-        dateLabel.textColor = .label
+        dateLabel.textColor = .secondaryLabel
         dateLabel.textAlignment = .left
         dateLabel.numberOfLines = 0
         
@@ -128,10 +177,24 @@ class DiaryPlayerViewController: UIViewController {
         textsStackView.addArrangedSubview(dateLabel)
         
         detailsView.addSubview(textsStackView)
+        
         textsStackView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.verticalEdges.equalToSuperview()
+            make.left.equalToSuperview().inset(10)
         }
         
+        emojiImageView.image = UIImage(resource: .colorpokerface)
+        emojiImageView.contentMode = .scaleAspectFit
+        
+        detailsView.addSubview(emojiImageView)
+        
+        emojiImageView.snp.makeConstraints { make in
+            make.size.equalTo(60)
+            make.top.equalToSuperview()
+            make.right.equalToSuperview().inset(10)
+            make.left.equalTo(textsStackView.snp.right).offset(10)
+        }
+    
         vStackView.addArrangedSubview(detailsView)
     }
     
@@ -337,7 +400,25 @@ class DiaryPlayerViewController: UIViewController {
         previousButton.removeAction(identifiedBy: previousDiaryActionId, for: .touchUpInside)
         previousButton
             .addAction(previousDiaryAction, for: .touchUpInside)
+    }
+    
+    private func diaryTextView() {
+        diaryTextLabelView.backgroundColor = .systemBackground
+        diaryTextLabelView.layer.cornerRadius = 20
         
+        diaryTextLabel.text = ""
+        diaryTextLabel.font = .roundedFont(ofSize: 17, weight: .regular)
+        diaryTextLabel.textColor = .label
+        diaryTextLabel.numberOfLines = 0
+        diaryTextLabel.textAlignment = .left
+        
+        diaryTextLabelView.addSubview(diaryTextLabel)
+        
+        diaryTextLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(10)
+        }
+        
+        vStackView.addArrangedSubview(diaryTextLabelView)
     }
     
     private func bindViewModel() {
@@ -345,8 +426,19 @@ class DiaryPlayerViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] currentlyPlaying in
                 guard let self else { return }
+                self.diaryImageView.image = viewModel.getImageOfDiary(diary: currentlyPlaying)
                 self.nameLabel.text = currentlyPlaying.name
                 self.dateLabel.text = viewModel.changeDateAndTime(currentlyPlaying.date)
+                self.emojiImageView.image = viewModel.getEmojiOfDiary(diary: currentlyPlaying)
+//                if !currentlyPlaying.text.isEmpty {
+//                    self.diaryTextLabelView.isHidden = false
+//                    self.diaryTextLabel.text = currentlyPlaying.text
+//                } else {
+//                    self.diaryTextLabelView.isHidden = true
+//                }
+                self.diaryTextLabel.text = currentlyPlaying.text
+                print("~~~~~~~~~~", currentlyPlaying.text)
+                
             }
             .store(in: &cancellables)
         
