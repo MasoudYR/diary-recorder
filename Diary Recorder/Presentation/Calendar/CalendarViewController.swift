@@ -136,7 +136,8 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         diariesListTableView.register(DiaryListTableViewCell.self, forCellReuseIdentifier: DiaryListTableViewCell.identifier)
         diariesListTableView.delegate = self
         diariesListTableView.dataSource = self
-        //diariesListTableView.estimatedRowHeight = 100
+        //diariesListTableView.rowHeight = UITableView.automaticDimension
+        diariesListTableView.estimatedRowHeight = 90
         diariesListTableView.showsVerticalScrollIndicator = false
         diariesListTableView.separatorInset = .zero
         diariesListTableView.bounces = false
@@ -228,6 +229,8 @@ extension CalendarViewController: UITableViewDelegate, UITableViewDataSource {
             duration: duration,
             emoji: emojiImage
         )
+        
+        cell.accessoryType = .disclosureIndicator
         return cell
     }
     
@@ -307,5 +310,9 @@ extension CalendarViewController {
             ]
         )
         return configuration
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
     }
 }

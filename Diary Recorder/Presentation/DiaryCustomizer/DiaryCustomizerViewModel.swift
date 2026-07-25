@@ -49,88 +49,88 @@ class DiaryCustomizerViewModel {
     private func setupArrayEmoji() {
         emojiArray = [
             EmojiModel(
-                grayscaleImage: UIImage(resource: .sunnysmile),
-                colorImage: UIImage(resource: .colorsunnysmile),
+                grayscaleImage: UIImage(resource: .graysunnysmile),
+                colorImage: UIImage(resource: .sunnysmile),
                 type: .sunnysmile
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .grin),
-                colorImage: UIImage(resource: .colorgrin),
+                grayscaleImage: UIImage(resource: .graygrin),
+                colorImage: UIImage(resource: .grin),
                 type: .grin
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .biggrin),
-                colorImage: UIImage(resource: .colorbiggrin),
+                grayscaleImage: UIImage(resource: .graybiggrin),
+                colorImage: UIImage(resource: .biggrin),
                 type: .biggrin
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .lol),
-                colorImage: UIImage(resource: .colorlol),
+                grayscaleImage: UIImage(resource: .graylol),
+                colorImage: UIImage(resource: .lol),
                 type: .lol
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .cuty),
-                colorImage: UIImage(resource: .colorcuty),
+                grayscaleImage: UIImage(resource: .graycuty),
+                colorImage: UIImage(resource: .cuty),
                 type: .cuty
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .bleh),
-                colorImage: UIImage(resource: .colorbleh),
+                grayscaleImage: UIImage(resource: .graybleh),
+                colorImage: UIImage(resource: .bleh),
                 type: .bleh
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .sillydead),
-                colorImage: UIImage(resource: .colorsillydead),
+                grayscaleImage: UIImage(resource: .graysillydead),
+                colorImage: UIImage(resource: .sillydead),
                 type: .sillydead
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .hearteye),
-                colorImage: UIImage(resource: .colorhearteye),
+                grayscaleImage: UIImage(resource: .grayhearteye),
+                colorImage: UIImage(resource: .hearteye),
                 type: .hearteye
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .kissy),
-                colorImage: UIImage(resource: .colorkissy),
+                grayscaleImage: UIImage(resource: .graykissy),
+                colorImage: UIImage(resource: .kissy),
                 type: .kissy
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .pokerface),
-                colorImage: UIImage(resource: .colorpokerface),
+                grayscaleImage: UIImage(resource: .graypokerface),
+                colorImage: UIImage(resource: .pokerface),
                 type: .pokerface
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .eyeroll),
-                colorImage: UIImage(resource: .coloreyeroll),
+                grayscaleImage: UIImage(resource: .grayeyeroll),
+                colorImage: UIImage(resource: .eyeroll),
                 type: .eyeroll
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .sideeye),
-                colorImage: UIImage(resource: .colorsideeye),
+                grayscaleImage: UIImage(resource: .graysideeye),
+                colorImage: UIImage(resource: .sideeye),
                 type: .sideeye
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .bluemode),
-                colorImage: UIImage(resource: .colorbluemode),
+                grayscaleImage: UIImage(resource: .graybluemode),
+                colorImage: UIImage(resource: .bluemode),
                 type: .bluemode
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .cry),
-                colorImage: UIImage(resource: .colorcry),
+                grayscaleImage: UIImage(resource: .graycry),
+                colorImage: UIImage(resource: .cry),
                 type: .cry
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .wowface),
-                colorImage: UIImage(resource: .colorwowface),
+                grayscaleImage: UIImage(resource: .graywowface),
+                colorImage: UIImage(resource: .wowface),
                 type: .wowface
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .frustrated),
-                colorImage: UIImage(resource: .colorfrustrated),
+                grayscaleImage: UIImage(resource: .grayfrustrated),
+                colorImage: UIImage(resource: .frustrated),
                 type: .frustrated
             ),
             EmojiModel(
-                grayscaleImage: UIImage(resource: .ragemode),
-                colorImage: UIImage(resource: .colorragemode),
+                grayscaleImage: UIImage(resource: .grayragemode),
+                colorImage: UIImage(resource: .ragemode),
                 type: .ragemode
             ),
         ]

@@ -183,7 +183,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
             make.left.equalToSuperview().inset(10)
         }
         
-        emojiImageView.image = UIImage(resource: .colorpokerface)
+        emojiImageView.image = UIImage(resource: .pokerface)
         emojiImageView.contentMode = .scaleAspectFit
         
         detailsView.addSubview(emojiImageView)
