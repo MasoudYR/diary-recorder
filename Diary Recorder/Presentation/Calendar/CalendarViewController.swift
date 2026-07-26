@@ -51,7 +51,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
     }
     
     private func navigationBarSetupUI() {
-        navigationItem.title = "Diaries Calendar"
+        navigationItem.title = "Diary Calendar"
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.titleTextAttributes = [
@@ -118,7 +118,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         calendarView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.horizontalEdges.equalToSuperview().inset(15)
-            make.height.equalTo(400)
+            make.height.equalTo(380)
         }
     }
     

@@ -15,6 +15,7 @@ class DiaryListTableViewCell: UITableViewCell {
     private let vStackView = UIStackView()
     private let nameLabel = UILabel()
     
+    private let timesHStackView = UIStackView()
     private let recordTimeParentView = UIView()
     private let recordTimeIcon = UIImageView()
     private let recordTimeLabel = UILabel()
@@ -39,6 +40,7 @@ class DiaryListTableViewCell: UITableViewCell {
         setupDiaryImageView()
         setupVStackView()
         setupNameLabel()
+        setupTimeHStackView()
         setupRecordTime()
         setupDuration()
         setupEmojiImageView()
@@ -70,8 +72,16 @@ class DiaryListTableViewCell: UITableViewCell {
         vStackView.snp.makeConstraints { make in
             make.verticalEdges.equalTo(contentView).inset(10)
             make.left.equalTo(diaryImageView.snp.right).offset(10)
-            make.right.equalToSuperview().inset(10)
+            //make.right.equalToSuperview().inset(10)
         }
+    }
+    
+    private func setupTimeHStackView() {
+        timesHStackView.axis = .horizontal
+        timesHStackView.spacing = 10
+        timesHStackView.distribution = .fillProportionally
+        timesHStackView.alignment = .leading
+        vStackView.addArrangedSubview(timesHStackView)
     }
     
     private func setupNameLabel() {
@@ -109,7 +119,7 @@ class DiaryListTableViewCell: UITableViewCell {
             make.centerY.equalTo(recordTimeIcon)
         }
         
-        vStackView.addArrangedSubview(recordTimeParentView)
+        timesHStackView.addArrangedSubview(recordTimeParentView)
     }
     
     private func setupDuration() {
@@ -137,7 +147,7 @@ class DiaryListTableViewCell: UITableViewCell {
             make.right.equalToSuperview()
         }
         
-        vStackView.addArrangedSubview(durationParentView)
+        timesHStackView.addArrangedSubview(durationParentView)
     }
     
     private func setupEmojiImageView() {
@@ -147,8 +157,9 @@ class DiaryListTableViewCell: UITableViewCell {
         
         emojiImageView.snp.makeConstraints { make in
             make.size.equalTo(40)
-            make.bottom.equalTo(vStackView)
-            make.right.equalTo(vStackView)
+            make.centerY.equalTo(vStackView)
+            make.left.equalTo(vStackView.snp.right).offset(5)
+            make.right.equalToSuperview()
         }
     }
 

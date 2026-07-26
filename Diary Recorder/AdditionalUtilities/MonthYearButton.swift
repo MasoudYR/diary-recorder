@@ -31,7 +31,7 @@ class MonthYearButton: UIButton {
     
     private func setupUI() {
         buttonLabel.text = "Month, Year"
-        buttonLabel.font = UIFont.roundedFont(ofSize: 25, weight: .bold)
+        buttonLabel.font = UIFont.roundedFont(ofSize: 22, weight: .semibold)
         buttonLabel.textColor = .label
         buttonLabel.textAlignment = .left
         //buttonLabel.backgroundColor = .red
@@ -42,7 +42,7 @@ class MonthYearButton: UIButton {
             make.left.equalToSuperview()
             make.centerY.equalToSuperview()
         }
-        let symbolConfigue = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
+        let symbolConfigue = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
         buttonImageView.image = UIImage(systemName: "chevron.right", withConfiguration: symbolConfigue)
         buttonImageView.tintColor = .label
         
@@ -60,7 +60,7 @@ class MonthYearButton: UIButton {
     }
     
     private func buttonStateUpdateView() {
-        let symbolConfigue = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
+        let symbolConfigue = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
         if  buttonState == .calendar {
             buttonImageView.image = UIImage(systemName: "chevron.right", withConfiguration: symbolConfigue)
         } else {

@@ -67,8 +67,8 @@ final class CalendarView: UIView {
         
         monthYearButton.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(15)
-            make.top.equalToSuperview().offset(10)
-            make.width.equalTo(200)
+            make.top.equalToSuperview().offset(5)
+            make.width.equalTo(150)
             make.height.equalTo(50)
         }
         
