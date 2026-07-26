@@ -94,7 +94,7 @@ final class CalendarView: UIView {
         todayButton.setTitleColor(.label, for: .normal)
         todayButton.tintColor = .label
         todayButton.layer.cornerRadius = 20
-        todayButton.layer.backgroundColor = UIColor.main.cgColor
+        todayButton.backgroundColor = UIColor.main
         //todayButton.layer.borderColor = UIColor.systemGray.cgColor
         //todayButton.layer.borderWidth = 1
         
@@ -363,6 +363,12 @@ final class CalendarView: UIView {
             if day.isToday {
                 let indexPath = IndexPath(row: lastMonth.days.firstIndex(of: day)!, section: viewModel.months.count - 1)
                 print("^^^^ this is index path of today: \(indexPath))")
+                
+                if let deselectItem = collectionView.indexPathsForSelectedItems?.first {
+                    collectionView.deselectItem(at: deselectItem, animated: true)
+                    collectionView.delegate?.collectionView?(collectionView, didDeselectItemAt: deselectItem)
+                }
+                
                 collectionView.selectItem(
                     at: indexPath,
                     animated: animated,
@@ -393,6 +399,7 @@ extension CalendarView: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let item = diffableDataSource.itemIdentifier(for: indexPath) else { return }
+        print(#function, "indexPath: \(indexPath)")
         
         switch item {
         case .day(let day):
@@ -409,6 +416,7 @@ extension CalendarView: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         guard let item = diffableDataSource.itemIdentifier(for: indexPath) else { return }
+        print(#function, "indexPath: \(indexPath)")
         
         switch item {
         case .day:

@@ -75,7 +75,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
             firstWeekday: 7,
             cellInRowSpacing: 2,
             rowsSpacing: 2,
-            weekDayTitlesRowHeight: 30,
+            weekDayTitlesRowHeight: 25,
             sectionInset: .init(top: 0, leading: 10, bottom: 0, trailing: 10)
         )
         
@@ -89,15 +89,15 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
             todayBackgroundColor: .main,
             todayBadgeNum: 0,
             selectedFont: .roundedFont(ofSize: 18, weight: .semibold),
-            selectedColor: .label,
-            selectedBackgroundColor: .systemGray,
+            selectedColor: .systemBackground,
+            selectedBackgroundColor: .reverseMain,
             selectedBadgeNum: 0,
             cornerRadius: 20,
             badgeFontSize: 12
         )
         
         WeekDayTitlesRowHeader.appearance = WeekDayTitlesAppearance(
-            font: .roundedFont(ofSize: 20, weight: .bold),
+            font: .roundedFont(ofSize: 17, weight: .semibold),
             color: .darkGray,
             spaceBetweenWeekDays: 2
         )
@@ -194,7 +194,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
 extension CalendarViewController {
     
     func calendarView(_ cv: CalendarView, didSelect day: CalendarDay) {
-        print("✅ انتخاب شد: \(day.date)")
+        print("the selected day is: \(day.date)")
         viewModel.getOneDayDiareiesList(date: day.date)
     }
     

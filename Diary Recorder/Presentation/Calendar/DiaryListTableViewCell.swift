@@ -14,12 +14,11 @@ class DiaryListTableViewCell: UITableViewCell {
     private let diaryImageView = UIImageView()
     private let vStackView = UIStackView()
     private let nameLabel = UILabel()
-    //private let parentSubDetails = UIView()
+    
     private let recordTimeParentView = UIView()
     private let recordTimeIcon = UIImageView()
     private let recordTimeLabel = UILabel()
     
-    //private let separatorView = UIView()
     private let durationParentView = UIView()
     private let durationIcon = UIImageView()
     private let durationLabel = UILabel()
@@ -54,14 +53,13 @@ class DiaryListTableViewCell: UITableViewCell {
         contentView.addSubview(diaryImageView)
         
         diaryImageView.snp.makeConstraints { make in
-            make.size.equalTo(50)
+            make.size.equalTo(60)
             make.left.equalToSuperview().offset(10)
             make.centerY.equalToSuperview()
         }
     }
     
     private func setupVStackView() {
-        //vStackView.backgroundColor = .red
         vStackView.axis = .vertical
         vStackView.spacing = 5
         vStackView.distribution = .fillProportionally
@@ -87,8 +85,6 @@ class DiaryListTableViewCell: UITableViewCell {
     }
     
     private func setupRecordTime() {
-        recordTimeParentView.backgroundColor = .systemGreen
-        
         recordTimeIcon.image = UIImage(systemName: "clock")
         recordTimeIcon.tintColor = .secondaryLabel
         recordTimeIcon.contentMode = .scaleAspectFit
@@ -96,7 +92,6 @@ class DiaryListTableViewCell: UITableViewCell {
         recordTimeParentView.addSubview(recordTimeIcon)
         
         recordTimeIcon.snp.makeConstraints { make in
-            //make.size.equalTo(20).priority(.high)
             make.left.equalToSuperview()
             make.verticalEdges.equalToSuperview()
         }
@@ -118,9 +113,6 @@ class DiaryListTableViewCell: UITableViewCell {
     }
     
     private func setupDuration() {
-        
-        durationParentView.backgroundColor = .blue
-        
         durationIcon.image = UIImage(systemName: "waveform")
         durationIcon.tintColor = .secondaryLabel
         durationIcon.contentMode = .scaleAspectFit
@@ -128,7 +120,6 @@ class DiaryListTableViewCell: UITableViewCell {
         durationParentView.addSubview(durationIcon)
         
         durationIcon.snp.makeConstraints { make in
-            //make.size.equalTo(20).priority(.high)
             make.left.equalToSuperview()
             make.verticalEdges.equalToSuperview()
         }

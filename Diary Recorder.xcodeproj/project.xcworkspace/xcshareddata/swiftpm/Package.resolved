@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dmrschmidt/DSWaveformImage.git",
       "state" : {
-        "revision" : "a7a96cf4478c6fa084e76c175bcf7f4c9a38f80a",
-        "version" : "14.3.0"
+        "revision" : "00afb7930863b9cc3bd011389d601735e548093c",
+        "version" : "14.5.0"
       }
     },
     {
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/realm/realm-core.git",
       "state" : {
-        "revision" : "4cc46f8607516226e5465062fdacd088fbd94552",
-        "version" : "20.1.4"
+        "revision" : "b4192c46305570577c4d08df790fddec5ab3aa04",
+        "version" : "20.1.5"
       }
     },
     {
@@ -61,7 +61,7 @@
       "location" : "https://github.com/realm/realm-swift.git",
       "state" : {
         "branch" : "community",
-        "revision" : "1cd09f1a41e7336f3c3eea76b60bc979bbdf46a9"
+        "revision" : "ca03df491ec5e4bb8af0bca1e9957d08c10ec2da"
       }
     },
     {
