@@ -38,6 +38,8 @@ public final class RecordingsDetailsRealmManager {
         config.schemaVersion = 1
         config.migrationBlock = { _, _ in }
         Realm.Configuration.defaultConfiguration = config
+        
+        print(">>>>", Self.self, config.fileURL)
         return try! Realm()
     }
 }
@@ -131,7 +133,13 @@ extension RecordingsDetailsRealmManager: RecordingModifierHandler {
         }
     }
     
-    func updateDiary(diary: RecordingFileDetails, newName: String?, newImage: String?, newMood: String?, newText: String?) throws(RealmError) {
+    func updateDiary(
+        diary: RecordingFileDetails,
+        newName: String?,
+        newImage: String?,
+        newMood: String?,
+        newText: String?
+    ) throws(RealmError) {
         
         guard let realmInstance = realm.object(ofType: RecordingsDetailsRealmModel.self, forPrimaryKey: diary.id) else {
             throw .failedToUpdate

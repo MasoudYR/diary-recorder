@@ -58,7 +58,11 @@ class DiaryPlayerViewModel: ObservableObject {
                 self.duration = newDuration
                 
                 self.updateTrackTimes(current: newCurrentTime, duration: newDuration)
-                self.currentlyPlaying = item.item
+                
+                if item.item != self.currentlyPlaying {
+                    self.currentlyPlaying = item.item
+                }
+                
             }
             .store(in: &cancellables)
     }
@@ -96,7 +100,10 @@ class DiaryPlayerViewModel: ObservableObject {
     }
     
     func play(_ diaryRecorded: RecordingFileDetails) {
-        audioPlayerService.play(diaryRecorded: diaryRecorded)
+        DispatchQueue.main.asyncAfterUnsafe(deadline: .now() + 0.1) {
+            self.audioPlayerService.play(diaryRecorded: diaryRecorded)
+        }
+        //audioPlayerService.play(diaryRecorded: diaryRecorded)
     }
     
     func pause() {

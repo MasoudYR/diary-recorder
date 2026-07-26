@@ -21,6 +21,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
     private let vStackView = UIStackView()
     private let hStackView = UIStackView()
     
+    private let diaryImageParentView = UIView()
     private let diaryImageView = UIImageView()
     
     private let detailsView = UIView()
@@ -43,6 +44,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
     private let previousButton = UIButton()
     
     private let diaryTextLabelView = UIView()
+    private let storyLabel = UILabel()
     private let diaryTextLabel = UILabel()
     
     private var progressTimer: Timer?
@@ -109,6 +111,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
         scrollView.isScrollEnabled = true
         scrollView.showsVerticalScrollIndicator = false
         scrollView.keyboardDismissMode = .interactive
+        scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.bounces = false
         
         view.addSubview(scrollView)
@@ -141,17 +144,21 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
     }
     
     private func setupDiaryImageView() {
+        //diaryImageParentView.backgroundColor = .red
+        
         diaryImageView.layer.cornerRadius = 20
         diaryImageView.contentMode = .scaleAspectFit
         diaryImageView.clipsToBounds = true
         
-        contentView.addSubview(diaryImageView)
+        diaryImageParentView.addSubview(diaryImageView)
         
         diaryImageView.snp.makeConstraints { make in
-            make.size.equalTo(80)
+            make.size.equalTo(120)
+            make.verticalEdges.equalToSuperview()
+            make.centerX.equalToSuperview()
         }
         
-        vStackView.addArrangedSubview(diaryImageView)
+        vStackView.addArrangedSubview(diaryImageParentView)
     }
     
     private func setupViewsDetailsView() {
@@ -189,7 +196,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
         detailsView.addSubview(emojiImageView)
         
         emojiImageView.snp.makeConstraints { make in
-            make.size.equalTo(60)
+            make.size.equalTo(40)
             make.top.equalToSuperview()
             make.right.equalToSuperview().inset(10)
             make.left.equalTo(textsStackView.snp.right).offset(10)
@@ -406,6 +413,18 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
         diaryTextLabelView.backgroundColor = .systemBackground
         diaryTextLabelView.layer.cornerRadius = 20
         
+        storyLabel.text = "Story:"
+        storyLabel.font = .roundedFont(ofSize: 20, weight: .medium)
+        storyLabel.textColor = .label
+        storyLabel.numberOfLines = 0
+        storyLabel.textAlignment = .left
+        
+        diaryTextLabelView.addSubview(storyLabel)
+        
+        storyLabel.snp.makeConstraints { make in
+            make.top.left.equalToSuperview().inset(10)
+        }
+        
         diaryTextLabel.text = ""
         diaryTextLabel.font = .roundedFont(ofSize: 17, weight: .regular)
         diaryTextLabel.textColor = .label
@@ -415,7 +434,9 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
         diaryTextLabelView.addSubview(diaryTextLabel)
         
         diaryTextLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(10)
+            make.horizontalEdges.equalToSuperview().inset(10)
+            make.top.equalTo(storyLabel.snp.bottom).offset(10)
+            make.bottom.equalToSuperview().inset(10)
         }
         
         vStackView.addArrangedSubview(diaryTextLabelView)
@@ -430,12 +451,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
                 self.nameLabel.text = currentlyPlaying.name
                 self.dateLabel.text = viewModel.changeDateAndTime(currentlyPlaying.date)
                 self.emojiImageView.image = viewModel.getEmojiOfDiary(diary: currentlyPlaying)
-//                if !currentlyPlaying.text.isEmpty {
-//                    self.diaryTextLabelView.isHidden = false
-//                    self.diaryTextLabel.text = currentlyPlaying.text
-//                } else {
-//                    self.diaryTextLabelView.isHidden = true
-//                }
+                self.diaryTextLabelView.isHidden = currentlyPlaying.text.isEmpty
                 self.diaryTextLabel.text = currentlyPlaying.text
                 print("~~~~~~~~~~", currentlyPlaying.text)
                 
@@ -503,3 +519,26 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
     }
 }
 
+extension DiaryPlayerViewController: UISheetPresentationControllerDelegate {
+    func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheetPresentationController: UISheetPresentationController) {
+        let isLarge = sheetPresentationController.selectedDetentIdentifier == .large
+        
+        UIView.animate(withDuration: 0.3) {
+            self.updateViewsSize(isLarge: isLarge)
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    private func updateViewsSize(isLarge: Bool) {
+        let ImageNewSize = isLarge ? 250 : 120
+        let emojiNewSize = isLarge ? 60: 40
+        
+        diaryImageView.snp.updateConstraints({ make in
+            make.size.equalTo(ImageNewSize)
+        })
+        
+        emojiImageView.snp.updateConstraints { make in
+            make.size.equalTo(emojiNewSize)
+        }
+    }
+}

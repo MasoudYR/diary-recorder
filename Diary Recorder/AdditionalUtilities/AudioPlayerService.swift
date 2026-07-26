@@ -10,7 +10,6 @@ import AVFoundation
 import Combine
 
 class AudioPlayerService: NSObject {
-    //static let shared = AudioPlayerService()
     
     @Published var playingStateDescriptor: PlayingStateDescriptor?
    
@@ -91,10 +90,7 @@ class AudioPlayerService: NSObject {
         
         player.replaceCurrentItem(with: playerItem)
         player.play()
-        
-        //isPlaying = true
-        //isFinished = false
-        //isPaused = false
+
         self.playingStateDescriptor = PlayingStateDescriptor(
             item: diaryRecorded,
             duration: asset.duration.seconds,
@@ -111,9 +107,13 @@ class AudioPlayerService: NSObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
                 guard let self else { return }
+                
+                print(">>>", Self.self, #function, "status: \(status.rawValue)")
+                
                 switch status {
                 case .readyToPlay:
                     let seconds = playerItem.duration.seconds
+                    print(">>>", Self.self, #function, "seconds: \(seconds)", seconds.isFinite, seconds.isNaN)
                     guard let playingStateDescriptor,
                           seconds.isFinite,
                           seconds > 0 else { return }
@@ -129,13 +129,6 @@ class AudioPlayerService: NSObject {
                 }
             }
             .store(in: &subscriptions)
-        
-//        playerItem.publisher(for: \.isPlaybackLikelyToKeepUp)
-//            .receive(on: DispatchQueue.main)
-//            .sink { isReady in
-//                print("isPlaybackLikelyToKeepUp: \(isReady)")
-//            }
-//            .store(in: &subscriptions)
     }
     
     private func setupBoundryObserver(duration: TimeInterval) {

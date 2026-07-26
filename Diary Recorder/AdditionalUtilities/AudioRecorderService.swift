@@ -89,8 +89,13 @@ class AudioRecorderService: NSObject, AVAudioRecorderDelegate {
         prepareToRecord()
         
         stopRecording()
-    
-        let fileURL = recordingStateDescriptor!.itemURL
+        
+        guard let recordingStateDescriptor else {
+                print("⚠️ recordingStateDescriptor is nil — did you forget to call prepareToRecord() first?")
+                return
+            }
+        
+        let fileURL = recordingStateDescriptor.itemURL
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
             AVSampleRateKey: 12000,
