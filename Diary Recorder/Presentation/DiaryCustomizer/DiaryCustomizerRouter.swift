@@ -80,11 +80,12 @@ class DiaryCustomizerRouter {
         //let navigationController = diaryCustomizerViewController.navigationController
         else { return }
         let cropController = CropViewController(image: image)
-        cropController.aspectRatioPreset = .init(width: image.size.width, height: image.size.width)
+        cropController.aspectRatioPreset = .presetSquare
         cropController.aspectRatioLockEnabled = true
         cropController.aspectRatioPickerButtonHidden = true
         cropController.resetButtonHidden = true
         cropController.delegate = diaryCustomizerViewController
+        
         cropController.transitioningDelegate = nil
         diaryCustomizerViewController.present(cropController, animated: true)
     }
