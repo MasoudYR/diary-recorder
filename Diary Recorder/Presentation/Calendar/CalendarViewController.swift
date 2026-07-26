@@ -84,14 +84,17 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
             normalColor: .label,
             normalBackgroundColor: .main,
             normalBadgeNum: 0,
+            normalBadgeColor: .label,
             todayFont: .roundedFont(ofSize: 18, weight: .semibold),
             todayColor: .systemRed,
             todayBackgroundColor: .main,
             todayBadgeNum: 0,
+            todayBadgeColor: .systemRed,
             selectedFont: .roundedFont(ofSize: 18, weight: .semibold),
             selectedColor: .systemBackground,
             selectedBackgroundColor: .reverseMain,
             selectedBadgeNum: 0,
+            selectedBadgeColor: .systemBackground,
             cornerRadius: 20,
             badgeFontSize: 12
         )

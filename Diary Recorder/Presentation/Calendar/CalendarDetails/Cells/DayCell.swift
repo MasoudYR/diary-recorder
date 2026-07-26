@@ -88,7 +88,7 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
     }
     
     private func setupDecorateBadgeView() {
-        dayDecorateBadgeLabel.textColor = .label
+        //dayDecorateBadgeLabel.textColor = .label
         dayDecorateBadgeLabel.textAlignment = .center
         dayDecorateBadgeLabel.adjustsFontSizeToFitWidth = true //in dare size numbre rooz ro kam mikine!
         dayDecorateBadgeLabel.minimumScaleFactor = 0.8
@@ -123,19 +123,23 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
         let baseFont: UIFont
         let textColor: UIColor
         let bg: UIColor
+        let badgeColor: UIColor
         
         if isToday {
             baseFont = a.todayFont
             textColor = a.todayColor
             bg = isSelected ? a.selectedBackgroundColor : a.todayBackgroundColor
+            badgeColor = isSelected ? a.selectedBadgeColor : a.normalBadgeColor
         } else if isSelected {
             baseFont = a.selectedFont
             textColor = a.selectedColor
             bg = a.selectedBackgroundColor
+            badgeColor = a.selectedBadgeColor
         } else {
             baseFont = a.normalFont
             textColor = a.normalColor
             bg = a.normalBackgroundColor
+            badgeColor = a.normalBadgeColor
         }
         
 //        guard let lastCellSize else { return }
@@ -146,6 +150,8 @@ class DayCell: UICollectionViewCell, DayCellConfiguration {
         
         dayLabel.font = baseFont
         dayLabel.textColor = textColor
+        
+        dayDecorateBadgeLabel.textColor = badgeColor
         
         bg.withAlphaComponent(0.7)
         contentView.backgroundColor = bg
