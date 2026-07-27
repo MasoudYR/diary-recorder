@@ -90,7 +90,7 @@ class RecorderMainPageViewModel: ObservableObject {
             id: UUID(),
             fileName: fileName,
             name: dateToString(date: date),
-            imageFileName: "",
+            imageFileName: imageFileName,
             date: date,
             duration: duration,
             mood: "pokerface",

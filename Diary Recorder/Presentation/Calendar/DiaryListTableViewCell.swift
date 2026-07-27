@@ -79,7 +79,7 @@ class DiaryListTableViewCell: UITableViewCell {
     private func setupTimeHStackView() {
         timesHStackView.axis = .horizontal
         timesHStackView.spacing = 10
-        timesHStackView.distribution = .fillProportionally
+        timesHStackView.distribution = .fill
         timesHStackView.alignment = .leading
         vStackView.addArrangedSubview(timesHStackView)
     }
@@ -159,7 +159,7 @@ class DiaryListTableViewCell: UITableViewCell {
             make.size.equalTo(40)
             make.centerY.equalTo(vStackView)
             make.left.equalTo(vStackView.snp.right).offset(5)
-            make.right.equalToSuperview()
+            make.right.equalToSuperview().inset(5)
         }
     }
 

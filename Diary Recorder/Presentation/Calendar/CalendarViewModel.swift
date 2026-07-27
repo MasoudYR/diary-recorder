@@ -23,7 +23,7 @@ class CalendarViewModel {
     
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss"
+        formatter.dateFormat = "HH:mm"
         return formatter
     }()
     
@@ -65,8 +65,8 @@ class CalendarViewModel {
         let hours = Int(duration) / 3600
         let minutes = (Int(duration) % 3600 / 60)
         let seconds = Int(duration) % 60
-        let milliseconds = Int((duration.truncatingRemainder(dividingBy: 1)) * 100)
-        let timeString = String(format: "%02d:%02d:%02d.%02d", hours, minutes, seconds, milliseconds)
+        //let milliseconds = Int((duration.truncatingRemainder(dividingBy: 1)) * 100)
+        let timeString = String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         return timeString
     }
     
