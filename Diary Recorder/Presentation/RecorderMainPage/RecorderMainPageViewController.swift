@@ -25,7 +25,7 @@ class RecorderMainPageViewController: UIViewController {
     private let voiceDiagramView = UIView()
     private let waveformLiveView = WaveformLiveView()
     private let buttonsView = UIView()
-    private let buttonsVStackView = UIStackView()
+    private let buttonsHStackView = UIStackView()
     private let recordButton = UIButton()
     private let pauseButton = UIButton()
     private let resumeButton = UIButton()
@@ -56,7 +56,6 @@ class RecorderMainPageViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemRed
         navigationBarSetupUI()
         setupUI()
         bindViewModel()
@@ -101,7 +100,6 @@ class RecorderMainPageViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = UIColor.init(named: "MainColor")
-        
         setupViewsMainStackView()
         setupVoiceRecorderImageView()
         setupTimerLabelView()
@@ -117,7 +115,6 @@ class RecorderMainPageViewController: UIViewController {
         vStackView.distribution = .fill
         vStackView.alignment = .fill
         vStackView.isLayoutMarginsRelativeArrangement = true
-        
         view.addSubview(vStackView)
         vStackView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
@@ -151,19 +148,18 @@ class RecorderMainPageViewController: UIViewController {
     }
     
     private func setupTimerLabelView() {
-        
         voiceTimerLabel.text = "00:00:00.00"
         voiceTimerLabel.font = UIFont.monospacedRoundedSystemFont(ofSize: 40, weight: .regular)
         voiceTimerLabel.textAlignment = .center
         voiceTimerLabel.textColor = .label
         
         vStackView.addArrangedSubview(voiceTimerLabel)
+        vStackView.setCustomSpacing(0, after: voiceTimerLabel)
     }
     
     private func setupVoiceDiagramView() {
-        
         voiceDiagramView.snp.makeConstraints { make in
-            make.height.equalTo(150)
+            make.height.equalTo(voiceDiagramView.snp.width).dividedBy(2.5)
         }
         waveformLiveView.shouldDrawSilencePadding = true
         waveformLiveView.configuration = Waveform.Configuration(
@@ -182,7 +178,7 @@ class RecorderMainPageViewController: UIViewController {
         
         voiceDiagramView.addSubview(waveformLiveView)
         waveformLiveView.snp.makeConstraints { make in
-            make.height.equalToSuperview().inset(10)
+            make.height.equalToSuperview()
             make.horizontalEdges.equalToSuperview()
         }
         
@@ -190,10 +186,10 @@ class RecorderMainPageViewController: UIViewController {
     }
     
     private func setupViewsButtonsGroupStackView() {
-        buttonsVStackView.axis = .vertical
-        buttonsVStackView.spacing = 5
-        buttonsVStackView.distribution = .fill
-        buttonsVStackView.alignment = .fill
+        buttonsHStackView.axis = .horizontal
+        buttonsHStackView.spacing = 50
+        buttonsHStackView.distribution = .fill
+        buttonsHStackView.alignment = .fill
         
         recordButton.backgroundColor = .label
         recordButton.setImage(UIImage(systemName: "circle.fill",withConfiguration: UIImage.SymbolConfiguration(pointSize: 30)), for: .normal)
@@ -233,18 +229,24 @@ class RecorderMainPageViewController: UIViewController {
             make.size.equalTo(80)
         }
         
-        buttonsView.addSubview(buttonsVStackView)
-        buttonsVStackView.snp.makeConstraints { make in
+        buttonsView.addSubview(buttonsHStackView)
+        buttonsHStackView.snp.makeConstraints { make in
             make.verticalEdges.equalToSuperview()
             make.center.equalToSuperview()
         }
         
-        buttonsVStackView.addArrangedSubview(recordButton)
-        buttonsVStackView.addArrangedSubview(pauseButton)
-        buttonsVStackView.addArrangedSubview(resumeButton)
-        buttonsVStackView.addArrangedSubview(stopButton)
+        buttonsHStackView.addArrangedSubview(recordButton)
+        buttonsHStackView.addArrangedSubview(pauseButton)
+        buttonsHStackView.addArrangedSubview(resumeButton)
+        buttonsHStackView.addArrangedSubview(stopButton)
         
-        vStackView.addArrangedSubview(buttonsView)
+//        vStackView.addArrangedSubview(buttonsView)
+        view.addSubview(buttonsHStackView)
+        
+        buttonsHStackView.snp.makeConstraints { make in
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(55)
+            make.centerX.equalToSuperview()
+        }
     }
 
     private func setupActions() {
