@@ -52,7 +52,7 @@ class DeleteAlertViewController: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .main
         setupVStackView()
         setupImageIconView()
         setupDeleteMessageLabels()
@@ -122,7 +122,7 @@ class DeleteAlertViewController: UIViewController {
         yesButton.setTitleColor(.label, for: .normal)
         yesButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
         yesButton.layer.cornerRadius = 20
-        yesButton.backgroundColor = .main
+        yesButton.backgroundColor = .presentViewsContents
 //        yesButton.layer.borderWidth = 1
 //        yesButton.layer.borderColor = UIColor.label.cgColor
         
@@ -137,7 +137,7 @@ class DeleteAlertViewController: UIViewController {
         noButton.setTitleColor(.label, for: .normal)
         noButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
         noButton.layer.cornerRadius = 20
-        noButton.backgroundColor = .main
+        noButton.backgroundColor = .presentViewsContents
 //        noButton.layer.borderWidth = 1
 //        noButton.layer.borderColor = UIColor.label.cgColor
         

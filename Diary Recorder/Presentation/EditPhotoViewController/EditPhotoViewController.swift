@@ -71,14 +71,14 @@ class EditPhotoViewController: UIViewController {
     private func setupCloseButton() {
         let largeConfigue = UIImage.SymbolConfiguration(weight: .bold)
         closeButton.setImage(UIImage(systemName: "xmark", withConfiguration: largeConfigue), for: .normal)
-        closeButton.tintColor = .systemGray
-        closeButton.backgroundColor = .systemBackground
-        closeButton.layer.cornerRadius = 15
+        closeButton.tintColor = .label
+        closeButton.backgroundColor = .presentViewsContents
+        closeButton.layer.cornerRadius = 20
         
         view.addSubview(closeButton)
         
         closeButton.snp.makeConstraints { make in
-            make.size.equalTo(30)
+            make.size.equalTo(40)
             make.top.equalToSuperview().offset(15)
             make.right.equalToSuperview().inset(15)
             make.centerY.equalTo(diaryPhotoLabel)

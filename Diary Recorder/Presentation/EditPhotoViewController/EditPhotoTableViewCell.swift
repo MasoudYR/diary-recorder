@@ -25,8 +25,7 @@ class EditPhotoTableViewCell: UITableViewCell {
     }
     
     private func setupUI() {
-//        contentView.layer.cornerRadius = 20
-//        contentView.backgroundColor = .systemBlue
+        contentView.backgroundColor = .presentViewsContents
         
         setuptitleLabel()
         setupIconImageView()

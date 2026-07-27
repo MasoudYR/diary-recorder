@@ -93,7 +93,8 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         scrollView.showsVerticalScrollIndicator = false
         scrollView.keyboardDismissMode = .interactive
         scrollView.bounces = false
-        scrollView.contentInset = .init(top: 20, left: 0, bottom: 20, right: 0)
+        scrollView.insetsLayoutMarginsFromSafeArea = true
+        scrollView.contentInset = .init(top: 20, left: 0, bottom: 70, right: 0)
         
         view.addSubview(scrollView)
         
@@ -142,7 +143,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     }
     
     private func setupRenameView() {
-        renameTitleLabel.text = "Name diary:"
+        renameTitleLabel.text = "Name"
         renameTitleLabel.textColor = .label
         renameTitleLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
         renameTitleLabel.textAlignment = .left
@@ -154,7 +155,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
             make.left.equalToSuperview().offset(5)
         }
         
-        renameTextFieldView.backgroundColor = .systemBackground
+        renameTextFieldView.backgroundColor = .blackAndWhite
         renameTextFieldView.layer.cornerRadius = 20
         
         renameParentView.addSubview(renameTextFieldView)
@@ -170,7 +171,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         renameTextField.placeholder = "Maximum 50 characters"
         renameTextField.font = .roundedFont(ofSize: 18, weight: .regular)
         renameTextField.textColor = .label
-        renameTextField.backgroundColor = .systemBackground
+        renameTextField.backgroundColor = .blackAndWhite
         
         renameTextFieldView.addSubview(renameTextField)
         
@@ -183,7 +184,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     }
     
     private func setupEmojiView() {
-        emojiTitleLabel.text = "Select mood:"
+        emojiTitleLabel.text = "Mood"
         emojiTitleLabel.textColor = .label
         emojiTitleLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
         emojiTitleLabel.textAlignment = .left
@@ -207,7 +208,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         layout.minimumInteritemSpacing = 0
         layout.sectionInset = .init(top: 0, left: 5, bottom: 0, right: 5)
         emojiHCollectionView.collectionViewLayout = layout
-        emojiHCollectionView.backgroundColor = .systemBackground
+        emojiHCollectionView.backgroundColor = .blackAndWhite
         emojiHCollectionView.showsHorizontalScrollIndicator = false
         emojiHCollectionView.layer.cornerRadius = 20
         emojiHCollectionView.layer.masksToBounds = true
@@ -226,7 +227,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
     }
     
     private func setupDiaryTextView() {
-        diaryTextTitleLabel.text = "Write story:"
+        diaryTextTitleLabel.text = "Story"
         diaryTextTitleLabel.font = .roundedFont(ofSize: 20, weight: .semibold)
         diaryTextTitleLabel.textColor = .label
         diaryTextTitleLabel.textAlignment = .left
@@ -238,7 +239,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
             make.left.equalToSuperview().offset(5)
         }
         
-        diaryTextViewView.backgroundColor = .systemBackground
+        diaryTextViewView.backgroundColor = .blackAndWhite
         diaryTextViewView.layer.cornerRadius = 20
         
         diaryTextParentView.addSubview(diaryTextViewView)
@@ -255,7 +256,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         diaryTextView.font = .roundedFont(ofSize: 18, weight: .regular)
         diaryTextView.textColor = .label
         diaryTextView.textAlignment = .left
-        diaryTextView.backgroundColor = .systemBackground
+        diaryTextView.backgroundColor = .blackAndWhite
         diaryTextView.inputAccessoryView = InputAccessoryView(responder: diaryTextView)
         
         diaryTextViewView.addSubview(diaryTextView)
@@ -310,7 +311,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         cancelButton.setTitleColor(.label, for: .normal)
         cancelButton.tintColor = .label
         cancelButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
-        cancelButton.backgroundColor = .systemBackground
+        cancelButton.backgroundColor = .blackAndWhite
         cancelButton.layer.cornerRadius = 20
         
         cancelButton.snp.makeConstraints { make in
@@ -323,7 +324,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         saveButton.setTitleColor(.label, for: .normal)
         saveButton.tintColor = .label
         saveButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
-        saveButton.backgroundColor = .systemBackground
+        saveButton.backgroundColor = .blackAndWhite
         saveButton.layer.cornerRadius = 20
         
         saveButton.snp.makeConstraints { make in
@@ -332,7 +333,12 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         
         buttonsHStackView.addArrangedSubview(saveButton)
         
-        vStackView.addArrangedSubview(buttonsHStackView)
+        view.addSubview(buttonsHStackView)
+        
+        buttonsHStackView.snp.makeConstraints { make in
+            make.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
+            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(20)
+        }
     }
     
     private func actions() {

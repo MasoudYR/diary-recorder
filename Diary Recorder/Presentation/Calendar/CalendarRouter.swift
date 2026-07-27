@@ -20,7 +20,7 @@ class CalendarRouter {
         guard let calendarViewController else { return }
         let deleteAlertViewController = DeleteAlertViewController.make(
             title: "Delete Alert",
-            message: "Are you sure you want to delete this file?",
+            message: "Are you sure you want to delete this diary?",
             deleteHandler: deleteHandler
         )
         calendarViewController.present(deleteAlertViewController, animated: true)

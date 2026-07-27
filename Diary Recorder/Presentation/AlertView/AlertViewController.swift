@@ -42,7 +42,7 @@ class AlertViewController: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .main
         setupVStackView()
         setupTitleLabel()
         setupMessageLabel()
@@ -89,7 +89,7 @@ class AlertViewController: UIViewController {
         okButton.setTitleColor(.label, for: .normal)
         okButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .medium)
         okButton.layer.cornerRadius = 20
-        okButton.backgroundColor = .main
+        okButton.backgroundColor = .presentViewsContents
         
         parentOkButton.addSubview(okButton)
         okButton.snp.makeConstraints { make in

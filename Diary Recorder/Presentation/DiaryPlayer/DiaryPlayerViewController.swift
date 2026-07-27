@@ -44,7 +44,6 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
     private let previousButton = UIButton()
     
     private let diaryTextLabelView = UIView()
-    private let storyLabel = UILabel()
     private let diaryTextLabel = UILabel()
     
     private var progressTimer: Timer?
@@ -259,6 +258,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
         }
         
         vStackView.addArrangedSubview(buttonsGroupView)
+        vStackView.setCustomSpacing(25, after: buttonsGroupView)
     }
     
     private func setupViewsButtonsGroupStackViewArrangedSubviews() {
@@ -410,20 +410,8 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
     }
     
     private func diaryTextView() {
-        diaryTextLabelView.backgroundColor = .systemBackground
+        diaryTextLabelView.backgroundColor = .blackAndWhite
         diaryTextLabelView.layer.cornerRadius = 20
-        
-        storyLabel.text = "Story:"
-        storyLabel.font = .roundedFont(ofSize: 20, weight: .medium)
-        storyLabel.textColor = .label
-        storyLabel.numberOfLines = 0
-        storyLabel.textAlignment = .left
-        
-        diaryTextLabelView.addSubview(storyLabel)
-        
-        storyLabel.snp.makeConstraints { make in
-            make.top.left.equalToSuperview().inset(10)
-        }
         
         diaryTextLabel.text = ""
         diaryTextLabel.font = .roundedFont(ofSize: 17, weight: .regular)
@@ -434,9 +422,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
         diaryTextLabelView.addSubview(diaryTextLabel)
         
         diaryTextLabel.snp.makeConstraints { make in
-            make.horizontalEdges.equalToSuperview().inset(10)
-            make.top.equalTo(storyLabel.snp.bottom).offset(10)
-            make.bottom.equalToSuperview().inset(10)
+            make.edges.equalToSuperview().inset(10)
         }
         
         vStackView.addArrangedSubview(diaryTextLabelView)
@@ -454,7 +440,6 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
                 self.diaryTextLabelView.isHidden = currentlyPlaying.text.isEmpty
                 self.diaryTextLabel.text = currentlyPlaying.text
                 print("~~~~~~~~~~", currentlyPlaying.text)
-                
             }
             .store(in: &cancellables)
         

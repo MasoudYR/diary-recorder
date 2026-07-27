@@ -52,7 +52,7 @@ class NameDiaryViewController: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .main
         setupVStack()
         setupNameLabel()
         setupTextFieldView()
@@ -87,14 +87,14 @@ class NameDiaryViewController: UIViewController {
         nameTextFieldView.layer.borderWidth = 1
         nameTextFieldView.layer.borderColor = UIColor.label.cgColor
         nameTextFieldView.layer.cornerRadius = 20
-        nameTextFieldView.backgroundColor = .main
+        nameTextFieldView.backgroundColor = .blackAndWhite
         
         nameTextField.delegate = self
         nameTextField.text = viewModel.text
         nameTextField.placeholder = "Maximum 50 characters"
         nameTextField.font = .roundedFont(ofSize: 18, weight: .regular)
         nameTextField.textColor = .label
-        nameTextField.backgroundColor = .main
+        nameTextField.backgroundColor = .blackAndWhite
         
         nameTextFieldView.addSubview(nameTextField)
         nameTextField.snp.makeConstraints { make in
@@ -119,7 +119,7 @@ class NameDiaryViewController: UIViewController {
         cancelButton.setTitleColor(.label, for: .normal)
         cancelButton.tintColor = .label
         cancelButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
-        cancelButton.backgroundColor = .main
+        cancelButton.backgroundColor = .presentViewsContents
         cancelButton.layer.cornerRadius = 20
 //        cancelButton.layer.borderWidth = 1
 //        cancelButton.layer.borderColor = UIColor.label.cgColor
@@ -135,7 +135,7 @@ class NameDiaryViewController: UIViewController {
         renameButton.setTitleColor(.label, for: .normal)
         renameButton.tintColor = .label
         renameButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
-        renameButton.backgroundColor = .main
+        renameButton.backgroundColor = .presentViewsContents
         renameButton.layer.cornerRadius = 20
 //        renameButton.layer.borderWidth = 1
 //        renameButton.layer.borderColor = UIColor.label.cgColor
