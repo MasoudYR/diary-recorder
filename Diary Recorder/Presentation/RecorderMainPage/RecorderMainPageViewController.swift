@@ -316,6 +316,20 @@ class RecorderMainPageViewController: UIViewController {
             .sink { [weak self] item in
                 guard let self else { return }
                 self.voiceTimerLabel.text = viewModel.transformTime(item.currentTime)
+                print("this is currentTim: \(viewModel.transformTime(item.currentTime))")
+                if item.currentTime >= 3600 {
+                    viewModel.stopRecording()
+                    viewModel.saveRecording()
+                    print("lastSavedDiaryInViewController: \(String(describing: viewModel.lastSavedDiary))")
+                    guard let lastSavedDiary = viewModel.lastSavedDiary else { return }
+                    
+                    let updateDetailsCurrentValueSubject = viewModel.updateDetailsCurrentValueSubject
+                    
+                    router.navigateToDiaryCustomizer(
+                        lastSavedDiary: lastSavedDiary,
+                        updateDetailsCurrentValueSubject: updateDetailsCurrentValueSubject
+                    )
+                }
             }
             .store(in: &cancellables)
         

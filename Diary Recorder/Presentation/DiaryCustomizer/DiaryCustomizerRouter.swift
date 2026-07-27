@@ -84,8 +84,8 @@ class DiaryCustomizerRouter {
         cropController.aspectRatioLockEnabled = true
         cropController.aspectRatioPickerButtonHidden = true
         cropController.resetButtonHidden = true
-        cropController.doneButtonColor = .systemBackground
-        cropController.cancelButtonColor = .systemBackground
+        cropController.doneButtonColor = .white
+        cropController.cancelButtonColor = .white
         cropController.delegate = diaryCustomizerViewController
         
         cropController.transitioningDelegate = nil
