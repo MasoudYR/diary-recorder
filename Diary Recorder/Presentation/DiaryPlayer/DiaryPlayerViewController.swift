@@ -334,7 +334,7 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
         
         buttonsVStackView.addArrangedSubview(playButton)
         buttonsVStackView.addArrangedSubview(pauseButton)
-        buttonsVStackView.addArrangedSubview(stopButton)
+        //buttonsVStackView.addArrangedSubview(stopButton)
         
         hStackView.addArrangedSubview(buttonsVStackView)
     }
@@ -402,7 +402,12 @@ class DiaryPlayerViewController: UIViewController, UIScrollViewDelegate {
         let previousDiaryActionId = UIAction.Identifier("previousDiaryActionId")
         
         let previousDiaryAction = UIAction { [unowned self] _ in
-            viewModel.playPreviousDiary()
+            
+            if  viewModel.currentTime >= 0, viewModel.currentTime < 1 {
+                viewModel.playPreviousDiary()
+            } else {
+                viewModel.seek(to: 0)
+            }
         }
         previousButton.removeAction(identifiedBy: previousDiaryActionId, for: .touchUpInside)
         previousButton

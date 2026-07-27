@@ -144,7 +144,7 @@ class CalendarViewController: UIViewController, CalendarViewDelegate, CalendarVi
         diariesListTableView.showsVerticalScrollIndicator = false
         diariesListTableView.separatorInset = .zero
         diariesListTableView.bounces = false
-        diariesListTableView.backgroundColor = .systemBackground
+        diariesListTableView.backgroundColor = .main
         
         parentDiariesListTableView.addSubview(diariesListTableView)
         

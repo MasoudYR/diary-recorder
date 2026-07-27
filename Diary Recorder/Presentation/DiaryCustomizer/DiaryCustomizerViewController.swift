@@ -311,7 +311,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         cancelButton.setTitleColor(.label, for: .normal)
         cancelButton.tintColor = .label
         cancelButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
-        cancelButton.backgroundColor = .blackAndWhite
+        cancelButton.backgroundColor = .presentViewsContents
         cancelButton.layer.cornerRadius = 20
         
         cancelButton.snp.makeConstraints { make in
@@ -324,7 +324,7 @@ class DiaryCustomizerViewController: UIViewController, PHPickerViewControllerDel
         saveButton.setTitleColor(.label, for: .normal)
         saveButton.tintColor = .label
         saveButton.titleLabel?.font = .roundedFont(ofSize: 18, weight: .regular)
-        saveButton.backgroundColor = .blackAndWhite
+        saveButton.backgroundColor = .presentViewsContents
         saveButton.layer.cornerRadius = 20
         
         saveButton.snp.makeConstraints { make in

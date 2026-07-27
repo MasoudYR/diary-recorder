@@ -25,7 +25,7 @@ class EditPhotoTableViewCell: UITableViewCell {
     }
     
     private func setupUI() {
-        contentView.backgroundColor = .presentViewsContents
+        contentView.backgroundColor = .blackAndWhite
         
         setuptitleLabel()
         setupIconImageView()

@@ -119,7 +119,7 @@ class DiaryPlayerViewModel: ObservableObject {
     }
     
     func seek(to progress: Double) {
-        precondition((0 ... 1).contains(progress), "kossssskesh in chie?...")
+        precondition((0 ... 1).contains(progress), "the time is between 0 and 1")
         
         guard let duration = audioPlayerService
             .playingStateDescriptor?

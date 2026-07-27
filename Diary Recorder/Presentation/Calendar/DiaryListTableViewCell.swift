@@ -47,7 +47,6 @@ class DiaryListTableViewCell: UITableViewCell {
     }
     
     private func setupDiaryImageView() {
-        diaryImageView.backgroundColor = .red
         diaryImageView.layer.cornerRadius = 20
         diaryImageView.contentMode = .scaleAspectFit
         diaryImageView.clipsToBounds = true
