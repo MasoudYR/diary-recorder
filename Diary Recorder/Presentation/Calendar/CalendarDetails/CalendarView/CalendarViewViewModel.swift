@@ -135,12 +135,16 @@ class CalendarViewViewModel {
         do {
             try recordingsDetailsRealmManager.removeDiary(withID: diary.id)
             guard let selectedDay else { return }
+            print("this is selectedDay: \(selectedDay)")
             print(">>>>", Self.self, #function, "selectedDay: \(selectedDay)")
             let calendarMonthId = selectedDay.date.monthId
-            guard let calendarMonthIndex = months.firstIndex(where: { $0.id == calendarMonthId }),
-                  let dayIndex = months[calendarMonthIndex].days.firstIndex(of: selectedDay) else { return }
-            
-            months[calendarMonthIndex].days[dayIndex] = CalendarDay(
+            print("this is calendar monthID: \(calendarMonthId)")
+            guard let calendarMonthIndex = months.firstIndex(where: { $0.id == calendarMonthId }) else { return }
+            print("this is month index: \(calendarMonthIndex)")
+            print("this is selectedDay details: id:\(selectedDay.id), date: \(selectedDay.date), dayNumber: \(selectedDay.dayNumber), isCurrentMonth \(selectedDay.isCurrentMonth), isToday: \(selectedDay.isToday), isSelected: \(selectedDay.isSelected), numberOfDiaries: \(selectedDay.numberOfDiaries)")
+            guard let dayIndex = months[calendarMonthIndex].days.firstIndex(where: { $0.id == selectedDay.id }) else { return }
+            print("this is month index: \(calendarMonthIndex), and this is dayIndex: \(dayIndex)")
+            let newDetailsDay = CalendarDay(
                 id: selectedDay.id,
                 date: selectedDay.date,
                 dayNumber: selectedDay.dayNumber,
@@ -149,6 +153,11 @@ class CalendarViewViewModel {
                 isSelected: selectedDay.isSelected,
                 numberOfDiaries: selectedDay.numberOfDiaries - 1
             )
+            
+            months[calendarMonthIndex].days[dayIndex] = newDetailsDay
+            self.selectedDay = newDetailsDay
+            
+            print("$$$$$$$ this is month data after delete one memory: \(months[calendarMonthIndex].days[dayIndex].numberOfDiaries)")
             
             print(">>>>", Self.self, #function, "updated haroooooom zallllin...")
         } catch {
