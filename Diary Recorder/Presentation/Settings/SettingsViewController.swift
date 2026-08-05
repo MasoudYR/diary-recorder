@@ -53,11 +53,25 @@ class SettingsViewController: UIViewController {
     }
     
     private func setupNavigationBarUI() {
+        navigationItem.title = "Settings"
+        let appearance = UINavigationBarAppearance()
+        //appearance.configureWithOpaqueBackground()
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.label,
+            .font: UIFont.roundedFont(ofSize: 25, weight: .semibold)
+        ]
+        appearance.shadowColor = .clear
+        //appearance.backgroundColor = UIColor.init(named: "MainColor")
         
+        navigationItem.standardAppearance = appearance
+        navigationItem.scrollEdgeAppearance = appearance
+        navigationItem.compactAppearance = appearance
+        navigationItem.compactScrollEdgeAppearance = appearance
+        navigationItem.backButtonTitle = ""
     }
     
     private func setupUI() {
-        view.backgroundColor = .main
+        view.backgroundColor = UIColor.init(named: "MainColor")
         setupHeaderParentView()
         setupVStackView()
         setupIconImageView()
@@ -68,7 +82,7 @@ class SettingsViewController: UIViewController {
     }
     
     private func setupHeaderParentView() {
-        headerParentView.frame = CGRect(origin: .zero, size: CGSize(width: .zero, height: 190))
+        headerParentView.frame = CGRect(origin: .zero, size: CGSize(width: .zero, height: 220))
     }
     
     private func setupVStackView() {
@@ -80,7 +94,8 @@ class SettingsViewController: UIViewController {
         headerParentView.addSubview(vStackView)
         
         vStackView.snp.makeConstraints { make in
-            make.top.centerX.equalToSuperview()
+            make.top.equalToSuperview().offset(30)
+            make.centerX.equalToSuperview()
         }
         
     }
@@ -126,12 +141,13 @@ class SettingsViewController: UIViewController {
     private func setupSettingsTableView() {
         settingsTableView.delegate = self
         settingsTableView.dataSource = self
+        
         settingsTableView.rowHeight = 60
         settingsTableView.register(SettingsTableViewCell.self, forCellReuseIdentifier: SettingsTableViewCell.identifier)
         
         settingsTableView.tableHeaderView = headerParentView
         settingsTableView.tableFooterView = messageLabel
-        
+        settingsTableView.backgroundColor = .main
         view.addSubview(settingsTableView)
         
         settingsTableView.snp.makeConstraints { make in
@@ -170,6 +186,7 @@ extension SettingsViewController: UITableViewDataSource {
 extension SettingsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: SettingsTableViewCell.identifier, for: indexPath) as! SettingsTableViewCell
+        //cell.selectionStyle = .
         
         switch indexPath.section {
         case 0:
@@ -210,17 +227,17 @@ extension SettingsViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        //tableView.deselectRow(at: indexPath, animated: true)
+        
         switch indexPath.section {
         case 0:
-            //go to about view
-            ()
+            self.router.navigateToAboutViewController()
         case 1:
             if indexPath.row == 0 {
-                //go to privacy policy view
-                ()
+                self.router.navigateToPrivacyPolicyViewController()
             } else {
-                //go to terms of service view
-                ()
+                self.router.navigateToTermsOfServiceViewController()
             }
         case 2:
             //go to contact us view
@@ -228,6 +245,10 @@ extension SettingsViewController: UITableViewDelegate {
         default:
             break
         }
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -248,5 +269,17 @@ extension SettingsViewController: UITableViewDelegate {
         let footer = UIView()
         footer.backgroundColor = .clear
         return footer
+    }
+    
+    func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath) {
+        if let cell = tableView.cellForRow(at: indexPath) as? SettingsTableViewCell {
+            cell.selectionChanged(isSelected: true)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath) {
+        if let cell = tableView.cellForRow(at: indexPath) as? SettingsTableViewCell {
+            cell.selectionChanged(isSelected: false)
+        }
     }
 }

@@ -24,6 +24,13 @@ class RecorderMainPageRouter {
         navigationController.pushViewController(diaryListViewController, animated: true)
     }
     
+    func navigateToSettingsViewController() {
+        guard let recorderMainPageViewController,
+              let navigationController = recorderMainPageViewController.navigationController else { return }
+        let settingsViewController = SettingsViewController.make()
+        navigationController.pushViewController(settingsViewController, animated: true)
+    }
+    
     func navigateToNameDiary(lastSavedDiary: RecordingFileDetails, nameCurrentValueSubject: PassthroughSubject<String, Never>) {
         guard let recorderMainPageViewController else { return }
         print("we have to show name diary")

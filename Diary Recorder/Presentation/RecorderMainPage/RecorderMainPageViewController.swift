@@ -31,6 +31,7 @@ class RecorderMainPageViewController: UIViewController {
     private let resumeButton = UIButton()
     private let stopButton = UIButton()
     private var savedDiaryBarButton = UIBarButtonItem()
+    private var settingsBarButton = UIBarButtonItem()
     private var cancellables = Set<AnyCancellable>()
     
     init(viewModel: RecorderMainPageViewModel, router: RecorderMainPageRouter) {
@@ -81,7 +82,7 @@ class RecorderMainPageViewController: UIViewController {
         navigationItem.scrollEdgeAppearance = appearance
         navigationItem.compactScrollEdgeAppearance = appearance
         
-        let largeConfigue = UIImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
+        let largeConfigue = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
         savedDiaryBarButton = UIBarButtonItem(
             image: UIImage(systemName: "play.square.stack",withConfiguration: largeConfigue),
             style: .plain,
@@ -89,12 +90,25 @@ class RecorderMainPageViewController: UIViewController {
             action: #selector(diariesListBarButtonTapped(_:))
         )
         navigationItem.rightBarButtonItem = savedDiaryBarButton
+        
+        settingsBarButton = UIBarButtonItem(
+            image: UIImage(systemName: "gear",withConfiguration: largeConfigue),
+            style: .plain,
+            target: self,
+            action: #selector(settingsBarButtonTapped(_:))
+        )
+        navigationItem.leftBarButtonItem = settingsBarButton
         navigationItem.backButtonTitle = ""
     }
     
     @objc func diariesListBarButtonTapped(_ sender: UIBarButtonItem) {
         print("navbutton tapped")
         self.router.navigateToDiaryList()
+    }
+    
+    @objc func settingsBarButtonTapped(_ sender: UIBarButtonItem) {
+        print("settings button tapped")
+        self.router.navigateToSettingsViewController()
     }
     
     

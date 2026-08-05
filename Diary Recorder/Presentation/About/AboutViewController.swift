@@ -57,7 +57,26 @@ class AboutViewController: UIViewController, UIScrollViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupNavigationBar()
         setupUI()
+    }
+    
+    private func setupNavigationBar() {
+        navigationItem.title = "About"
+        
+        let appearance = UINavigationBarAppearance()
+        //appearance.configureWithOpaqueBackground()
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.label,
+            .font: UIFont.roundedFont(ofSize: 25, weight: .semibold)
+        ]
+        appearance.shadowColor = .clear
+       // appearance.backgroundColor = .main
+        navigationItem.standardAppearance = appearance
+        navigationItem.compactAppearance = appearance
+        navigationItem.scrollEdgeAppearance = appearance
+        navigationItem.compactScrollEdgeAppearance = appearance
+        navigationItem.backButtonTitle = ""
     }
     
     private func setupUI() {
@@ -78,6 +97,8 @@ class AboutViewController: UIViewController, UIScrollViewDelegate {
     private func setupScrollView() {
         scrollView.delegate = self
         scrollView.showsVerticalScrollIndicator = false
+        scrollView.bounces = true
+        scrollView.alwaysBounceVertical = true
         view.addSubview(scrollView)
         scrollView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -101,7 +122,7 @@ class AboutViewController: UIViewController, UIScrollViewDelegate {
         vStackView.layoutMargins = .init(top: 0, left: 20, bottom: 0, right: 20)
         contentView.addSubview(vStackView)
         vStackView.snp.makeConstraints { make in
-            make.top.horizontalEdges.equalToSuperview()
+            make.edges.equalToSuperview()
         }
     }
     

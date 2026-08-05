@@ -11,6 +11,7 @@ import UIKit
 class SettingsTableViewCell: UITableViewCell {
     static let identifier = "SettingsTableViewCell"
     
+    private let parentView = UIView()
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
     
@@ -24,9 +25,18 @@ class SettingsTableViewCell: UITableViewCell {
     }
     
     private func setupUI() {
-        contentView.backgroundColor = .presentViewsContents
+        //contentView.backgroundColor = .systemOrange
+        setupParentView()
         setupIconImageView()
         setupTitleLabelView()
+    }
+    
+    private func setupParentView() {
+        parentView.backgroundColor = .presentViewsContents
+        contentView.addSubview(parentView)
+        parentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
     
     private func setupIconImageView() {
@@ -34,7 +44,7 @@ class SettingsTableViewCell: UITableViewCell {
         iconImageView.preferredSymbolConfiguration = symbolConfiguration
         iconImageView.contentMode = .center
         iconImageView.layer.cornerRadius = 10
-        contentView.addSubview(iconImageView)
+        parentView.addSubview(iconImageView)
         
         iconImageView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(15)
@@ -47,7 +57,7 @@ class SettingsTableViewCell: UITableViewCell {
         titleLabel.font = .roundedFont(ofSize: 18, weight: .medium)
         titleLabel.textColor = .label
         titleLabel.textAlignment = .left
-        contentView.addSubview(titleLabel)
+        parentView.addSubview(titleLabel)
         
         titleLabel.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
@@ -65,5 +75,19 @@ class SettingsTableViewCell: UITableViewCell {
         iconImageView.tintColor = iconTintColor
         iconImageView.backgroundColor = iconBackgroundColor
         titleLabel.text = title
+    }
+    
+    func selectionChanged(isSelected: Bool) {
+        let backgroundColor: UIColor = isSelected
+        ? .systemGray2
+        : .presentViewsContents
+        if isSelected {
+            parentView.backgroundColor = backgroundColor
+        } else {
+            
+            UIView.animate(withDuration: 0.3) {
+                self.parentView.backgroundColor = backgroundColor
+            }
+        }
     }
 }
