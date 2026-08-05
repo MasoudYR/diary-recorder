@@ -31,7 +31,7 @@ class SettingsRouter {
         configuration.barCollapsingEnabled = true
         configuration.entersReaderIfAvailable = false
         
-        let url = URL(string: "https://www.google.com")!
+        let url = URL(string: "https://diaryrecorder.ir/privacy_policy")!
         let privacyPolicyViewController = SFSafariViewController(url: url, configuration: configuration)
         navigationViewController.present(privacyPolicyViewController, animated: true
         )
@@ -44,7 +44,7 @@ class SettingsRouter {
         configuration.barCollapsingEnabled = true
         configuration.entersReaderIfAvailable = false
         
-        let url = URL(string: "https://www.google.com")!
+        let url = URL(string: "https://diaryrecorder.ir/terms_of_service")!
         let termsOfServiceViewController = SFSafariViewController(url: url, configuration: configuration)
         navigationViewController.present(termsOfServiceViewController, animated: true
         )
