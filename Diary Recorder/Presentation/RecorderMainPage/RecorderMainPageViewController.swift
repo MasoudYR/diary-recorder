@@ -381,6 +381,11 @@ class RecorderMainPageViewController: UIViewController {
                 state == .paused
                 ? nil : savedDiaryBarButton
                 
+                navigationItem.leftBarButtonItem =
+                state == .recording ||
+                state == .paused
+                ? nil : settingsBarButton
+                
                 if state == .finished || state == .idle {
                     waveformLiveView.reset()
                 }

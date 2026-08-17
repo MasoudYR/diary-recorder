@@ -49,4 +49,12 @@ class SettingsRouter {
         navigationViewController.present(termsOfServiceViewController, animated: true
         )
     }
+    
+    func navigateToContactUsViewController() {
+        guard let settingsViewController,
+              let navigationViewController = settingsViewController.navigationController else { return }
+        
+        let aboutViewController = ContactUsViewController.make()
+        navigationViewController.pushViewController(aboutViewController, animated: true)
+    }
 }

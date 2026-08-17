@@ -240,8 +240,7 @@ extension SettingsViewController: UITableViewDelegate {
                 self.router.navigateToTermsOfServiceViewController()
             }
         case 2:
-            //go to contact us view
-            ()
+                self.router.navigateToContactUsViewController()
         default:
             break
         }

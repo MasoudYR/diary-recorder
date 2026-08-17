@@ -162,7 +162,7 @@ class AboutViewController: UIViewController, UIScrollViewDelegate {
     private func setupAbstractView() {
         abstractParentView.layer.cornerRadius = 20
         abstractLabel.text = "A private, offline app for your voice diary. No account, no cloud, just you."
-        abstractLabel.font = .roundedFont(ofSize: 20, weight: .regular)
+        abstractLabel.font = .roundedFont(ofSize: 19, weight: .regular)
         abstractLabel.numberOfLines = 0
         abstractLabel.textColor = .label
         abstractLabel.textAlignment = .center
@@ -176,10 +176,10 @@ class AboutViewController: UIViewController, UIScrollViewDelegate {
     }
     
     private func setupWhatItDoesView() {
-        whatItDoesParentView.backgroundColor = .blackAndWhite
+        whatItDoesParentView.backgroundColor = .presentViewsContents
         whatItDoesParentView.layer.cornerRadius = 20
         whatItDoesTitleLabel.text = "What it does"
-        whatItDoesTitleLabel.font = .roundedFont(ofSize: 18, weight: .semibold)
+        whatItDoesTitleLabel.font = .roundedFont(ofSize: 18, weight: .medium)
         whatItDoesTitleLabel.textColor = .gray
         whatItDoesTitleLabel.textAlignment = .left
         whatItDoesParentView.addSubview(whatItDoesTitleLabel)
@@ -202,10 +202,10 @@ class AboutViewController: UIViewController, UIScrollViewDelegate {
     }
     
     private func setupWhyOfflineView() {
-        whyOfflineParentView.backgroundColor = .blackAndWhite
+        whyOfflineParentView.backgroundColor = .presentViewsContents
         whyOfflineParentView.layer.cornerRadius = 20
         whyOfflineTitleLabel.text = "Why offline"
-        whyOfflineTitleLabel.font = .roundedFont(ofSize: 18, weight: .semibold)
+        whyOfflineTitleLabel.font = .roundedFont(ofSize: 18, weight: .medium)
         whyOfflineTitleLabel.textColor = .gray
         whyOfflineTitleLabel.textAlignment = .left
         whyOfflineParentView.addSubview(whyOfflineTitleLabel)
